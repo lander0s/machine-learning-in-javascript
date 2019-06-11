@@ -1,0 +1,14 @@
+
+html {
+    text-align: center;
+}
+
+label {
+    font-weight: bold;
+    font-family: 'Domine', serif;
+    line-height: 50px;
+}
+
+p {
+    font-family: 'Roboto', sans-serif;
+}

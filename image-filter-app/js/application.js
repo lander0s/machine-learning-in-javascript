@@ -4,7 +4,7 @@ define("DragImageElement", ["require", "exports"], function (require, exports) {
     var DragImageElement = (function () {
         function DragImageElement(selector, text) {
             var _this = this;
-            text = text || 'Drag an image here or click for browsing';
+            if (text === void 0) { text = 'Drag an image here or click for browsing'; }
             this.selector = selector;
             this.rootElem = document.querySelector(selector);
             this.rootElem.innerHTML = text;
@@ -92,8 +92,8 @@ define("Application", ["require", "exports", "DragImageElement"], function (requ
         function Application() {
         }
         Application.prototype.main = function () {
-            this.dragImage1 = new DragImageElement_1.DragImageElement("#example-image", "drag an image here");
-            this.dragImage2 = new DragImageElement_1.DragImageElement("#example-image-with-filter", "drag an image here");
+            this.dragImage1 = new DragImageElement_1.DragImageElement('#example-image', 'original image goes here');
+            this.dragImage2 = new DragImageElement_1.DragImageElement('#example-image-with-filter', 'filtered image goes here');
         };
         return Application;
     }());

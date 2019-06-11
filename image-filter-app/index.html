@@ -2,11 +2,20 @@
 <html>
     <head>
         <title> App that learns how to apply image filters based on a given example</title>
+        <link rel="stylesheet" href="css/index.css">
         <link rel="stylesheet" href="css/DragImageElement.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Domine&display=swap" rel="stylesheet">
     </head>
     <body>
+        <label> STEP 1: Select a pair of images to learn from </label> <br/>
+        <p> On the left container select an image from your computer,<br/> then on the right container select the same image with the filter applied (e.g. gray scaled ) </p>
         <div id="example-image"></div>
         <div id="example-image-with-filter"></div>
+        <br/><br/>
+        <label> STEP 2: Now select a different image </label> <br/>
+        <p> The artifical neural network will try to apply the same filter to this new image <br/> based on what it learned from the previous example  </p>
+        <div id="challenge-image"></div>
         <script src="libs/synaptic/synaptic.min.js"></script>
         <script src="libs/requirejs/require.min.js"></script>
         <script src="js/application.js"></script>
