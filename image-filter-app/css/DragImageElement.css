@@ -1,0 +1,12 @@
+
+.drag-image-element {
+    width            : 300px;
+    height           : 300px;
+    line-height      : 300px;    
+    background-color : #0000000A;
+    border           : 5px dotted silver;
+    text-align       : center; 
+    cursor           : pointer;
+    color            : gray;
+    background-size  : 100% 100%;
+}
