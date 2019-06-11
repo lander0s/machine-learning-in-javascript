@@ -9,5 +9,6 @@
     "files": [
         "Application.ts",
         "DragImageElement.ts",
+        "Pixel.ts"
     ]
 }
