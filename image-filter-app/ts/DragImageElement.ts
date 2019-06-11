@@ -7,8 +7,7 @@ export class DragImageElement {
     private inputFile : HTMLInputElement;
     private selector  : string;
 
-    constructor(selector:string, text:string) {
-        text = text || 'Drag an image here or click for browsing';
+    constructor(selector:string, text:string = 'Drag an image here or click for browsing') {
         this.selector = selector;
         this.rootElem = document.querySelector(selector);
         this.rootElem.innerHTML = text;
