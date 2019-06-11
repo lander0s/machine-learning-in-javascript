@@ -2,18 +2,23 @@
 
 class DragImageElement {
 
-    constructor(selector, text) {
+    rootElem       : HTMLElement;
+    inputFile      : HTMLInputElement;
+    selector       : string;
+    onloadCallback : Function;
+
+    constructor(selector:string, text:string) {
         text = text || 'Drag an image here or click for browsing';
         this.selector = selector;
         this.rootElem = document.querySelector(selector);
-        this.rootElem.innerText = text;
+        this.rootElem.innerHTML = text;
         this.rootElem.className = 'drag-image-element';
-        this.rootElem.addEventListener('mouseover', (e) => this.onMouseOver(e) );
-        this.rootElem.addEventListener('mouseleave', (e) => this.onMouseLeave(e) );
-        this.rootElem.addEventListener('click', (e) => this.onClick(e) );
+        this.rootElem.addEventListener('mouseover', (e) => this.onMouseOver() );
+        this.rootElem.addEventListener('mouseleave', (e) => this.onMouseLeave() );
+        this.rootElem.addEventListener('click', (e) => this.onClick() );
         this.rootElem.addEventListener('dragover', (e) => e.preventDefault() );
         this.rootElem.addEventListener('drop', (e) => this.onDrop(e) );
-        this.onload = (image) => { };
+        this.onloadCallback = () => { };
         this.resetInputFile();
     }
 
@@ -28,7 +33,7 @@ class DragImageElement {
     }
 
     setOnLoadListener(callback) {
-        this.onload = callback;
+        this.onloadCallback = callback;
     }
 
     onMouseOver() {
@@ -43,12 +48,12 @@ class DragImageElement {
         this.inputFile.click();
     }
 
-    onImageSelected(event) {
+    onImageSelected(event : any) {
         let selectedFile = event.target.files[0];
         if(selectedFile.type.match('image.*')) {
             let reader = new FileReader();
             reader.readAsDataURL(selectedFile);
-            reader.onload = (loadedEvent) => {
+            reader.onload = (loadedEvent : any) => {
                 if(loadedEvent.target.readyState == FileReader.DONE) {
                     this.onImageReadAsDataUrl(loadedEvent.target.result);
                 }
@@ -65,7 +70,7 @@ class DragImageElement {
         this.hideHintText();
         var image = new Image();
         image.src = url;
-        image.onload = () => this.onload(image);
+        image.onload = () => this.onloadCallback(image);
     }
 
     onDrop(event) {
@@ -76,7 +81,7 @@ class DragImageElement {
                 let selectedFile = item.getAsFile();
                 let reader = new FileReader();
                 reader.readAsDataURL(selectedFile);
-                reader.onload = (loadedEvent) => {
+                reader.onload = (loadedEvent : any) => {
                     if(loadedEvent.target.readyState == FileReader.DONE) {
                         this.onImageReadAsDataUrl(loadedEvent.target.result);
                     }
