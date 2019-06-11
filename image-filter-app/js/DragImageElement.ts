@@ -2,10 +2,10 @@
 
 class DragImageElement {
 
-    rootElem       : HTMLElement;
-    inputFile      : HTMLInputElement;
-    selector       : string;
-    onloadCallback : Function;
+    public  onload    : Function;
+    private rootElem  : HTMLElement;
+    private inputFile : HTMLInputElement;
+    private selector  : string;
 
     constructor(selector:string, text:string) {
         text = text || 'Drag an image here or click for browsing';
@@ -18,37 +18,33 @@ class DragImageElement {
         this.rootElem.addEventListener('click', (e) => this.onClick() );
         this.rootElem.addEventListener('dragover', (e) => e.preventDefault() );
         this.rootElem.addEventListener('drop', (e) => this.onDrop(e) );
-        this.onloadCallback = () => { };
+        this.onload = () => { };
         this.resetInputFile();
     }
 
-    resetInputFile() {
+    private resetInputFile() {
         this.inputFile = document.createElement('input');
         this.inputFile.type = 'file';
         this.inputFile.addEventListener('change', (e) => this.onImageSelected(e) );
     }
 
-    hideHintText() {
+    private hideHintText() {
         this.rootElem.style.color = 'rgba(0,0,0,0)';
     }
 
-    setOnLoadListener(callback : Function) {
-        this.onloadCallback = callback;
-    }
-
-    onMouseOver() {
+    private onMouseOver() {
         this.rootElem.style.textDecoration = 'underline';
     }
 
-    onMouseLeave() {
+    private onMouseLeave() {
         this.rootElem.style.textDecoration = 'none';
     }
 
-    onClick() {
+    private onClick() {
         this.inputFile.click();
     }
 
-    onImageSelected(event : any) {
+    private onImageSelected(event : any) {
         let selectedFile = event.target.files[0];
         if(selectedFile.type.match('image.*')) {
             let reader = new FileReader();
@@ -63,17 +59,17 @@ class DragImageElement {
         }
     }
 
-    onImageReadAsDataUrl(url : string) {
+    private onImageReadAsDataUrl(url : string) {
         this.rootElem.style.backgroundImage = `url(${url})`;
         this.rootElem.style.border = '5px solid gray';
         this.resetInputFile();
         this.hideHintText();
         var image = new Image();
         image.src = url;
-        image.onload = () => this.onloadCallback(image);
+        image.onload = () => this.onload(image);
     }
 
-    onDrop(event : any) {
+    private onDrop(event : any) {
         event.preventDefault();
         if(event.dataTransfer.items) {
             let item = event.dataTransfer.items[0];
