@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile" : "../js/application.js"
+    },
+    "files": [
+        "Application.ts",
+        "DragImageElement.ts",
+    ]
+}

@@ -1,6 +1,6 @@
 
 
-class DragImageElement {
+export class DragImageElement {
 
     public  onload    : Function;
     private rootElem  : HTMLElement;
@@ -87,5 +87,4 @@ class DragImageElement {
             }
         }
     }
-
 }

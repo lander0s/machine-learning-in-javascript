@@ -5,8 +5,16 @@
         <link rel="stylesheet" href="css/DragImageElement.css">
     </head>
     <body>
+        <div id="example-image"></div>
+        <div id="example-image-with-filter"></div>
         <script src="libs/synaptic/synaptic.min.js"></script>
-        <script src="js/Main.js"></script>
-        <script src="js/DragImageElement.js"></script>
+        <script src="libs/requirejs/require.min.js"></script>
+        <script src="js/application.js"></script>
+        <script>
+            require(["Application"], (module) => {
+                let app = new module.Application();
+                app.main();
+            });
+        </script>
     </body>
 </html>
