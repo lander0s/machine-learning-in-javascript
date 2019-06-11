@@ -6,9 +6,7 @@ class DragImageElement {
         text = text || 'Drag an image here or click for browsing';
         this.selector = selector;
         this.rootElem = document.querySelector(selector);
-        this.label = document.createElement('label');
-        this.label.innerText = text;
-        this.rootElem.appendChild(this.label);
+        this.rootElem.innerText = text;
         this.rootElem.className = 'drag-image-element';
         this.rootElem.addEventListener('mouseover', (e) => this.onMouseOver(e) );
         this.rootElem.addEventListener('mouseleave', (e) => this.onMouseLeave(e) );
@@ -25,11 +23,8 @@ class DragImageElement {
         this.inputFile.addEventListener('change', (e) => this.onImageSelected(e) );
     }
 
-    removeLabel() {
-        if(this.label != null) {
-            this.rootElem.removeChild(this.label);
-            this.label = null;
-        }
+    hideHintText() {
+        this.rootElem.style.color = 'rgba(0,0,0,0)';
     }
 
     setOnLoadListener(callback) {
@@ -37,15 +32,11 @@ class DragImageElement {
     }
 
     onMouseOver() {
-        if(this.label != null) {
-            this.label.style.textDecoration = 'underline';
-        }
+        this.rootElem.style.textDecoration = 'underline';
     }
 
     onMouseLeave() {
-        if(this.label != null) {
-            this.label.style.textDecoration = 'none';
-        }
+        this.rootElem.style.textDecoration = 'none';
     }
 
     onClick() {
@@ -71,7 +62,7 @@ class DragImageElement {
         this.rootElem.style.backgroundImage = `url(${url})`;
         this.rootElem.style.border = '5px solid gray';
         this.resetInputFile();
-        this.removeLabel();
+        this.hideHintText();
         var image = new Image();
         image.src = url;
         image.onload = () => this.onload(image);
