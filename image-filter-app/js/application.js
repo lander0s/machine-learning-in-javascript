@@ -92,8 +92,9 @@ define("Application", ["require", "exports", "DragImageElement"], function (requ
         function Application() {
         }
         Application.prototype.main = function () {
-            this.dragImage1 = new DragImageElement_1.DragImageElement('#example-image', 'original image goes here');
-            this.dragImage2 = new DragImageElement_1.DragImageElement('#example-image-with-filter', 'filtered image goes here');
+            this.exampleDragImage = new DragImageElement_1.DragImageElement('#example-image', 'original image goes here');
+            this.filterDragImage = new DragImageElement_1.DragImageElement('#example-image-with-filter', 'filtered image goes here');
+            this.challengeDragImage = new DragImageElement_1.DragImageElement('#challenge-image', 'a complete different image goes here');
         };
         return Application;
     }());
