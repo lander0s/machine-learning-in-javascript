@@ -32,7 +32,7 @@ class DragImageElement {
         this.rootElem.style.color = 'rgba(0,0,0,0)';
     }
 
-    setOnLoadListener(callback) {
+    setOnLoadListener(callback : Function) {
         this.onloadCallback = callback;
     }
 
@@ -63,7 +63,7 @@ class DragImageElement {
         }
     }
 
-    onImageReadAsDataUrl(url) {
+    onImageReadAsDataUrl(url : string) {
         this.rootElem.style.backgroundImage = `url(${url})`;
         this.rootElem.style.border = '5px solid gray';
         this.resetInputFile();
@@ -73,7 +73,7 @@ class DragImageElement {
         image.onload = () => this.onloadCallback(image);
     }
 
-    onDrop(event) {
+    onDrop(event : any) {
         event.preventDefault();
         if(event.dataTransfer.items) {
             let item = event.dataTransfer.items[0];
