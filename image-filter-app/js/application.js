@@ -1,3 +1,14 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 define("DragImageElement", ["require", "exports"], function (require, exports) {
     "use strict";
     exports.__esModule = true;
@@ -115,10 +126,14 @@ define("RawImage", ["require", "exports", "Pixel"], function (require, exports, 
             this.canvas.height = this.height;
             this.context = this.canvas.getContext('2d');
         };
-        RawImage.prototype.fromPixelArray = function (image, width, height) {
-            this.width = width;
-            this.height = height;
-            this.pixels = image;
+        RawImage.prototype.copyFrom = function (image) {
+            this.width = image.width;
+            this.height = image.height;
+            this.pixels = [];
+            for (var i = 0; i < image.pixels.length; i++) {
+                var pixel = __assign({}, image.pixels[i]);
+                this.pixels.push(pixel);
+            }
             this.updateCanvasContext();
         };
         RawImage.prototype.fromImage = function (image) {
@@ -164,7 +179,51 @@ define("RawImage", ["require", "exports", "Pixel"], function (require, exports, 
     }());
     exports.RawImage = RawImage;
 });
-define("Application", ["require", "exports", "DragImageElement", "RawImage"], function (require, exports, DragImageElement_1, RawImage_1) {
+define("ImageFilterLearner", ["require", "exports", "RawImage"], function (require, exports, RawImage_1) {
+    "use strict";
+    exports.__esModule = true;
+    var ImageFilterLearner = (function () {
+        function ImageFilterLearner() {
+            this.network = new synaptic.Architect.Perceptron(3, 3, 3);
+            this.learningRate = 0.5;
+        }
+        ImageFilterLearner.prototype.train = function (original, filtered) {
+            for (var y = 0; y < original.height; y++) {
+                for (var x = 0; x < original.width; x++) {
+                    var pixelIndex = y * original.width + x;
+                    this.network.activate([
+                        original.pixels[pixelIndex].r / 255.0,
+                        original.pixels[pixelIndex].g / 255.0,
+                        original.pixels[pixelIndex].b / 255.0,
+                    ]);
+                    this.network.propagate(this.learningRate, [
+                        filtered.pixels[pixelIndex].r / 255.0,
+                        filtered.pixels[pixelIndex].g / 255.0,
+                        filtered.pixels[pixelIndex].b / 255.0,
+                    ]);
+                }
+            }
+        };
+        ImageFilterLearner.prototype.applyFilter = function (image) {
+            var newImage = new RawImage_1.RawImage();
+            newImage.copyFrom(image);
+            for (var i = 0; i < newImage.pixels.length; i++) {
+                var output = this.network.activate([
+                    image.pixels[i].r / 255.0,
+                    image.pixels[i].g / 255.0,
+                    image.pixels[i].b / 255.0,
+                ]);
+                newImage.pixels[i].r = output[0] * 255 | 0;
+                newImage.pixels[i].g = output[1] * 255 | 0;
+                newImage.pixels[i].b = output[2] * 255 | 0;
+            }
+            return newImage;
+        };
+        return ImageFilterLearner;
+    }());
+    exports.ImageFilterLearner = ImageFilterLearner;
+});
+define("Application", ["require", "exports", "DragImageElement", "RawImage", "ImageFilterLearner"], function (require, exports, DragImageElement_1, RawImage_2, ImageFilterLearner_1) {
     "use strict";
     exports.__esModule = true;
     var ImageRol;
@@ -181,6 +240,7 @@ define("Application", ["require", "exports", "DragImageElement", "RawImage"], fu
         }
         Application.prototype.main = function () {
             var _this = this;
+            this.imageFilterLearner = new ImageFilterLearner_1.ImageFilterLearner();
             this.exampleDragImage = new DragImageElement_1.DragImageElement('#example-image', 'original image goes here');
             this.filterDragImage = new DragImageElement_1.DragImageElement('#example-image-with-filter', 'filtered image goes here');
             this.challengeDragImage = new DragImageElement_1.DragImageElement('#challenge-image', 'a complete different image goes here');
@@ -191,23 +251,25 @@ define("Application", ["require", "exports", "DragImageElement", "RawImage"], fu
         Application.prototype.onImageLoaded = function (img, rol) {
             switch (rol) {
                 case ImageRol.Example: {
-                    this.exampleRawImage = new RawImage_1.RawImage();
+                    this.exampleRawImage = new RawImage_2.RawImage();
                     this.exampleRawImage.fromImage(img);
                     break;
                 }
                 case ImageRol.Filtered: {
-                    this.filterRawImage = new RawImage_1.RawImage();
+                    this.filterRawImage = new RawImage_2.RawImage();
                     this.filterRawImage.fromImage(img);
                     break;
                 }
                 case ImageRol.Challenge: {
-                    this.challengeRawImage = new RawImage_1.RawImage();
+                    this.challengeRawImage = new RawImage_2.RawImage();
                     this.challengeRawImage.fromImage(img);
                     break;
                 }
             }
             if (this.isReady()) {
-                var imageAsUrl = this.challengeRawImage.toDataUrl();
+                this.imageFilterLearner.train(this.exampleRawImage, this.filterRawImage);
+                var resultImage = this.imageFilterLearner.applyFilter(this.challengeRawImage);
+                var imageAsUrl = resultImage.toDataUrl();
                 var resultElem = document.querySelector('#ann-result');
                 resultElem.style.backgroundImage = "url(" + imageAsUrl + ")";
                 resultElem.style.backgroundSize = '100% 100%';
