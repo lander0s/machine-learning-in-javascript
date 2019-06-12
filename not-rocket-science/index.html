@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Not rocket science</title>
+    <meta name="description" content="Artificial intelligence controlled rocket that learns how to land">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Domine&display=swap" rel="stylesheet">
+    <link href="css/index.css" rel="stylesheet">
+</head>
+<body>
+    <script src="libs/synaptic/synaptic.min.js"></script>
+    <script src="libs/p2.js/p2.min.js"></script>
+    <script src="libs/p2.js/p2.renderer.min.js"></script>
+    <script src="libs/requirejs/require.min.js"></script>
+    <script src="js/application.js"></script>
+    <script>
+        require(["Application"], (module) => {
+            let app = new module.Application();
+            app.main();
+        });
+    </script>
+</body>
+</html>
