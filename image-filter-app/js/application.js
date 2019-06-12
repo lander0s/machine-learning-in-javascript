@@ -207,7 +207,6 @@ define("Application", ["require", "exports", "DragImageElement", "RawImage"], fu
                 }
             }
             if (this.isReady()) {
-                this.challengeRawImage.invertColors();
                 var imageAsUrl = this.challengeRawImage.toDataUrl();
                 var resultElem = document.querySelector('#ann-result');
                 resultElem.style.backgroundImage = "url(" + imageAsUrl + ")";
