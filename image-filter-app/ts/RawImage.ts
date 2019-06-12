@@ -23,10 +23,14 @@ export class RawImage {
         this.context = this.canvas.getContext('2d');
     }
 
-    public fromPixelArray(image : Array<Pixel>, width: number, height: number) {
-        this.width = width;
-        this.height = height;
-        this.pixels = image;
+    public copyFrom(image : RawImage) {
+        this.width = image.width;
+        this.height = image.height;
+        this.pixels = [];
+        for(let i : number = 0; i < image.pixels.length; i++) {
+            let pixel = {... image.pixels[i]};
+            this.pixels.push(pixel);
+        }
         this.updateCanvasContext();
     }
 

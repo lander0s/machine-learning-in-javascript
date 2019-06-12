@@ -1,5 +1,6 @@
 import { DragImageElement } from "./DragImageElement"
 import { RawImage } from "./RawImage"
+import { ImageFilterLearner } from "./ImageFilterLearner"
 
 enum ImageRol {
     Example,
@@ -9,6 +10,7 @@ enum ImageRol {
 
 export class Application {
 
+    private imageFilterLearner : ImageFilterLearner;
     private exampleDragImage   : DragImageElement;
     private filterDragImage    : DragImageElement;
     private challengeDragImage : DragImageElement;
@@ -17,6 +19,7 @@ export class Application {
     private challengeRawImage : RawImage = null;
 
     public main() {
+        this.imageFilterLearner = new ImageFilterLearner();
         this.exampleDragImage = new DragImageElement('#example-image', 'original image goes here');
         this.filterDragImage = new DragImageElement('#example-image-with-filter', 'filtered image goes here');
         this.challengeDragImage = new DragImageElement('#challenge-image', 'a complete different image goes here');
@@ -46,13 +49,9 @@ export class Application {
         }
 
         if(this.isReady()) {
-            /**
-             * Learning process and challenge solving go here!
-             * Learning process and challenge solving go here!
-             * Learning process and challenge solving go here!
-             * Learning process and challenge solving go here!
-             */
-            let imageAsUrl = this.challengeRawImage.toDataUrl();
+            this.imageFilterLearner.train(this.exampleRawImage, this.filterRawImage);
+            let resultImage = this.imageFilterLearner.applyFilter(this.challengeRawImage);
+            let imageAsUrl = resultImage.toDataUrl();
             let resultElem : HTMLElement = document.querySelector('#ann-result');
             resultElem.style.backgroundImage = `url(${imageAsUrl})`;
             resultElem.style.backgroundSize = '100% 100%';
