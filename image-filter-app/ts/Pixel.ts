@@ -1,10 +1,10 @@
 
 export class Pixel {
 
-    public r : Number;
-    public g : Number;
-    public b : Number;
-    public a : Number;
+    public r : number;
+    public g : number;
+    public b : number;
+    public a : number;
 
     constructor(rgba : Array<number>) {
         this.r = rgba[0];

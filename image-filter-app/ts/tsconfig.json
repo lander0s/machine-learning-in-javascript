@@ -9,6 +9,7 @@
     "files": [
         "Application.ts",
         "DragImageElement.ts",
-        "Pixel.ts"
+        "Pixel.ts",
+        "RawImage.ts"
     ]
 }
