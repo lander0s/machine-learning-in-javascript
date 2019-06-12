@@ -12,3 +12,21 @@ label {
 p {
     font-family: 'Roboto', sans-serif;
 }
+
+.ann-result {
+    display          : inline-block;
+    width            : 0px;
+    height           : 300px;   
+    line-height      : 300px;    
+    background-color : #0000000A;
+    border           : 0px solid silver;
+    text-align       : center; 
+    color            : gray;
+    background-size  : 100% 100%;
+    transition       : all 0.3s ease-in-out;
+}
+
+.ann-revealed-result {
+    border           : 5px solid silver;
+    width            : 300px;
+}
