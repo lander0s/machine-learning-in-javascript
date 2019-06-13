@@ -17,15 +17,12 @@
     <script src="js/application.js"></script>
     <script>
         require(["Application"], (module) => {
-
             let app = new module.Application();
             app.init();
-
             function update() {
                 app.update();
                 window.requestAnimationFrame(update);
             }
-
             update();
         });
     </script>
