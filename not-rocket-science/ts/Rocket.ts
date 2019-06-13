@@ -1,51 +1,12 @@
-
-export class RocketHandle {
-    private rocket : Rocket;
-    public onSimulationFinished : Function;
-
-    constructor(rocket:Rocket) {
-        this.rocket = rocket;
-        this.rocket.handle = this;
-        this.onSimulationFinished = () => { };
-    }
-
-    public getRocketAngle() : number {
-        return this.rocket.body.angle;
-    }
-
-    public getRocketPosition() : Array<number> {
-        return this.rocket.body.position;
-    }
-
-    public getThrusterAngle() : number {
-        return this.rocket.thrusterAngle;
-    }
-
-    public getThrusterIntesity() : number {
-        return this.rocket.thrusterIntensity;
-    }
-
-    public getScore() : number {
-        return this.rocket.score;
-    }
-
-    public setDesiredThrusterAngle(angle:number) : void {
-        this.rocket.desiredThrusterAngle = angle;
-    }
-
-    public setDesiredThrusterIntensity(intesity:number) : void {
-        this.rocket.desiredThrusterIntensity = intesity;
-    }
-}
+import { SimulatorConfig } from "./Config";
 
 export class Rocket {
-    public score                   : number;
-    public thrusterAngle            : number;
-    public desiredThrusterAngle     : number;
-    public thrusterIntensity        : number;
-    public desiredThrusterIntensity : number;
-    public body                    : p2.Body;
-    public handle                  : RocketHandle;
+    private score                    : number;
+    private thrusterAngle            : number;
+    private desiredThrusterAngle     : number;
+    private thrusterIntensity        : number;
+    private desiredThrusterIntensity : number;
+    private body                     : p2.Body;
     
     constructor(body:p2.Body) {
         this.score = 0;
@@ -54,6 +15,92 @@ export class Rocket {
         this.desiredThrusterAngle = 0;
         this.thrusterIntensity = 0;
         this.desiredThrusterIntensity = 0;
-        this.handle = null;
+    }
+
+    public update(elapsedSeconds:number) : void {
+        let thrusterRotationSpeed = 5;
+        let thrusterIntensityAcc = 20;
+
+        // update thrusters
+        this.thrusterAngle = this.stepValue(
+            this.desiredThrusterAngle,
+            this.thrusterAngle,
+            thrusterRotationSpeed,
+            elapsedSeconds
+        );
+
+        this.thrusterIntensity = this.stepValue(
+            this.desiredThrusterIntensity,
+            this.thrusterIntensity,
+            thrusterIntensityAcc,
+            elapsedSeconds
+        );
+    }
+
+    public getPhysicsObject() : p2.Body {
+        return this.body;
+    }
+
+    public getAngle() : number {
+        let angle = this.body.angle;
+        let normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
+        return normalized;
+    }
+
+    public getAngleFactor() : number {
+        let angle = this.getAngle();
+        let min = -Math.PI;
+        let max = Math.PI;
+        return ((angle - min) / (max - min));
+    }
+
+    public getThrusterAngle() :number {
+        let angle = this.thrusterAngle;
+        let normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
+        return normalized;
+    }
+
+    public getThrusterAngleFactor() : number {
+        let halfFreedomInRadians = (SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
+        let angle = this.getThrusterAngle();
+        let min = -halfFreedomInRadians;
+        let max = halfFreedomInRadians;
+        return ((angle - min) / (max - min));
+    }
+
+    public getThrusterIntensity() : number {
+        return this.thrusterIntensity;
+    }
+
+    public getPosition() : Array<number> {
+        return this.body.position;
+    }
+
+    public setDesiredThrusterIntensityFactor(factor:number) : void {
+        let min = 0;
+        let max = SimulatorConfig.thrusterMaxIntensity;
+        this.desiredThrusterIntensity = min + factor * (max - min);
+    }
+
+    public setDesiredThrusterAngleFactor(factor:number) : void {
+        let halfFreedomInRadians = (SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
+        let min = -halfFreedomInRadians;
+        let max = halfFreedomInRadians;
+        this.desiredThrusterAngle = min + factor * (max - min);
+    }
+
+    private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
+        if(desiredValue < currentValue) {
+            let step = -speed * elapsedtime;
+            if(currentValue + step < desiredValue)
+                return desiredValue;
+            return currentValue + step;
+        }
+        else {
+            let step = speed * elapsedtime;
+            if(currentValue + step > desiredValue)
+                return desiredValue;
+            return currentValue + step;
+        }
     }
 }

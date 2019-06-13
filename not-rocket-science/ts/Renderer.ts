@@ -51,18 +51,19 @@ export class Renderer {
     private drawRockets() {
         let rockets = this.simulator.getAllRockets();
         rockets.forEach((rocket) => {
+            
             this.context.save();
-            let screenSpacePosition = this.toScreenSpace(rocket.body.position);
+            let screenSpacePosition = this.toScreenSpace(rocket.getPosition());
             this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
-            this.context.rotate(rocket.body.angle);
+            this.context.rotate(rocket.getAngle());
             let rocketSize = this.toScreenSpace(SimulatorConfig.rocketSize);
             this.context.strokeRect(-rocketSize[0]/2, -rocketSize[1]/2, rocketSize[0], rocketSize[1]);
 
             // thruster
             let angleOffset = 90 * Math.PI / 180;
             this.context.translate(0, - rocketSize[1]/2 );
-            this.context.rotate(rocket.thrusterAngle + angleOffset);
-            this.context.strokeRect(-rocketSize[0]/2, 0, -rocket.desiredThrusterIntensity * 10, 0);
+            this.context.rotate(rocket.getThrusterAngle() + angleOffset);
+            this.context.strokeRect(-rocketSize[0]/2, 0, -rocket.getThrusterIntensity() * 10, 0);
 
             this.context.restore();
         });

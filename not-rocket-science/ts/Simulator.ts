@@ -1,5 +1,5 @@
 
-import { Rocket, RocketHandle } from './Rocket'
+import { Rocket } from './Rocket'
 import { SimulatorConfig } from './Config';
 declare var p2 : any;
 //import * as p2 from "./p2"
@@ -22,7 +22,7 @@ export class Simulator {
         this.rockets = [];
     }
 
-    public addRocket() : RocketHandle {
+    public addRocket() : Rocket {
         let rocketShape = new p2.Box({width: SimulatorConfig.rocketSize[0], height: SimulatorConfig.rocketSize[1]});
         let rocketBody = new p2.Body({mass:1, position: SimulatorConfig.rocketSpawnPoint });
         rocketBody.addShape(rocketShape);
@@ -30,9 +30,7 @@ export class Simulator {
 
         let rocket = new Rocket(rocketBody);
         this.rockets.push(rocket);
-
-        let handle = new RocketHandle(rocket);
-        return handle;
+        return rocket;
     }
 
     public getAllRockets() {
@@ -41,50 +39,17 @@ export class Simulator {
 
     public update() : void {
         let elapsedSeconds = 1/60;
-        let thrusterRotationSpeed = 1;
-        let thrusterIntensityAcc = 1;
-
         this.rockets.forEach( (rocket) => {
-            // update thrusters
-            rocket.thrusterAngle = this.stepValue(
-                rocket.desiredThrusterAngle,
-                rocket.thrusterAngle,
-                thrusterRotationSpeed,
-                elapsedSeconds
-            );
-
-            // update thrusters
-            rocket.thrusterIntensity = this.stepValue(
-                rocket.desiredThrusterIntensity,
-                rocket.thrusterIntensity,
-                thrusterIntensityAcc,
-                elapsedSeconds
-            );
-
+            rocket.update(elapsedSeconds);
             // apply corresponding force
-            let angleOffset = 90 * Math.PI / 180;
-            let forceX = rocket.thrusterIntensity * Math.cos(rocket.thrusterAngle + angleOffset);
-            let forceY = rocket.thrusterIntensity * Math.sin(rocket.thrusterAngle + angleOffset);
+            let effectiveAngle = rocket.getThrusterAngle() + (Math.PI/2);
+            let forceX = rocket.getThrusterIntensity() * Math.cos(effectiveAngle);
+            let forceY = rocket.getThrusterIntensity() * Math.sin(effectiveAngle);
             let posX = 0;
             let posY = -SimulatorConfig.rocketSize[1] / 2;
-            rocket.body.applyForceLocal([forceX, forceY], [posX, posY]);
+            rocket.getPhysicsObject().applyForceLocal([forceX, forceY], [posX, posY]);
         });
 
         this.world.step(elapsedSeconds);
-    }
-
-    private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
-        if(desiredValue < currentValue) {
-            let step = -speed * elapsedtime;
-            if(currentValue + step < desiredValue)
-                return desiredValue;
-            return currentValue + step;
-        }
-        else {
-            let step = speed * elapsedtime;
-            if(currentValue + step > desiredValue)
-                return desiredValue;
-            return currentValue + step;
-        }
     }
 }
