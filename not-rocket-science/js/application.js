@@ -84,7 +84,35 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             return this.rockets;
         };
         Simulator.prototype.update = function () {
-            this.world.step(1 / 60);
+            var _this = this;
+            var elapsedSeconds = 1 / 60;
+            var turbineRotationSpeed = 1;
+            var turbineIntensityAcc = 1;
+            this.rockets.forEach(function (rocket) {
+                rocket.turbineAngle = _this.stepValue(rocket.desiredTurbineAngle, rocket.turbineAngle, turbineRotationSpeed, elapsedSeconds);
+                rocket.turbineIntensity = _this.stepValue(rocket.desiredTurbineIntensity, rocket.turbineIntensity, turbineIntensityAcc, elapsedSeconds);
+                var angleOffset = 90 * Math.PI / 180;
+                var forceX = rocket.turbineIntensity * Math.cos(rocket.turbineAngle + angleOffset);
+                var forceY = rocket.turbineIntensity * Math.sin(rocket.turbineAngle + angleOffset);
+                var posX = 0;
+                var posY = -Config_1.SimulatorConfig.rocketSize[1] / 2;
+                rocket.body.applyForceLocal([forceX, forceY], [posX, posY]);
+            });
+            this.world.step(elapsedSeconds);
+        };
+        Simulator.prototype.stepValue = function (desiredValue, currentValue, speed, elapsedtime) {
+            if (desiredValue > currentValue) {
+                var step = -speed * elapsedtime;
+                if (currentValue + step < desiredValue)
+                    return desiredValue;
+                return currentValue + step;
+            }
+            else {
+                var step = speed * elapsedtime;
+                if (currentValue + step > desiredValue)
+                    return desiredValue;
+                return currentValue + step;
+            }
         };
         return Simulator;
     }());
@@ -132,6 +160,10 @@ define("Renderer", ["require", "exports", "Config"], function (require, exports,
                 _this.context.rotate(rocket.body.angle);
                 var rocketSize = _this.toScreenSpace(Config_2.SimulatorConfig.rocketSize);
                 _this.context.strokeRect(-rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
+                var angleOffset = 90 * Math.PI / 180;
+                _this.context.translate(0, -rocketSize[1] / 2);
+                _this.context.rotate(rocket.turbineAngle + angleOffset);
+                _this.context.strokeRect(-rocketSize[0] / 2, 0, -rocket.desiredTurbineIntensity * 10, 0);
                 _this.context.restore();
             });
         };
