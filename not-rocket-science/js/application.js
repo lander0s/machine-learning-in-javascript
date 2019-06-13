@@ -1,62 +1,96 @@
-define("Rocket", ["require", "exports"], function (require, exports) {
-    "use strict";
-    exports.__esModule = true;
-    var RocketHandle = (function () {
-        function RocketHandle(rocket) {
-            this.rocket = rocket;
-            this.rocket.handle = this;
-            this.onSimulationFinished = function () { };
-        }
-        RocketHandle.prototype.getRocketAngle = function () {
-            return this.rocket.body.angle;
-        };
-        RocketHandle.prototype.getRocketPosition = function () {
-            return this.rocket.body.position;
-        };
-        RocketHandle.prototype.getTurbineAngle = function () {
-            return this.rocket.turbineAngle;
-        };
-        RocketHandle.prototype.getTurbineIntesity = function () {
-            return this.rocket.turbineIntensity;
-        };
-        RocketHandle.prototype.getScore = function () {
-            return this.rocket.score;
-        };
-        RocketHandle.prototype.setDesiredTurbineAngle = function (angle) {
-            this.rocket.desiredTurbineAngle = angle;
-        };
-        RocketHandle.prototype.setDesiredTurbineIntensity = function (intesity) {
-            this.rocket.desiredTurbineIntensity = intesity;
-        };
-        return RocketHandle;
-    }());
-    exports.RocketHandle = RocketHandle;
-    var Rocket = (function () {
-        function Rocket(body) {
-            this.score = 0;
-            this.body = body;
-            this.turbineAngle = 0;
-            this.desiredTurbineAngle = 0;
-            this.turbineIntensity = 0;
-            this.desiredTurbineIntensity = 0;
-            this.handle = null;
-        }
-        return Rocket;
-    }());
-    exports.Rocket = Rocket;
-});
 define("Config", ["require", "exports"], function (require, exports) {
     "use strict";
     exports.__esModule = true;
     exports.SimulatorConfig = {
         rocketSpawnPoint: [0, 40],
-        rocketSize: [1, 8]
+        rocketSize: [1, 8],
+        thrusterFreedomInDegrees: 90,
+        thrusterMaxIntensity: 20
     };
     exports.RenderConfig = {
         initialCameraPosition: [0, 20]
     };
 });
-define("Simulator", ["require", "exports", "Rocket", "Config"], function (require, exports, Rocket_1, Config_1) {
+define("Rocket", ["require", "exports", "Config"], function (require, exports, Config_1) {
+    "use strict";
+    exports.__esModule = true;
+    var Rocket = (function () {
+        function Rocket(body) {
+            this.score = 0;
+            this.body = body;
+            this.thrusterAngle = 0;
+            this.desiredThrusterAngle = 0;
+            this.thrusterIntensity = 0;
+            this.desiredThrusterIntensity = 0;
+        }
+        Rocket.prototype.update = function (elapsedSeconds) {
+            var thrusterRotationSpeed = 5;
+            var thrusterIntensityAcc = 20;
+            this.thrusterAngle = this.stepValue(this.desiredThrusterAngle, this.thrusterAngle, thrusterRotationSpeed, elapsedSeconds);
+            this.thrusterIntensity = this.stepValue(this.desiredThrusterIntensity, this.thrusterIntensity, thrusterIntensityAcc, elapsedSeconds);
+        };
+        Rocket.prototype.getPhysicsObject = function () {
+            return this.body;
+        };
+        Rocket.prototype.getAngle = function () {
+            var angle = this.body.angle;
+            var normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
+            return normalized;
+        };
+        Rocket.prototype.getAngleFactor = function () {
+            var angle = this.getAngle();
+            var min = -Math.PI;
+            var max = Math.PI;
+            return ((angle - min) / (max - min));
+        };
+        Rocket.prototype.getThrusterAngle = function () {
+            var angle = this.thrusterAngle;
+            var normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
+            return normalized;
+        };
+        Rocket.prototype.getThrusterAngleFactor = function () {
+            var halfFreedomInRadians = (Config_1.SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
+            var angle = this.getThrusterAngle();
+            var min = -halfFreedomInRadians;
+            var max = halfFreedomInRadians;
+            return ((angle - min) / (max - min));
+        };
+        Rocket.prototype.getThrusterIntensity = function () {
+            return this.thrusterIntensity;
+        };
+        Rocket.prototype.getPosition = function () {
+            return this.body.position;
+        };
+        Rocket.prototype.setDesiredThrusterIntensityFactor = function (factor) {
+            var min = 0;
+            var max = Config_1.SimulatorConfig.thrusterMaxIntensity;
+            this.desiredThrusterIntensity = min + factor * (max - min);
+        };
+        Rocket.prototype.setDesiredThrusterAngleFactor = function (factor) {
+            var halfFreedomInRadians = (Config_1.SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
+            var min = -halfFreedomInRadians;
+            var max = halfFreedomInRadians;
+            this.desiredThrusterAngle = min + factor * (max - min);
+        };
+        Rocket.prototype.stepValue = function (desiredValue, currentValue, speed, elapsedtime) {
+            if (desiredValue < currentValue) {
+                var step = -speed * elapsedtime;
+                if (currentValue + step < desiredValue)
+                    return desiredValue;
+                return currentValue + step;
+            }
+            else {
+                var step = speed * elapsedtime;
+                if (currentValue + step > desiredValue)
+                    return desiredValue;
+                return currentValue + step;
+            }
+        };
+        return Rocket;
+    }());
+    exports.Rocket = Rocket;
+});
+define("Simulator", ["require", "exports", "Rocket", "Config"], function (require, exports, Rocket_1, Config_2) {
     "use strict";
     exports.__esModule = true;
     var Simulator = (function () {
@@ -71,54 +105,35 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             this.rockets = [];
         };
         Simulator.prototype.addRocket = function () {
-            var rocketShape = new p2.Box({ width: Config_1.SimulatorConfig.rocketSize[0], height: Config_1.SimulatorConfig.rocketSize[1] });
-            var rocketBody = new p2.Body({ mass: 1, position: Config_1.SimulatorConfig.rocketSpawnPoint });
+            var rocketShape = new p2.Box({ width: Config_2.SimulatorConfig.rocketSize[0], height: Config_2.SimulatorConfig.rocketSize[1] });
+            var rocketBody = new p2.Body({ mass: 1, position: Config_2.SimulatorConfig.rocketSpawnPoint });
             rocketBody.addShape(rocketShape);
             this.world.addBody(rocketBody);
             var rocket = new Rocket_1.Rocket(rocketBody);
             this.rockets.push(rocket);
-            var handle = new Rocket_1.RocketHandle(rocket);
-            return handle;
+            return rocket;
         };
         Simulator.prototype.getAllRockets = function () {
             return this.rockets;
         };
         Simulator.prototype.update = function () {
-            var _this = this;
             var elapsedSeconds = 1 / 60;
-            var turbineRotationSpeed = 1;
-            var turbineIntensityAcc = 1;
             this.rockets.forEach(function (rocket) {
-                rocket.turbineAngle = _this.stepValue(rocket.desiredTurbineAngle, rocket.turbineAngle, turbineRotationSpeed, elapsedSeconds);
-                rocket.turbineIntensity = _this.stepValue(rocket.desiredTurbineIntensity, rocket.turbineIntensity, turbineIntensityAcc, elapsedSeconds);
-                var angleOffset = 90 * Math.PI / 180;
-                var forceX = rocket.turbineIntensity * Math.cos(rocket.turbineAngle + angleOffset);
-                var forceY = rocket.turbineIntensity * Math.sin(rocket.turbineAngle + angleOffset);
+                rocket.update(elapsedSeconds);
+                var effectiveAngle = rocket.getThrusterAngle() + (Math.PI / 2);
+                var forceX = rocket.getThrusterIntensity() * Math.cos(effectiveAngle);
+                var forceY = rocket.getThrusterIntensity() * Math.sin(effectiveAngle);
                 var posX = 0;
-                var posY = -Config_1.SimulatorConfig.rocketSize[1] / 2;
-                rocket.body.applyForceLocal([forceX, forceY], [posX, posY]);
+                var posY = -Config_2.SimulatorConfig.rocketSize[1] / 2;
+                rocket.getPhysicsObject().applyForceLocal([forceX, forceY], [posX, posY]);
             });
             this.world.step(elapsedSeconds);
-        };
-        Simulator.prototype.stepValue = function (desiredValue, currentValue, speed, elapsedtime) {
-            if (desiredValue > currentValue) {
-                var step = -speed * elapsedtime;
-                if (currentValue + step < desiredValue)
-                    return desiredValue;
-                return currentValue + step;
-            }
-            else {
-                var step = speed * elapsedtime;
-                if (currentValue + step > desiredValue)
-                    return desiredValue;
-                return currentValue + step;
-            }
         };
         return Simulator;
     }());
     exports.Simulator = Simulator;
 });
-define("Renderer", ["require", "exports", "Config"], function (require, exports, Config_2) {
+define("Renderer", ["require", "exports", "Config"], function (require, exports, Config_3) {
     "use strict";
     exports.__esModule = true;
     var Renderer = (function () {
@@ -135,7 +150,7 @@ define("Renderer", ["require", "exports", "Config"], function (require, exports,
             this.rootElem.appendChild(this.canvas);
             this.canvas.style.width = '100%';
             this.canvas.style.height = '100%';
-            this.cameraPosition = Config_2.RenderConfig.initialCameraPosition;
+            this.cameraPosition = Config_3.RenderConfig.initialCameraPosition;
         }
         Renderer.prototype.init = function () {
         };
@@ -155,15 +170,15 @@ define("Renderer", ["require", "exports", "Config"], function (require, exports,
             var rockets = this.simulator.getAllRockets();
             rockets.forEach(function (rocket) {
                 _this.context.save();
-                var screenSpacePosition = _this.toScreenSpace(rocket.body.position);
+                var screenSpacePosition = _this.toScreenSpace(rocket.getPosition());
                 _this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
-                _this.context.rotate(rocket.body.angle);
-                var rocketSize = _this.toScreenSpace(Config_2.SimulatorConfig.rocketSize);
+                _this.context.rotate(rocket.getAngle());
+                var rocketSize = _this.toScreenSpace(Config_3.SimulatorConfig.rocketSize);
                 _this.context.strokeRect(-rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
                 var angleOffset = 90 * Math.PI / 180;
                 _this.context.translate(0, -rocketSize[1] / 2);
-                _this.context.rotate(rocket.turbineAngle + angleOffset);
-                _this.context.strokeRect(-rocketSize[0] / 2, 0, -rocket.desiredTurbineIntensity * 10, 0);
+                _this.context.rotate(rocket.getThrusterAngle() + angleOffset);
+                _this.context.strokeRect(-rocketSize[0] / 2, 0, -rocket.getThrusterIntensity() * 10, 0);
                 _this.context.restore();
             });
         };
@@ -198,7 +213,12 @@ define("Application", ["require", "exports", "Simulator", "Renderer"], function 
         Application.prototype.init = function () {
             this.renderer.init();
             this.simulator.init();
-            this.simulator.addRocket();
+            var handle = this.simulator.addRocket();
+            handle.setDesiredThrusterIntensityFactor(0.0);
+            handle.setDesiredThrusterAngleFactor(0.5);
+            setTimeout(function () {
+                handle.setDesiredThrusterIntensityFactor(1.0);
+            }, 1500);
         };
         Application.prototype.update = function () {
             this.simulator.update();
