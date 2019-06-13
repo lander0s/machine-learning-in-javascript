@@ -41,30 +41,30 @@ export class Simulator {
 
     public update() : void {
         let elapsedSeconds = 1/60;
-        let turbineRotationSpeed = 1;
-        let turbineIntensityAcc = 1;
+        let thrusterRotationSpeed = 1;
+        let thrusterIntensityAcc = 1;
 
         this.rockets.forEach( (rocket) => {
-            // update turbines
-            rocket.turbineAngle = this.stepValue(
-                rocket.desiredTurbineAngle,
-                rocket.turbineAngle,
-                turbineRotationSpeed,
+            // update thrusters
+            rocket.thrusterAngle = this.stepValue(
+                rocket.desiredThrusterAngle,
+                rocket.thrusterAngle,
+                thrusterRotationSpeed,
                 elapsedSeconds
             );
 
-            // update turbines
-            rocket.turbineIntensity = this.stepValue(
-                rocket.desiredTurbineIntensity,
-                rocket.turbineIntensity,
-                turbineIntensityAcc,
+            // update thrusters
+            rocket.thrusterIntensity = this.stepValue(
+                rocket.desiredThrusterIntensity,
+                rocket.thrusterIntensity,
+                thrusterIntensityAcc,
                 elapsedSeconds
             );
 
             // apply corresponding force
             let angleOffset = 90 * Math.PI / 180;
-            let forceX = rocket.turbineIntensity * Math.cos(rocket.turbineAngle + angleOffset);
-            let forceY = rocket.turbineIntensity * Math.sin(rocket.turbineAngle + angleOffset);
+            let forceX = rocket.thrusterIntensity * Math.cos(rocket.thrusterAngle + angleOffset);
+            let forceY = rocket.thrusterIntensity * Math.sin(rocket.thrusterAngle + angleOffset);
             let posX = 0;
             let posY = -SimulatorConfig.rocketSize[1] / 2;
             rocket.body.applyForceLocal([forceX, forceY], [posX, posY]);
