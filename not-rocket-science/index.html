@@ -9,6 +9,7 @@
     <link href="css/index.css" rel="stylesheet">
 </head>
 <body>
+    <div id="render-surface"></div>
     <script src="libs/synaptic/synaptic.min.js"></script>
     <script src="libs/p2.js/p2.min.js"></script>
     <script src="libs/p2.js/p2.renderer.min.js"></script>
@@ -16,8 +17,16 @@
     <script src="js/application.js"></script>
     <script>
         require(["Application"], (module) => {
+
             let app = new module.Application();
-            app.main();
+            app.init();
+
+            function update() {
+                app.update();
+                window.requestAnimationFrame(update);
+            }
+
+            update();
         });
     </script>
 </body>

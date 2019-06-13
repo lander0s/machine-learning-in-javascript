@@ -7,6 +7,11 @@
         "outFile" : "../js/application.js"
     },
     "files": [
-        "Application.ts"
+        "Application.ts",
+        "Renderer.ts",
+        "Simulator.ts",
+        "Config.ts",
+        "Rocket.ts",
+        "p2.d.ts"
     ]
 }
