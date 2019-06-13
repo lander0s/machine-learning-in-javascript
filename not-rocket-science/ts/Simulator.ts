@@ -74,7 +74,7 @@ export class Simulator {
     }
 
     private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
-        if(desiredValue > currentValue) {
+        if(desiredValue < currentValue) {
             let step = -speed * elapsedtime;
             if(currentValue + step < desiredValue)
                 return desiredValue;
