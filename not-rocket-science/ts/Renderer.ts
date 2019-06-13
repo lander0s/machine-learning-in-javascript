@@ -57,6 +57,13 @@ export class Renderer {
             this.context.rotate(rocket.body.angle);
             let rocketSize = this.toScreenSpace(SimulatorConfig.rocketSize);
             this.context.strokeRect(-rocketSize[0]/2, -rocketSize[1]/2, rocketSize[0], rocketSize[1]);
+
+            // turbine
+            let angleOffset = 90 * Math.PI / 180;
+            this.context.translate(0, - rocketSize[1]/2 );
+            this.context.rotate(rocket.turbineAngle + angleOffset);
+            this.context.strokeRect(-rocketSize[0]/2, 0, -rocket.desiredTurbineIntensity * 10, 0);
+
             this.context.restore();
         });
     }

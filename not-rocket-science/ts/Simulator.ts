@@ -40,6 +40,51 @@ export class Simulator {
     }
 
     public update() : void {
-        this.world.step(1/60);
+        let elapsedSeconds = 1/60;
+        let turbineRotationSpeed = 1;
+        let turbineIntensityAcc = 1;
+
+        this.rockets.forEach( (rocket) => {
+            // update turbines
+            rocket.turbineAngle = this.stepValue(
+                rocket.desiredTurbineAngle,
+                rocket.turbineAngle,
+                turbineRotationSpeed,
+                elapsedSeconds
+            );
+
+            // update turbines
+            rocket.turbineIntensity = this.stepValue(
+                rocket.desiredTurbineIntensity,
+                rocket.turbineIntensity,
+                turbineIntensityAcc,
+                elapsedSeconds
+            );
+
+            // apply corresponding force
+            let angleOffset = 90 * Math.PI / 180;
+            let forceX = rocket.turbineIntensity * Math.cos(rocket.turbineAngle + angleOffset);
+            let forceY = rocket.turbineIntensity * Math.sin(rocket.turbineAngle + angleOffset);
+            let posX = 0;
+            let posY = -SimulatorConfig.rocketSize[1] / 2;
+            rocket.body.applyForceLocal([forceX, forceY], [posX, posY]);
+        });
+
+        this.world.step(elapsedSeconds);
+    }
+
+    private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
+        if(desiredValue > currentValue) {
+            let step = -speed * elapsedtime;
+            if(currentValue + step < desiredValue)
+                return desiredValue;
+            return currentValue + step;
+        }
+        else {
+            let step = speed * elapsedtime;
+            if(currentValue + step > desiredValue)
+                return desiredValue;
+            return currentValue + step;
+        }
     }
 }
