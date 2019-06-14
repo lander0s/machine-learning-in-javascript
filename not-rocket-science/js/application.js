@@ -153,21 +153,23 @@ define("FireGFX", ["require", "exports"], function (require, exports) {
             this.texture.src = 'https://webiconspng.com/wp-content/uploads/2017/09/Flame-PNG-Image-20197.png';
             this.time = 0;
         }
-        FireGFX.prototype.draw = function (factor) {
-            for (var i = 0; i < 10; i++) {
-                var size = Math.cos(i + this.time) + 5;
+        FireGFX.prototype.draw = function (factor, size) {
+            var copies = 18;
+            for (var i = 0; i < copies; i++) {
+                var degreeOffset = (this.time + i * 20) * Math.PI / 180;
+                var scale = (Math.cos(degreeOffset) + 4) * 0.5;
                 this.context.save();
-                this.context.globalAlpha = 0.2;
-                this.context.scale(size / 4, size);
+                this.context.globalAlpha = 0.1;
+                this.context.scale(scale * 2, scale);
                 this.context.scale(factor, factor);
-                this.context.rotate(Math.cos(this.time + i * 2) * 0.1);
-                this.context.drawImage(this.texture, -25, -50, 50, 50);
+                this.context.rotate((Math.random() - 0.5) * 0.025);
+                this.context.drawImage(this.texture, -size[0] / 2, -size[1] * 0.95, size[0], size[1]);
                 this.context.globalAlpha = 0.1;
                 this.context.restore();
             }
         };
         FireGFX.prototype.update = function () {
-            this.time += (60 / 60);
+            this.time += 5;
         };
         return FireGFX;
     }());
@@ -178,6 +180,7 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
     exports.__esModule = true;
     var Renderer = (function () {
         function Renderer(selector, simulator) {
+            var _this = this;
             this.simulator = simulator;
             this.rootElem = document.querySelector(selector);
             this.canvas = document.createElement('canvas');
@@ -192,6 +195,8 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.canvas.style.height = '100%';
             this.cameraPosition = Config_3.RenderConfig.initialCameraPosition;
             this.fireGFX = new FireGFX_1.FireGFX(this.canvas, this.context);
+            window.addEventListener('wheel', function (e) { return _this.onMouseWheel(e); });
+            this.scale = 20;
         }
         Renderer.prototype.init = function () {
         };
@@ -218,26 +223,37 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
                 _this.context.strokeRect(-rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
                 _this.context.translate(0, -rocketSize[1] / 2);
                 _this.context.rotate(rocket.getThrusterAngle());
-                _this.fireGFX.draw(rocket.getThrusterIntensityFactor());
+                _this.fireGFX.draw(rocket.getThrusterIntensityFactor(), _this.toScreenSpace(Config_3.SimulatorConfig.rocketSize));
                 _this.context.restore();
             });
             this.fireGFX.update();
         };
         Renderer.prototype.drawGround = function () {
             this.context.beginPath();
-            this.context.moveTo(-this.canvas.width / 2, 0);
-            this.context.lineTo(this.canvas.width / 2, 0);
+            this.context.moveTo(-this.canvas.width * 100, 0);
+            this.context.lineTo(this.canvas.width * 100, 0);
             this.context.lineWidth = 5;
             this.context.strokeStyle = 'black';
             this.context.stroke();
         };
         Renderer.prototype.toScreenSpace = function (worldSpacePosition) {
-            var mtsToPixelFactor = 20;
             var screenSpacePosition = [
-                worldSpacePosition[0] * mtsToPixelFactor,
-                worldSpacePosition[1] * mtsToPixelFactor,
+                worldSpacePosition[0] * this.scale,
+                worldSpacePosition[1] * this.scale,
             ];
             return screenSpacePosition;
+        };
+        Renderer.prototype.onMouseWheel = function (e) {
+            if (e.ctrlKey) {
+                this.scale += -e.deltaY * 0.01;
+                if (this.scale < 1) {
+                    this.scale = 1;
+                }
+            }
+            else {
+                this.cameraPosition[0] += -e.deltaX * 0.01;
+                this.cameraPosition[1] += e.deltaY * 0.01;
+            }
         };
         return Renderer;
     }());
