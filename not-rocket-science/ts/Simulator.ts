@@ -37,6 +37,7 @@ export class Simulator {
 
         let rocket = new Rocket(rocketBody);
         this.rockets.push(rocket);
+        this.applyRandomImpulse(rocket);
         return rocket;
     }
 
@@ -58,5 +59,13 @@ export class Simulator {
         });
 
         this.world.step(elapsedSeconds);
+    }
+
+    public applyRandomImpulse(rocket:Rocket) : void {
+        let forceX = (Math.random() * 2 - 1) * 20;
+        let forceY = (Math.random() * 2 - 1) * 20;
+        let posX = (Math.random() * 2 + 1) * SimulatorConfig.rocketSize[0];
+        let posY = 0;
+        rocket.getPhysicsObject().applyImpulseLocal([forceX, forceY],[posX, posY]);
     }
 }
