@@ -1,8 +1,11 @@
 
 import { Rocket } from './Rocket'
-import { SimulatorConfig } from './Config';
+import { SimulatorConfig } from './Config'
 declare var p2 : any;
 //import * as p2 from "./p2"
+
+const COLLISION_GROUP_GROUND =  Math.pow(2,0);
+const COLLISION_GROUP_ROCKET =  Math.pow(2,1);
 
 export class Simulator {
 
@@ -16,6 +19,8 @@ export class Simulator {
     public init() {
         this.world = new p2.World();
         let planeShape = new p2.Plane();
+        planeShape.collisionMask = COLLISION_GROUP_ROCKET;
+        planeShape.collisionGroup = COLLISION_GROUP_GROUND;
         this.ground = new p2.Body();
         this.ground.addShape(planeShape);
         this.world.addBody(this.ground);
@@ -26,6 +31,8 @@ export class Simulator {
         let rocketShape = new p2.Box({width: SimulatorConfig.rocketSize[0], height: SimulatorConfig.rocketSize[1]});
         let rocketBody = new p2.Body({mass:1, position: SimulatorConfig.rocketSpawnPoint });
         rocketBody.addShape(rocketShape);
+        rocketShape.collisionMask = COLLISION_GROUP_GROUND;
+        rocketShape.collisionGroup = COLLISION_GROUP_ROCKET;
         this.world.addBody(rocketBody);
 
         let rocket = new Rocket(rocketBody);
