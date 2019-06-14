@@ -15,21 +15,24 @@ export class FireGFX {
         this.time = 0;
     }
 
-    public draw(factor:number) {
-        for(var i = 0; i < 10; i++) {
-            let size = Math.cos(i + this.time) + 5;
+    public draw(factor: number, size: Array<number>) {
+
+        let copies = 18;
+        for (let i = 0; i < copies; i++) {
+            let degreeOffset = (this.time + i * 20) * Math.PI / 180;
+            let scale = (Math.cos(degreeOffset) + 4) * 0.5;
             this.context.save();
-            this.context.globalAlpha = 0.2;
-            this.context.scale(size / 4, size);
+            this.context.globalAlpha = 0.1;
+            this.context.scale(scale * 2, scale);
             this.context.scale(factor, factor);
-            this.context.rotate(Math.cos(this.time + i*2) * 0.1);
-            this.context.drawImage(this.texture, -25, -50, 50, 50);
+            this.context.rotate((Math.random() - 0.5) * 0.025 );
+            this.context.drawImage(this.texture, -size[0] / 2, -size[1] * 0.95, size[0], size[1]);
             this.context.globalAlpha = 0.1;
             this.context.restore();
         }
     }
 
     public update() : void {
-        this.time += (60/60);
+        this.time += 5;
     }
 }

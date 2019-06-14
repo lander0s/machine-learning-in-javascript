@@ -65,7 +65,7 @@ export class Renderer {
             // thruster
             this.context.translate(0, - rocketSize[1]/2 );
             this.context.rotate(rocket.getThrusterAngle());
-            this.fireGFX.draw(rocket.getThrusterIntensityFactor());
+            this.fireGFX.draw(rocket.getThrusterIntensityFactor(), this.toScreenSpace(SimulatorConfig.rocketSize));
 
             this.context.restore();
         });
