@@ -19,7 +19,7 @@ export class Rocket {
 
     public update(elapsedSeconds:number) : void {
         let thrusterRotationSpeed = 5;
-        let thrusterIntensityAcc = 20;
+        let thrusterIntensityAcc = 50;
 
         // update thrusters
         this.thrusterAngle = this.stepValue(
