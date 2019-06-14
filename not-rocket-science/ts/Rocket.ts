@@ -8,9 +8,11 @@ export class Rocket {
     private desiredThrusterIntensity  : number;
     private fuelTankReserve           : number;
     private body                      : p2.Body;
+    private isAlive                   : boolean;
     private finishSimulationCallbacks : Array<Function>;
     
     constructor(body:p2.Body) {
+        this.isAlive = true;
         this.score = 0;
         this.body = body;
         this.thrusterAngle = 0;
@@ -126,6 +128,14 @@ export class Rocket {
         }
 
         return Math.min(1 + efficiencyReduction, 1);
+    }
+
+    public markAsDead() : void {
+        this.isAlive = false;
+    }
+
+    public isDead() : boolean {
+        return !this.isAlive;
     }
 
     private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
