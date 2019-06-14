@@ -37,10 +37,11 @@ export class Rocket {
 
         this.thrusterIntensity = this.stepValue(
             this.desiredThrusterIntensity,
-            this.thrusterIntensity * this.getEngineEfficiency(),
+            this.thrusterIntensity ,
             thrusterIntensityAcc,
             elapsedSeconds
         );
+        this.thrusterIntensity *= this.getEngineEfficiency();
 
         this.consumeFuel();
     }
@@ -121,7 +122,16 @@ export class Rocket {
     }
 
     private getEngineEfficiency() : number {
-        return this.fuelTankReserve > 0 ? 1 : 0;
+        let influenceThreshold = 90; // Tank capacity where fuel efficiency is affected.
+        let reductionRate = 0.025;
+
+        let efficiencyReduction = 0;
+        if (influenceThreshold >= this.fuelTankReserve)  {
+            let influenceRatio = 1 - (influenceThreshold - this.fuelTankReserve) / influenceThreshold;
+            efficiencyReduction = Math.max(reductionRate * Math.log(influenceRatio), -1);
+        }
+
+        return Math.min(1 + efficiencyReduction, 1);
     }
 
     private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
