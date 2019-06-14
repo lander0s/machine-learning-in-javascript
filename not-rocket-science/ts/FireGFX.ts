@@ -11,7 +11,7 @@ export class FireGFX {
         this.canvas = canvas;
         this.context = context;
         this.texture = new Image();
-        this.texture.src =  'https://webiconspng.com/wp-content/uploads/2017/09/Flame-PNG-Image-20197.png';
+        this.texture.src =  './res/fire-gfx-texture.png';
         this.time = 0;
     }
 
