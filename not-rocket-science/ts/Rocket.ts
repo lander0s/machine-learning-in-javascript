@@ -47,6 +47,14 @@ export class Rocket {
         this.consumeFuel();
     }
 
+    public setScore(value: number) : void {
+        this.score = value;
+    }
+
+    public getScore() : number {
+        return this.score;
+    }
+
     public getPhysicsObject() : p2.Body {
         return this.body;
     }

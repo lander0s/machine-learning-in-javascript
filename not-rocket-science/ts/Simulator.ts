@@ -74,7 +74,31 @@ export class Simulator {
     private onBeginContact(evt : any) : void {
         let theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
         let rocket = this.getRocketById(theRocket.id);
+    
+        if (!rocket.isDead()) {
+            let score = this.judgeLanding(rocket.getPhysicsObject());
+            rocket.setScore(score);
+        }
         rocket.markAsDead();
+    }
+
+    private judgeLanding(obj: p2.Body) : number {
+        let spinWeight = 1600;
+        let spinRatio = 600;
+        let spinScore = spinWeight - obj.angularVelocity * spinRatio;
+
+        let angularWeight = 800;
+        let angularRatio = 2000;
+        let angularScore = angularWeight - obj.angle * angularRatio;
+
+        let speedWeight = 400;
+        let speedRatio = 10;
+        let speed = Math.sqrt(
+            obj.velocity[0] * obj.velocity[0] +
+            obj.velocity[1] * obj.velocity[1]);
+        let speedScore = speedWeight - speed * speedRatio;
+
+        return spinScore + angularScore + speedScore;   
     }
 
     private getRocketById(id:number) : Rocket { 
