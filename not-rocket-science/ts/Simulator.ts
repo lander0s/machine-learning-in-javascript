@@ -38,7 +38,7 @@ export class Simulator {
 
         let rocket = new Rocket(rocketBody);
         this.rockets.push(rocket);
-        this.applyRandomImpulse(rocket);
+        //this.applyRandomImpulse(rocket);
         return rocket;
     }
 
@@ -85,11 +85,11 @@ export class Simulator {
     private judgeLanding(obj: p2.Body) : number {
         let spinWeight = 1600;
         let spinRatio = 600;
-        let spinScore = spinWeight - obj.angularVelocity * spinRatio;
+        let spinScore = spinWeight - Math.abs(obj.angularVelocity) * spinRatio;
 
         let angularWeight = 800;
         let angularRatio = 2000;
-        let angularScore = angularWeight - obj.angle * angularRatio;
+        let angularScore = angularWeight - Math.abs(obj.angle) * angularRatio;
 
         let speedWeight = 400;
         let speedRatio = 10;
