@@ -272,6 +272,7 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.context.scale(1, -1);
             var cameraScreenSpacePosition = this.toScreenSpace(this.cameraPosition);
             this.context.translate(-cameraScreenSpacePosition[0], -cameraScreenSpacePosition[1]);
+            this.context.lineWidth = 0.4 * this.scale;
             this.drawGround();
             this.drawRockets();
             this.context.restore();
@@ -297,7 +298,6 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.context.beginPath();
             this.context.moveTo(-this.canvas.width * 100, 0);
             this.context.lineTo(this.canvas.width * 100, 0);
-            this.context.lineWidth = 5;
             this.context.strokeStyle = 'black';
             this.context.stroke();
         };
