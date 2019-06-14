@@ -63,7 +63,7 @@ export class Renderer {
             let angleOffset = 90 * Math.PI / 180;
             this.context.translate(0, - rocketSize[1]/2 );
             this.context.rotate(rocket.getThrusterAngle() + angleOffset);
-            this.context.strokeRect(-rocketSize[0]/2, 0, -rocket.getThrusterIntensity() * 10, 0);
+            this.context.strokeRect(-rocketSize[0]/2, 0, -rocket.getThrusterIntensityFactor() * rocketSize[1], 0);
 
             this.context.restore();
         });

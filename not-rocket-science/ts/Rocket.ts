@@ -72,6 +72,10 @@ export class Rocket {
         return this.thrusterIntensity;
     }
 
+    public getThrusterIntensityFactor() : number {
+        return this.thrusterIntensity / SimulatorConfig.thrusterMaxIntensity;
+    }
+
     public getPosition() : Array<number> {
         return this.body.position;
     }
