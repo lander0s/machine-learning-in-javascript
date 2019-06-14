@@ -18,6 +18,7 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
     exports.__esModule = true;
     var Rocket = (function () {
         function Rocket(body) {
+            this.isAlive = true;
             this.score = 0;
             this.body = body;
             this.thrusterAngle = 0;
@@ -34,6 +35,12 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             this.thrusterIntensity = this.stepValue(this.desiredThrusterIntensity, this.thrusterIntensity, thrusterIntensityAcc, elapsedSeconds);
             this.thrusterIntensity *= this.getEngineEfficiency();
             this.consumeFuel();
+        };
+        Rocket.prototype.setScore = function (value) {
+            this.score = value;
+        };
+        Rocket.prototype.getScore = function () {
+            return this.score;
         };
         Rocket.prototype.getPhysicsObject = function () {
             return this.body;
@@ -102,6 +109,18 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
                 efficiencyReduction = Math.max(reductionRate * Math.log(influenceRatio), -1);
             }
             return Math.min(1 + efficiencyReduction, 1);
+        };
+        Rocket.prototype.markAsDead = function () {
+            if (this.isAlive) {
+                this.isAlive = false;
+                this.deathTimestamp = new Date().getTime();
+            }
+        };
+        Rocket.prototype.isDead = function () {
+            return !this.isAlive;
+        };
+        Rocket.prototype.getSecondsSinceDeath = function () {
+            return (new Date().getTime() - this.deathTimestamp) / 1000;
         };
         Rocket.prototype.stepValue = function (desiredValue, currentValue, speed, elapsedtime) {
             if (desiredValue < currentValue) {
@@ -183,6 +202,7 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
                 rocket.getPhysicsObject().applyForceLocal([forceX, forceY], [posX, posY]);
             });
             this.world.step(elapsedSeconds);
+            this.removeDeadRockets();
         };
         Simulator.prototype.applyRandomImpulse = function (rocket) {
             var forceX = (Math.random() * 2 - 1) * 20;
@@ -194,6 +214,25 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
         Simulator.prototype.onBeginContact = function (evt) {
             var theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
             var rocket = this.getRocketById(theRocket.id);
+            if (!rocket.isDead()) {
+                var score = this.judgeLanding(rocket.getPhysicsObject());
+                rocket.setScore(score);
+            }
+            rocket.markAsDead();
+        };
+        Simulator.prototype.judgeLanding = function (obj) {
+            var spinWeight = 1600;
+            var spinRatio = 600;
+            var spinScore = spinWeight - Math.abs(obj.angularVelocity) * spinRatio;
+            var angularWeight = 800;
+            var angularRatio = 2000;
+            var angularScore = angularWeight - Math.abs(obj.angle) * angularRatio;
+            var speedWeight = 400;
+            var speedRatio = 10;
+            var speed = Math.sqrt(obj.velocity[0] * obj.velocity[0] +
+                obj.velocity[1] * obj.velocity[1]);
+            var speedScore = speedWeight - speed * speedRatio;
+            return spinScore + angularScore + speedScore;
         };
         Simulator.prototype.getRocketById = function (id) {
             for (var i = 0; i < this.rockets.length; i++) {
@@ -203,6 +242,16 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             }
             console.error('attempt to access an unkown rocket');
             return null;
+        };
+        Simulator.prototype.removeDeadRockets = function () {
+            for (var i = this.rockets.length - 1; i >= 0; i--) {
+                if (this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= 2) {
+                    var rocket = this.rockets[i];
+                    this.world.removeBody(rocket.getPhysicsObject());
+                    this.rockets.splice(i, 1);
+                    rocket.notifySimulationFinished();
+                }
+            }
         };
         return Simulator;
     }());

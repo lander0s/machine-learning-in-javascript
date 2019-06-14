@@ -38,7 +38,7 @@ export class Simulator {
 
         let rocket = new Rocket(rocketBody);
         this.rockets.push(rocket);
-        //this.applyRandomImpulse(rocket);
+        this.applyRandomImpulse(rocket);
         return rocket;
     }
 
