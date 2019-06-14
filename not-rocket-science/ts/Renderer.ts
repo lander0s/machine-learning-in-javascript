@@ -40,16 +40,14 @@ export class Renderer {
         this.context.save();
         this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
         this.context.scale(1, -1);
-
         let cameraScreenSpacePosition = this.toScreenSpace(this.cameraPosition);
         this.context.translate(
             -cameraScreenSpacePosition[0],
             -cameraScreenSpacePosition[1]
         );
-
+        this.context.lineWidth = 0.4 * this.scale;
         this.drawGround();
         this.drawRockets();
-
         this.context.restore();
     }
 
@@ -78,7 +76,6 @@ export class Renderer {
         this.context.beginPath();
         this.context.moveTo(- this.canvas.width*100, 0);
         this.context.lineTo(this.canvas.width*100, 0);
-        this.context.lineWidth = 5;
         this.context.strokeStyle = 'black';
         this.context.stroke();
     }
