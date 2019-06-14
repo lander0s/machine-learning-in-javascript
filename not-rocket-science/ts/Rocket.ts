@@ -6,6 +6,8 @@ export class Rocket {
     private desiredThrusterAngle      : number;
     private thrusterIntensity         : number;
     private desiredThrusterIntensity  : number;
+    private fuelTankCapacity          : number;
+    private fuelTankReserve           : number;
     private body                      : p2.Body;
     private finishSimulationCallbacks : Array<Function>;
     
@@ -17,6 +19,8 @@ export class Rocket {
         this.thrusterIntensity = 0;
         this.desiredThrusterIntensity = 0;
         this.finishSimulationCallbacks = [];
+        this.fuelTankCapacity = SimulatorConfig.fuelTankCapacity;
+        this.fuelTankReserve = this.fuelTankCapacity;
     }
 
     public update(elapsedSeconds:number) : void {
@@ -33,10 +37,12 @@ export class Rocket {
 
         this.thrusterIntensity = this.stepValue(
             this.desiredThrusterIntensity,
-            this.thrusterIntensity,
+            this.thrusterIntensity * this.getEngineEfficiency(),
             thrusterIntensityAcc,
             elapsedSeconds
         );
+
+        this.consumeFuel();
     }
 
     public getPhysicsObject() : p2.Body {
@@ -93,6 +99,29 @@ export class Rocket {
         let min = -halfFreedomInRadians;
         let max = halfFreedomInRadians;
         this.desiredThrusterAngle = min + factor * (max - min);
+    }
+
+    public setDesiredFuelTankCapacity(factor:number) : void {
+        this.fuelTankCapacity = factor;
+    }
+
+    public getFuelTankReservePercentage() : number {
+        return this.fuelTankReserve / this.fuelTankCapacity;
+    }
+
+    private consumeFuel() : boolean {
+        let fuelConsumption = this.getThrusterIntensityFactor() * SimulatorConfig.fuelConsumptionRate;
+        this.fuelTankReserve -= fuelConsumption;
+
+        if (this.fuelTankReserve < 0)  {
+            this.fuelTankReserve = 0;
+            return false;
+        }
+        return true;
+    }
+
+    private getEngineEfficiency() : number {
+        return this.fuelTankReserve > 0 ? 1 : 0;
     }
 
     private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
