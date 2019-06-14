@@ -25,6 +25,7 @@ export class Simulator {
         this.ground.addShape(planeShape);
         this.world.addBody(this.ground);
         this.rockets = [];
+        this.world.on('beginContact', (e:any) => this.onBeginContact(e));
     }
 
     public addRocket() : Rocket {
@@ -67,5 +68,20 @@ export class Simulator {
         let posX = (Math.random() * 2 + 1) * SimulatorConfig.rocketSize[0];
         let posY = 0;
         rocket.getPhysicsObject().applyImpulseLocal([forceX, forceY],[posX, posY]);
+    }
+
+    private onBeginContact(evt : any) : void {
+        let theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
+        let rocket = this.getRocketById(theRocket.id);
+    }
+
+    private getRocketById(id:number) : Rocket { 
+        for(let i = 0; i < this.rockets.length; i++) {
+            if(this.rockets[i].getPhysicsObject().id == id) {
+                return this.rockets[i];
+            }
+        }
+        console.error('attempt to access an unkown rocket');
+        return null;
     }
 }
