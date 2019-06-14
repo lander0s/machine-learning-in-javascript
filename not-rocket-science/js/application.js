@@ -120,6 +120,7 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             this.world.addBody(rocketBody);
             var rocket = new Rocket_1.Rocket(rocketBody);
             this.rockets.push(rocket);
+            this.applyRandomImpulse(rocket);
             return rocket;
         };
         Simulator.prototype.getAllRockets = function () {
@@ -137,6 +138,13 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
                 rocket.getPhysicsObject().applyForceLocal([forceX, forceY], [posX, posY]);
             });
             this.world.step(elapsedSeconds);
+        };
+        Simulator.prototype.applyRandomImpulse = function (rocket) {
+            var forceX = (Math.random() * 2 - 1) * 20;
+            var forceY = (Math.random() * 2 - 1) * 20;
+            var posX = (Math.random() * 2 + 1) * Config_2.SimulatorConfig.rocketSize[0];
+            var posY = 0;
+            rocket.getPhysicsObject().applyImpulseLocal([forceX, forceY], [posX, posY]);
         };
         return Simulator;
     }());
@@ -162,9 +170,8 @@ define("FireGFX", ["require", "exports"], function (require, exports) {
                 this.context.globalAlpha = 0.1;
                 this.context.scale(scale * 2, scale);
                 this.context.scale(factor, factor);
-                this.context.rotate((Math.random() - 0.5) * 0.025);
+                this.context.rotate((Math.random() - 0.5) * 0.04);
                 this.context.drawImage(this.texture, -size[0] / 2, -size[1] * 0.95, size[0], size[1]);
-                this.context.globalAlpha = 0.1;
                 this.context.restore();
             }
         };
