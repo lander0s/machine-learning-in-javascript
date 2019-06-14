@@ -92,15 +92,9 @@ export class Renderer {
     }
 
     private onMouseWheel(e:MouseWheelEvent) : void {
-        if(e.ctrlKey) {
-            this.scale += -e.deltaY * 0.01;
-            if(this.scale < 1) {
-                this.scale = 1;
-            }
-        }
-        else {
-            this.cameraPosition[0] += -e.deltaX * 0.01;
-            this.cameraPosition[1] += e.deltaY * 0.01;
+        this.scale += -e.deltaY * 0.01;
+        if(this.scale < 1) {
+            this.scale = 1;
         }
     }
 }
