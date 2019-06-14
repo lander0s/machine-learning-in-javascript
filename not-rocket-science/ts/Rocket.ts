@@ -1,12 +1,13 @@
 import { SimulatorConfig } from "./Config";
 
 export class Rocket {
-    private score                    : number;
-    private thrusterAngle            : number;
-    private desiredThrusterAngle     : number;
-    private thrusterIntensity        : number;
-    private desiredThrusterIntensity : number;
-    private body                     : p2.Body;
+    private score                     : number;
+    private thrusterAngle             : number;
+    private desiredThrusterAngle      : number;
+    private thrusterIntensity         : number;
+    private desiredThrusterIntensity  : number;
+    private body                      : p2.Body;
+    private finishSimulationCallbacks : Array<Function>;
     
     constructor(body:p2.Body) {
         this.score = 0;
@@ -15,6 +16,7 @@ export class Rocket {
         this.desiredThrusterAngle = 0;
         this.thrusterIntensity = 0;
         this.desiredThrusterIntensity = 0;
+        this.finishSimulationCallbacks = [];
     }
 
     public update(elapsedSeconds:number) : void {
@@ -107,4 +109,21 @@ export class Rocket {
             return currentValue + step;
         }
     }
+
+    public notifySimulationFinished() : void {
+        this.finishSimulationCallbacks.forEach( (callback) => callback() );
+    }
+
+    public on(eventType:string, callback:Function) : void {
+        switch(eventType) {
+            case 'finishSimulation' : {
+                this.finishSimulationCallbacks.push(callback);
+                break;
+            }
+            default: {
+                console.error('unknown event type');
+                break;
+            }
+        }
+    }    
 }
