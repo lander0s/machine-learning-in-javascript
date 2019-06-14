@@ -5,7 +5,9 @@ define("Config", ["require", "exports"], function (require, exports) {
         rocketSpawnPoint: [0, 40],
         rocketSize: [1, 8],
         thrusterFreedomInDegrees: 90,
-        thrusterMaxIntensity: 20
+        thrusterMaxIntensity: 20,
+        fuelTankCapacity: 3 * 60,
+        fuelConsumptionRate: 1
     };
     exports.RenderConfig = {
         initialCameraPosition: [0, 20]
@@ -23,12 +25,15 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             this.thrusterIntensity = 0;
             this.desiredThrusterIntensity = 0;
             this.finishSimulationCallbacks = [];
+            this.fuelTankReserve = Config_1.SimulatorConfig.fuelTankCapacity;
         }
         Rocket.prototype.update = function (elapsedSeconds) {
             var thrusterRotationSpeed = 5;
             var thrusterIntensityAcc = 50;
             this.thrusterAngle = this.stepValue(this.desiredThrusterAngle, this.thrusterAngle, thrusterRotationSpeed, elapsedSeconds);
             this.thrusterIntensity = this.stepValue(this.desiredThrusterIntensity, this.thrusterIntensity, thrusterIntensityAcc, elapsedSeconds);
+            this.thrusterIntensity *= this.getEngineEfficiency();
+            this.consumeFuel();
         };
         Rocket.prototype.getPhysicsObject = function () {
             return this.body;
@@ -76,6 +81,28 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             var max = halfFreedomInRadians;
             this.desiredThrusterAngle = min + factor * (max - min);
         };
+        Rocket.prototype.getFuelTankReservePercentage = function () {
+            return this.fuelTankReserve / Config_1.SimulatorConfig.fuelTankCapacity;
+        };
+        Rocket.prototype.consumeFuel = function () {
+            var fuelConsumption = this.getThrusterIntensityFactor() * Config_1.SimulatorConfig.fuelConsumptionRate;
+            this.fuelTankReserve -= fuelConsumption;
+            if (this.fuelTankReserve < 0) {
+                this.fuelTankReserve = 0;
+                return false;
+            }
+            return true;
+        };
+        Rocket.prototype.getEngineEfficiency = function () {
+            var influenceThreshold = 90;
+            var reductionRate = 0.025;
+            var efficiencyReduction = 0;
+            if (influenceThreshold >= this.fuelTankReserve) {
+                var influenceRatio = 1 - (influenceThreshold - this.fuelTankReserve) / influenceThreshold;
+                efficiencyReduction = Math.max(reductionRate * Math.log(influenceRatio), -1);
+            }
+            return Math.min(1 + efficiencyReduction, 1);
+        };
         Rocket.prototype.stepValue = function (desiredValue, currentValue, speed, elapsedtime) {
             if (desiredValue < currentValue) {
                 var step = -speed * elapsedtime;
@@ -118,6 +145,7 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
         function Simulator() {
         }
         Simulator.prototype.init = function () {
+            var _this = this;
             this.world = new p2.World();
             var planeShape = new p2.Plane();
             planeShape.collisionMask = COLLISION_GROUP_ROCKET;
@@ -126,6 +154,7 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             this.ground.addShape(planeShape);
             this.world.addBody(this.ground);
             this.rockets = [];
+            this.world.on('beginContact', function (e) { return _this.onBeginContact(e); });
         };
         Simulator.prototype.addRocket = function () {
             var rocketShape = new p2.Box({ width: Config_2.SimulatorConfig.rocketSize[0], height: Config_2.SimulatorConfig.rocketSize[1] });
@@ -161,6 +190,19 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             var posX = (Math.random() * 2 + 1) * Config_2.SimulatorConfig.rocketSize[0];
             var posY = 0;
             rocket.getPhysicsObject().applyImpulseLocal([forceX, forceY], [posX, posY]);
+        };
+        Simulator.prototype.onBeginContact = function (evt) {
+            var theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
+            var rocket = this.getRocketById(theRocket.id);
+        };
+        Simulator.prototype.getRocketById = function (id) {
+            for (var i = 0; i < this.rockets.length; i++) {
+                if (this.rockets[i].getPhysicsObject().id == id) {
+                    return this.rockets[i];
+                }
+            }
+            console.error('attempt to access an unkown rocket');
+            return null;
         };
         return Simulator;
     }());
