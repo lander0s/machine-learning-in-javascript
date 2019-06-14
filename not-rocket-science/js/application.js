@@ -25,7 +25,7 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
         }
         Rocket.prototype.update = function (elapsedSeconds) {
             var thrusterRotationSpeed = 5;
-            var thrusterIntensityAcc = 20;
+            var thrusterIntensityAcc = 50;
             this.thrusterAngle = this.stepValue(this.desiredThrusterAngle, this.thrusterAngle, thrusterRotationSpeed, elapsedSeconds);
             this.thrusterIntensity = this.stepValue(this.desiredThrusterIntensity, this.thrusterIntensity, thrusterIntensityAcc, elapsedSeconds);
         };
@@ -142,7 +142,38 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
     }());
     exports.Simulator = Simulator;
 });
-define("Renderer", ["require", "exports", "Config"], function (require, exports, Config_3) {
+define("FireGFX", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var FireGFX = (function () {
+        function FireGFX(canvas, context) {
+            this.canvas = canvas;
+            this.context = context;
+            this.texture = new Image();
+            this.texture.src = 'https://webiconspng.com/wp-content/uploads/2017/09/Flame-PNG-Image-20197.png';
+            this.time = 0;
+        }
+        FireGFX.prototype.draw = function (factor) {
+            for (var i = 0; i < 10; i++) {
+                var size = Math.cos(i + this.time) + 5;
+                this.context.save();
+                this.context.globalAlpha = 0.2;
+                this.context.scale(size / 4, size);
+                this.context.scale(factor, factor);
+                this.context.rotate(Math.cos(this.time + i * 2) * 0.1);
+                this.context.drawImage(this.texture, -25, -50, 50, 50);
+                this.context.globalAlpha = 0.1;
+                this.context.restore();
+            }
+        };
+        FireGFX.prototype.update = function () {
+            this.time += (60 / 60);
+        };
+        return FireGFX;
+    }());
+    exports.FireGFX = FireGFX;
+});
+define("Renderer", ["require", "exports", "Config", "FireGFX"], function (require, exports, Config_3, FireGFX_1) {
     "use strict";
     exports.__esModule = true;
     var Renderer = (function () {
@@ -160,6 +191,7 @@ define("Renderer", ["require", "exports", "Config"], function (require, exports,
             this.canvas.style.width = '100%';
             this.canvas.style.height = '100%';
             this.cameraPosition = Config_3.RenderConfig.initialCameraPosition;
+            this.fireGFX = new FireGFX_1.FireGFX(this.canvas, this.context);
         }
         Renderer.prototype.init = function () {
         };
@@ -184,12 +216,12 @@ define("Renderer", ["require", "exports", "Config"], function (require, exports,
                 _this.context.rotate(rocket.getAngle());
                 var rocketSize = _this.toScreenSpace(Config_3.SimulatorConfig.rocketSize);
                 _this.context.strokeRect(-rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
-                var angleOffset = 90 * Math.PI / 180;
                 _this.context.translate(0, -rocketSize[1] / 2);
-                _this.context.rotate(rocket.getThrusterAngle() + angleOffset);
-                _this.context.strokeRect(-rocketSize[0] / 2, 0, -rocket.getThrusterIntensityFactor() * rocketSize[1], 0);
+                _this.context.rotate(rocket.getThrusterAngle());
+                _this.fireGFX.draw(rocket.getThrusterIntensityFactor());
                 _this.context.restore();
             });
+            this.fireGFX.update();
         };
         Renderer.prototype.drawGround = function () {
             this.context.beginPath();
