@@ -6,7 +6,6 @@ export class Rocket {
     private desiredThrusterAngle      : number;
     private thrusterIntensity         : number;
     private desiredThrusterIntensity  : number;
-    private fuelTankCapacity          : number;
     private fuelTankReserve           : number;
     private body                      : p2.Body;
     private finishSimulationCallbacks : Array<Function>;
@@ -19,8 +18,7 @@ export class Rocket {
         this.thrusterIntensity = 0;
         this.desiredThrusterIntensity = 0;
         this.finishSimulationCallbacks = [];
-        this.fuelTankCapacity = SimulatorConfig.fuelTankCapacity;
-        this.fuelTankReserve = this.fuelTankCapacity;
+        this.fuelTankReserve = SimulatorConfig.fuelTankCapacity;
     }
 
     public update(elapsedSeconds:number) : void {
@@ -102,12 +100,8 @@ export class Rocket {
         this.desiredThrusterAngle = min + factor * (max - min);
     }
 
-    public setDesiredFuelTankCapacity(factor:number) : void {
-        this.fuelTankCapacity = factor;
-    }
-
     public getFuelTankReservePercentage() : number {
-        return this.fuelTankReserve / this.fuelTankCapacity;
+        return this.fuelTankReserve / SimulatorConfig.fuelTankCapacity;
     }
 
     private consumeFuel() : boolean {
