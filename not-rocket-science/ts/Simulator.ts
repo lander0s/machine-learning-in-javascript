@@ -60,6 +60,7 @@ export class Simulator {
         });
 
         this.world.step(elapsedSeconds);
+        this.removeDeadRockets();
     }
 
     private applyRandomImpulse(rocket:Rocket) : void {
@@ -73,6 +74,7 @@ export class Simulator {
     private onBeginContact(evt : any) : void {
         let theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
         let rocket = this.getRocketById(theRocket.id);
+        rocket.markAsDead();
     }
 
     private getRocketById(id:number) : Rocket { 
@@ -83,5 +85,16 @@ export class Simulator {
         }
         console.error('attempt to access an unkown rocket');
         return null;
+    }
+
+    private removeDeadRockets() : void {
+        for(let i = this.rockets.length -1; i >= 0; i--) {
+            if(this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= 2) {
+                let rocket = this.rockets[i];
+                this.world.removeBody(rocket.getPhysicsObject());
+                this.rockets.splice(i,1);
+                rocket.notifySimulationFinished();
+            }
+        }
     }
 }

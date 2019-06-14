@@ -9,6 +9,7 @@ export class Rocket {
     private fuelTankReserve           : number;
     private body                      : p2.Body;
     private isAlive                   : boolean;
+    private deathTimestamp            : number;
     private finishSimulationCallbacks : Array<Function>;
     
     constructor(body:p2.Body) {
@@ -131,11 +132,18 @@ export class Rocket {
     }
 
     public markAsDead() : void {
-        this.isAlive = false;
+        if(this.isAlive) {
+            this.isAlive = false;
+            this.deathTimestamp = new Date().getTime();
+        }
     }
 
     public isDead() : boolean {
         return !this.isAlive;
+    }
+
+    public getSecondsSinceDeath() : number {
+        return (new Date().getTime() - this.deathTimestamp) / 1000;
     }
 
     private stepValue(desiredValue : number, currentValue : number, speed : number, elapsedtime : number) : number {
