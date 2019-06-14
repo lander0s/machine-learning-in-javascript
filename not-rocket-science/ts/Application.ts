@@ -14,11 +14,11 @@ export class Application {
     public init() {
         this.renderer.init();
         this.simulator.init();
-        let handle = this.simulator.addRocket();
-        handle.setDesiredThrusterIntensityFactor(0.0);
-        handle.setDesiredThrusterAngleFactor(0.5);
+        let rocket = this.simulator.addRocket();
+        rocket.setDesiredThrusterIntensityFactor(0.0);
+        rocket.setDesiredThrusterAngleFactor(0.5);
         setTimeout( ()=>{
-            handle.setDesiredThrusterIntensityFactor(1.0);
+            rocket.setDesiredThrusterIntensityFactor(1.0);
         }, 1500);
     }
 

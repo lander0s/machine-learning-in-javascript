@@ -96,12 +96,16 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
 define("Simulator", ["require", "exports", "Rocket", "Config"], function (require, exports, Rocket_1, Config_2) {
     "use strict";
     exports.__esModule = true;
+    var COLLISION_GROUP_GROUND = Math.pow(2, 0);
+    var COLLISION_GROUP_ROCKET = Math.pow(2, 1);
     var Simulator = (function () {
         function Simulator() {
         }
         Simulator.prototype.init = function () {
             this.world = new p2.World();
             var planeShape = new p2.Plane();
+            planeShape.collisionMask = COLLISION_GROUP_ROCKET;
+            planeShape.collisionGroup = COLLISION_GROUP_GROUND;
             this.ground = new p2.Body();
             this.ground.addShape(planeShape);
             this.world.addBody(this.ground);
@@ -111,6 +115,8 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             var rocketShape = new p2.Box({ width: Config_2.SimulatorConfig.rocketSize[0], height: Config_2.SimulatorConfig.rocketSize[1] });
             var rocketBody = new p2.Body({ mass: 1, position: Config_2.SimulatorConfig.rocketSpawnPoint });
             rocketBody.addShape(rocketShape);
+            rocketShape.collisionMask = COLLISION_GROUP_GROUND;
+            rocketShape.collisionGroup = COLLISION_GROUP_ROCKET;
             this.world.addBody(rocketBody);
             var rocket = new Rocket_1.Rocket(rocketBody);
             this.rockets.push(rocket);
@@ -216,6 +222,7 @@ define("Application", ["require", "exports", "Simulator", "Renderer"], function 
         Application.prototype.init = function () {
             this.renderer.init();
             this.simulator.init();
+            this.simulator.addRocket();
             var handle = this.simulator.addRocket();
             handle.setDesiredThrusterIntensityFactor(0.0);
             handle.setDesiredThrusterAngleFactor(0.5);
