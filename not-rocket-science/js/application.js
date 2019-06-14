@@ -58,6 +58,9 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
         Rocket.prototype.getThrusterIntensity = function () {
             return this.thrusterIntensity;
         };
+        Rocket.prototype.getThrusterIntensityFactor = function () {
+            return this.thrusterIntensity / Config_1.SimulatorConfig.thrusterMaxIntensity;
+        };
         Rocket.prototype.getPosition = function () {
             return this.body.position;
         };
@@ -178,7 +181,7 @@ define("Renderer", ["require", "exports", "Config"], function (require, exports,
                 var angleOffset = 90 * Math.PI / 180;
                 _this.context.translate(0, -rocketSize[1] / 2);
                 _this.context.rotate(rocket.getThrusterAngle() + angleOffset);
-                _this.context.strokeRect(-rocketSize[0] / 2, 0, -rocket.getThrusterIntensity() * 10, 0);
+                _this.context.strokeRect(-rocketSize[0] / 2, 0, -rocket.getThrusterIntensityFactor() * rocketSize[1], 0);
                 _this.context.restore();
             });
         };
