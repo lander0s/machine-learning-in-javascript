@@ -26,6 +26,8 @@ export class Renderer {
         this.canvas.style.height = '100%';
         this.cameraPosition = RenderConfig.initialCameraPosition;
         this.fireGFX = new FireGFX(this.canvas, this.context);
+        window.addEventListener('wheel', (e) => this.onMouseWheel(e) );
+        this.scale = 20;
     }
 
     public init() : void {
@@ -74,19 +76,31 @@ export class Renderer {
 
     private drawGround() {
         this.context.beginPath();
-        this.context.moveTo(- this.canvas.width/2, 0);
-        this.context.lineTo(this.canvas.width/2, 0);
+        this.context.moveTo(- this.canvas.width*100, 0);
+        this.context.lineTo(this.canvas.width*100, 0);
         this.context.lineWidth = 5;
         this.context.strokeStyle = 'black';
         this.context.stroke();
     }
 
     private toScreenSpace(worldSpacePosition:Array<number>) : Array<number> {
-        let mtsToPixelFactor = 20;
         let screenSpacePosition = [
-            worldSpacePosition[0] * mtsToPixelFactor,
-            worldSpacePosition[1] * mtsToPixelFactor,
+            worldSpacePosition[0] * this.scale,
+            worldSpacePosition[1] * this.scale,
         ];
         return screenSpacePosition;
+    }
+
+    private onMouseWheel(e:MouseWheelEvent) : void {
+        if(e.ctrlKey) {
+            this.scale += -e.deltaY * 0.01;
+            if(this.scale < 1) {
+                this.scale = 1;
+            }
+        }
+        else {
+            this.cameraPosition[0] += -e.deltaX * 0.01;
+            this.cameraPosition[1] += e.deltaY * 0.01;
+        }
     }
 }
