@@ -12,6 +12,7 @@
         "Simulator.ts",
         "Config.ts",
         "Rocket.ts",
+        "FireGFX.ts",
         "p2.d.ts"
     ]
 }

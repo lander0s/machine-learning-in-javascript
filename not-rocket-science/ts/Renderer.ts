@@ -1,5 +1,6 @@
 import { Simulator } from './Simulator'
 import { RenderConfig, SimulatorConfig } from './Config';
+import { FireGFX } from './FireGFX';
 
 export class Renderer {    
     private rootElem       : HTMLElement;
@@ -8,6 +9,7 @@ export class Renderer {
     private simulator      : Simulator;
     private cameraPosition : Array<number>;
     private scale          : number;
+    private fireGFX        : FireGFX;
 
     constructor(selector:string, simulator: Simulator) {
         this.simulator = simulator;
@@ -23,6 +25,7 @@ export class Renderer {
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.cameraPosition = RenderConfig.initialCameraPosition;
+        this.fireGFX = new FireGFX(this.canvas, this.context);
     }
 
     public init() : void {
@@ -60,13 +63,13 @@ export class Renderer {
             this.context.strokeRect(-rocketSize[0]/2, -rocketSize[1]/2, rocketSize[0], rocketSize[1]);
 
             // thruster
-            let angleOffset = 90 * Math.PI / 180;
             this.context.translate(0, - rocketSize[1]/2 );
-            this.context.rotate(rocket.getThrusterAngle() + angleOffset);
-            this.context.strokeRect(-rocketSize[0]/2, 0, -rocket.getThrusterIntensityFactor() * rocketSize[1], 0);
+            this.context.rotate(rocket.getThrusterAngle());
+            this.fireGFX.draw(rocket.getThrusterIntensityFactor());
 
             this.context.restore();
         });
+        this.fireGFX.update();
     }
 
     private drawGround() {
