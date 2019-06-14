@@ -22,6 +22,7 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             this.desiredThrusterAngle = 0;
             this.thrusterIntensity = 0;
             this.desiredThrusterIntensity = 0;
+            this.finishSimulationCallbacks = [];
         }
         Rocket.prototype.update = function (elapsedSeconds) {
             var thrusterRotationSpeed = 5;
@@ -87,6 +88,21 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
                 if (currentValue + step > desiredValue)
                     return desiredValue;
                 return currentValue + step;
+            }
+        };
+        Rocket.prototype.notifySimulationFinished = function () {
+            this.finishSimulationCallbacks.forEach(function (callback) { return callback(); });
+        };
+        Rocket.prototype.on = function (eventType, callback) {
+            switch (eventType) {
+                case 'finishSimulation': {
+                    this.finishSimulationCallbacks.push(callback);
+                    break;
+                }
+                default: {
+                    console.error('unknown event type');
+                    break;
+                }
             }
         };
         return Rocket;
@@ -251,15 +267,9 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             return screenSpacePosition;
         };
         Renderer.prototype.onMouseWheel = function (e) {
-            if (e.ctrlKey) {
-                this.scale += -e.deltaY * 0.01;
-                if (this.scale < 1) {
-                    this.scale = 1;
-                }
-            }
-            else {
-                this.cameraPosition[0] += -e.deltaX * 0.01;
-                this.cameraPosition[1] += e.deltaY * 0.01;
+            this.scale += -e.deltaY * 0.01;
+            if (this.scale < 1) {
+                this.scale = 1;
             }
         };
         return Renderer;
