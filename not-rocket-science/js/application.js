@@ -222,12 +222,11 @@ define("Application", ["require", "exports", "Simulator", "Renderer"], function 
         Application.prototype.init = function () {
             this.renderer.init();
             this.simulator.init();
-            this.simulator.addRocket();
-            var handle = this.simulator.addRocket();
-            handle.setDesiredThrusterIntensityFactor(0.0);
-            handle.setDesiredThrusterAngleFactor(0.5);
+            var rocket = this.simulator.addRocket();
+            rocket.setDesiredThrusterIntensityFactor(0.0);
+            rocket.setDesiredThrusterAngleFactor(0.5);
             setTimeout(function () {
-                handle.setDesiredThrusterIntensityFactor(1.0);
+                rocket.setDesiredThrusterIntensityFactor(1.0);
             }, 1500);
         };
         Application.prototype.update = function () {
