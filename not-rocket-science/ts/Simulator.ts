@@ -61,7 +61,7 @@ export class Simulator {
         this.world.step(elapsedSeconds);
     }
 
-    public applyRandomImpulse(rocket:Rocket) : void {
+    private applyRandomImpulse(rocket:Rocket) : void {
         let forceX = (Math.random() * 2 - 1) * 20;
         let forceY = (Math.random() * 2 - 1) * 20;
         let posX = (Math.random() * 2 + 1) * SimulatorConfig.rocketSize[0];
