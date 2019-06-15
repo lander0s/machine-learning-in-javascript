@@ -13,6 +13,8 @@
         "Config.ts",
         "Rocket.ts",
         "FireGFX.ts",
+        "Genome.ts",
+        "Learner.ts",
         "p2.d.ts"
     ]
 }

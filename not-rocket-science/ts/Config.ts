@@ -11,3 +11,7 @@ export const SimulatorConfig = {
 export const RenderConfig = {
     initialCameraPosition : [0, 20],
 }
+
+export const LearnerConfig = {
+    generationSize : 10,
+}
