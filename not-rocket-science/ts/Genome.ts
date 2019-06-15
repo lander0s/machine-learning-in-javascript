@@ -44,14 +44,6 @@ export class Genome {
         this.network = synaptic.Network.fromJSON(mutatedNetworkJsonObj);
     }
 
-    public setNetwork(network : any) : void {
-        this.network = network;
-    }
-
-    public activate(input : Array<number>) : Array<number> {
-        return this.network.activate(input);
-    }
-
     public getFitness() : number {
         return this.rocket.getScore();
     }
