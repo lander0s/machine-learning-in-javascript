@@ -35,11 +35,11 @@ export class Genome {
         this.network = new synaptic.Architect.Perceptron(3, 4, 4, 2);
     }
 
-    public fromParents(dady:Genome, mum:Genome) : void {
-        let dadyNetworkJsonObj = JSON.parse(JSON.stringify(dady.network.toJSON()));
+    public fromParents(daddy:Genome, mum:Genome) : void {
+        let daddyNetworkJsonObj = JSON.parse(JSON.stringify(daddy.network.toJSON()));
         let mumNetworkJsonObj = JSON.parse(JSON.stringify(mum.network.toJSON()));
 
-        let childNetworkJsonObj = this.crossOver(dadyNetworkJsonObj, mumNetworkJsonObj);
+        let childNetworkJsonObj = this.crossOver(daddyNetworkJsonObj, mumNetworkJsonObj);
         var mutatedNetworkJsonObj =  this.mutate(childNetworkJsonObj);
         this.network = synaptic.Network.fromJSON(mutatedNetworkJsonObj);
     }
@@ -56,17 +56,17 @@ export class Genome {
         return this.uuid;
     }
 
-    private crossOver(dadyNetworkJsonObj:any, mumNetworkJsonObj:any) : any {
-        let randomCut = (Math.random() * dadyNetworkJsonObj.neurons.length)|0;
-        for(let i = randomCut; i < dadyNetworkJsonObj.neurons.length; i++) {
+    private crossOver(daddyNetworkJsonObj:any, mumNetworkJsonObj:any) : any {
+        let randomCut = (Math.random() * daddyNetworkJsonObj.neurons.length)|0;
+        for(let i = randomCut; i < daddyNetworkJsonObj.neurons.length; i++) {
             //swap bias
-            let aux = dadyNetworkJsonObj.neurons[i].bias;
-            dadyNetworkJsonObj.neurons[i].bias = mumNetworkJsonObj.neurons[i].bias;
+            let aux = daddyNetworkJsonObj.neurons[i].bias;
+            daddyNetworkJsonObj.neurons[i].bias = mumNetworkJsonObj.neurons[i].bias;
             mumNetworkJsonObj.neurons[i].bias = aux;
         }
 
         if(Math.random() > 0.5) {
-            return dadyNetworkJsonObj;
+            return daddyNetworkJsonObj;
         } else {
             return mumNetworkJsonObj;
         }
