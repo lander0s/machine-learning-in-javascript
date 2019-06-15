@@ -22,7 +22,7 @@ export class FireGFX {
             let degreeOffset = (this.time + i * 20) * Math.PI / 180;
             let scale = (Math.cos(degreeOffset) + 4) * 0.5;
             this.context.save();
-            this.context.globalAlpha = 0.1;
+            this.context.globalAlpha *= 0.1;
             this.context.scale(scale * 2, scale);
             this.context.scale(factor, factor);
             this.context.rotate((Math.random() - 0.5) * 0.04 );
