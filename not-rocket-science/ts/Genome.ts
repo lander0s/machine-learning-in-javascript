@@ -18,8 +18,8 @@ export class Genome {
 
     public update() : void {
         let input = [
-            this.rocket.getAngleFactor(),
-            this.rocket.getAngularVelocityFactor(),
+            /*this.rocket.getAngleFactor(),*/ 0.0,
+            /*this.rocket.getAngularVelocityFactor()*/ 0.0,
             this.rocket.getPosition()[1] / 100,
         ];
         let output = this.network.activate(input);

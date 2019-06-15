@@ -117,7 +117,6 @@ export class Simulator {
                 let rocket = this.rockets[i];
                 this.world.removeBody(rocket.getPhysicsObject());
                 this.rockets.splice(i,1);
-                rocket.notifySimulationFinished();
             }
         }
     }

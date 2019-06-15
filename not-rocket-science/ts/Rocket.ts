@@ -10,7 +10,6 @@ export class Rocket {
     private body                      : p2.Body;
     private isAlive                   : boolean;
     private deathTimestamp            : number;
-    private finishSimulationCallbacks : Array<Function>;
     
     constructor(body:p2.Body) {
         this.isAlive = true;
@@ -20,7 +19,6 @@ export class Rocket {
         this.desiredThrusterAngle = 0;
         this.thrusterIntensity = 0;
         this.desiredThrusterIntensity = 0;
-        this.finishSimulationCallbacks = [];
         this.fuelTankReserve = SimulatorConfig.fuelTankCapacity;
     }
 
@@ -65,40 +63,10 @@ export class Rocket {
         return normalized;
     }
 
-    public getAngleFactor() : number {
-        let angle = this.getAngle();
-        let min = -Math.PI;
-        let max = Math.PI;
-        return ((angle - min) / (max - min));
-    }
-
-    public getAngularVelocityFactor() : number {
-        let angularVelocity = this.body.angularVelocity;
-        let min = -30;
-        let max = 30;
-
-        // clamp angular velocity 
-        if(angularVelocity < min) {
-            angularVelocity = min;
-        } else if(angularVelocity > max) {
-            angularVelocity = max;
-        }
-
-        return ((angularVelocity - min) / (max - min));
-    }
-
     public getThrusterAngle() :number {
         let angle = this.thrusterAngle;
         let normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
         return normalized;
-    }
-
-    public getThrusterAngleFactor() : number {
-        let halfFreedomInRadians = (SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
-        let angle = this.getThrusterAngle();
-        let min = -halfFreedomInRadians;
-        let max = halfFreedomInRadians;
-        return ((angle - min) / (max - min));
     }
 
     public getThrusterIntensity() : number {
@@ -183,21 +151,4 @@ export class Rocket {
             return currentValue + step;
         }
     }
-
-    public notifySimulationFinished() : void {
-        this.finishSimulationCallbacks.forEach( (callback) => callback() );
-    }
-
-    public on(eventType:string, callback:Function) : void {
-        switch(eventType) {
-            case 'finishSimulation' : {
-                this.finishSimulationCallbacks.push(callback);
-                break;
-            }
-            default: {
-                console.error('unknown event type');
-                break;
-            }
-        }
-    }    
 }
