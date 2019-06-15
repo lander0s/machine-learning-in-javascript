@@ -72,6 +72,21 @@ export class Rocket {
         return ((angle - min) / (max - min));
     }
 
+    public getAngularVelocityFactor() : number {
+        let angularVelocity = this.body.angularVelocity;
+        let min = -30;
+        let max = 30;
+
+        // clamp angular velocity 
+        if(angularVelocity < min) {
+            angularVelocity = min;
+        } else if(angularVelocity > max) {
+            angularVelocity = max;
+        }
+
+        return ((angularVelocity - min) / (max - min));
+    }
+
     public getThrusterAngle() :number {
         let angle = this.thrusterAngle;
         let normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
