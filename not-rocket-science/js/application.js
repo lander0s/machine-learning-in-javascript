@@ -291,12 +291,22 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.scale = 20;
             this.rocketTexture = new Image();
             this.rocketTexture.src = './res/rocket-texture.png';
+            this.moonTexture = new Image();
+            this.stars = [];
+            this.moonTexture.src = './res/moon.png';
+            for (var i = 0; i < 100; i++) {
+                this.stars.push([
+                    Math.random() * window.innerWidth,
+                    Math.random() * window.innerHeight,
+                ]);
+            }
         }
         Renderer.prototype.init = function () {
         };
         Renderer.prototype.draw = function () {
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.context.save();
+            this.drawSky();
             this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
             this.context.scale(1, -1);
             var cameraScreenSpacePosition = this.toScreenSpace(this.cameraPosition);
@@ -311,7 +321,7 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             for (var i = 0; i < rockets.length; i++) {
                 var rocket = rockets[i];
                 this.context.save();
-                this.context.globalAlpha *= (i == 0 ? 1.0 : 0.05);
+                this.context.globalAlpha *= (i == 0 ? 1.0 : 0.02);
                 var screenSpacePosition = this.toScreenSpace(rocket.getPosition());
                 this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
                 this.context.rotate(rocket.getAngle());
@@ -323,6 +333,21 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
                 this.context.restore();
             }
             this.fireGFX.update();
+        };
+        Renderer.prototype.drawSky = function () {
+            this.context.save();
+            this.context.drawImage(this.moonTexture, 100, 100, 50, 50);
+            this.context.fillStyle = 'white';
+            for (var i = 0; i < this.stars.length; i++) {
+                this.context.save();
+                this.context.fillRect(this.stars[i][0] - 1, this.stars[i][1] - 1, 2, 2);
+                this.context.globalAlpha *= Math.random();
+                var coronaSize = Math.random() * 5;
+                var halfCoronaSize = coronaSize / 2;
+                this.context.fillRect(this.stars[i][0] - halfCoronaSize, this.stars[i][1] - halfCoronaSize, coronaSize, coronaSize);
+                this.context.restore();
+            }
+            this.context.restore();
         };
         Renderer.prototype.drawGround = function () {
             this.context.beginPath();
