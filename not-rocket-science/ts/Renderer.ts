@@ -81,9 +81,25 @@ export class Renderer {
             this.context.drawImage(this.rocketTexture, -rocketSize[0]/2, -rocketSize[1]/2, rocketSize[0], rocketSize[1]);
 
             // thruster
+            this.context.save();
             this.context.translate(0, - rocketSize[1]/2 );
             this.context.rotate(rocket.getThrusterAngle());
             this.fireGFX.draw(rocket.getThrusterIntensityFactor(), this.toScreenSpace(SimulatorConfig.rocketSize));
+            this.context.restore();
+
+            // score
+            this.context.save();
+            this.context.translate(0, rocketSize[1]/2);
+            this.context.rotate( - rocket.getAngle());
+            this.context.font = '30px arial';
+            this.context.textAlign = 'center';
+            this.context.fillStyle = rocket.getScore() > 0 ? '#00FF00' : '#FF0000';
+            this.context.scale(1,-1);
+            let offset = [0, -(SimulatorConfig.rocketSize[0] + 1)];
+            offset = this.toScreenSpace(offset);
+            let text = (rocket.getScore() > 0 ? '+' : '') + rocket.getScore();
+            this.context.fillText( text , offset[0], offset[1]);
+            this.context.restore();
 
             this.context.restore();
         }
