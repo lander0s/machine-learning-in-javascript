@@ -14,5 +14,5 @@ export const RenderConfig = {
 }
 
 export const LearnerConfig = {
-    generationSize : 10,
+    generationSize : 12,
 }
