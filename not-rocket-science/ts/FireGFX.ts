@@ -23,9 +23,9 @@ export class FireGFX {
             let scale = (Math.cos(degreeOffset) + 4) * 0.5;
             this.context.save();
             this.context.globalAlpha *= 0.1;
-            this.context.scale(scale * 2, scale);
+            this.context.scale( 5, scale);
             this.context.scale(factor, factor);
-            this.context.rotate((Math.random() - 0.5) * 0.04 );
+            this.context.rotate((Math.random() - 0.5) * 0.1 );
             this.context.drawImage(this.texture, -size[0] / 2, -size[1] * 0.95, size[0], size[1]);
             this.context.restore();
         }

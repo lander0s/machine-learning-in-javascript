@@ -10,6 +10,7 @@ export class Renderer {
     private cameraPosition : Array<number>;
     private scale          : number;
     private fireGFX        : FireGFX;
+    private rocketTexture  : HTMLImageElement;
 
     constructor(selector:string, simulator: Simulator) {
         this.simulator = simulator;
@@ -24,10 +25,13 @@ export class Renderer {
         this.rootElem.appendChild(this.canvas);
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
+        this.canvas.style.backgroundColor = '#1b2124';
         this.cameraPosition = RenderConfig.initialCameraPosition;
         this.fireGFX = new FireGFX(this.canvas, this.context);
         window.addEventListener('wheel', (e) => this.onMouseWheel(e) );
         this.scale = 20;
+        this.rocketTexture = new Image();
+        this.rocketTexture.src = './res/rocket-texture.png';
     }
 
     public init() : void {
@@ -62,7 +66,7 @@ export class Renderer {
             this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
             this.context.rotate(rocket.getAngle());
             let rocketSize = this.toScreenSpace(SimulatorConfig.rocketSize);
-            this.context.strokeRect(-rocketSize[0]/2, -rocketSize[1]/2, rocketSize[0], rocketSize[1]);
+            this.context.drawImage(this.rocketTexture, -rocketSize[0]/2, -rocketSize[1]/2, rocketSize[0], rocketSize[1]);
 
             // thruster
             this.context.translate(0, - rocketSize[1]/2 );
