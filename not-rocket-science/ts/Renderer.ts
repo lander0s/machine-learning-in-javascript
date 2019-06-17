@@ -53,9 +53,11 @@ export class Renderer {
 
     private drawRockets() {
         let rockets = this.simulator.getAllRockets();
-        rockets.forEach((rocket) => {
-            
+        for(let i = 0; i < rockets.length; i++) {
+            let rocket = rockets[i];
+
             this.context.save();
+            this.context.globalAlpha *= (i == 0 ? 1.0 : 0.05);
             let screenSpacePosition = this.toScreenSpace(rocket.getPosition());
             this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
             this.context.rotate(rocket.getAngle());
@@ -68,7 +70,8 @@ export class Renderer {
             this.fireGFX.draw(rocket.getThrusterIntensityFactor(), this.toScreenSpace(SimulatorConfig.rocketSize));
 
             this.context.restore();
-        });
+        }
+
         this.fireGFX.update();
     }
 
