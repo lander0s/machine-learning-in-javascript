@@ -252,9 +252,9 @@ define("FireGFX", ["require", "exports"], function (require, exports) {
                 var scale = (Math.cos(degreeOffset) + 4) * 0.5;
                 this.context.save();
                 this.context.globalAlpha *= 0.1;
-                this.context.scale(scale * 2, scale);
+                this.context.scale(5, scale);
                 this.context.scale(factor, factor);
-                this.context.rotate((Math.random() - 0.5) * 0.04);
+                this.context.rotate((Math.random() - 0.5) * 0.1);
                 this.context.drawImage(this.texture, -size[0] / 2, -size[1] * 0.95, size[0], size[1]);
                 this.context.restore();
             }
@@ -284,10 +284,13 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.rootElem.appendChild(this.canvas);
             this.canvas.style.width = '100%';
             this.canvas.style.height = '100%';
+            this.canvas.style.backgroundColor = '#1b2124';
             this.cameraPosition = Config_3.RenderConfig.initialCameraPosition;
             this.fireGFX = new FireGFX_1.FireGFX(this.canvas, this.context);
             window.addEventListener('wheel', function (e) { return _this.onMouseWheel(e); });
             this.scale = 20;
+            this.rocketTexture = new Image();
+            this.rocketTexture.src = './res/rocket-texture.png';
         }
         Renderer.prototype.init = function () {
         };
@@ -313,7 +316,7 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
                 this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
                 this.context.rotate(rocket.getAngle());
                 var rocketSize = this.toScreenSpace(Config_3.SimulatorConfig.rocketSize);
-                this.context.strokeRect(-rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
+                this.context.drawImage(this.rocketTexture, -rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
                 this.context.translate(0, -rocketSize[1] / 2);
                 this.context.rotate(rocket.getThrusterAngle());
                 this.fireGFX.draw(rocket.getThrusterIntensityFactor(), this.toScreenSpace(Config_3.SimulatorConfig.rocketSize));
