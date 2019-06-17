@@ -33,7 +33,7 @@ export class Genome {
             absAngle /  Math.PI
         ];
         let output = this.network.activate(input);
-        this.rocket.setDesiredThrusterAngleFactor(output[0] > 0.5 ? 1.0 : 0.0);
+        this.rocket.setDesiredThrusterAngleFactor(output[0]);
         this.rocket.setDesiredThrusterIntensityFactor(output[1]);
     }
 
