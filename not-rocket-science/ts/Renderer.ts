@@ -11,6 +11,8 @@ export class Renderer {
     private scale          : number;
     private fireGFX        : FireGFX;
     private rocketTexture  : HTMLImageElement;
+    private moonTexture    : HTMLImageElement;
+    private stars          : Array<Array<number>>;
 
     constructor(selector:string, simulator: Simulator) {
         this.simulator = simulator;
@@ -32,6 +34,15 @@ export class Renderer {
         this.scale = 20;
         this.rocketTexture = new Image();
         this.rocketTexture.src = './res/rocket-texture.png';
+        this.moonTexture = new Image();
+        this.stars = [];
+        this.moonTexture.src = './res/moon.png';
+        for(let i = 0; i  < 100; i++) {
+            this.stars.push([
+                Math.random() * window.innerWidth,
+                Math.random() * window.innerHeight,
+            ]);
+        }
     }
 
     public init() : void {
@@ -42,6 +53,7 @@ export class Renderer {
         this.context.clearRect(0,0,this.canvas.width, this.canvas.height);
 
         this.context.save();
+        this.drawSky();
         this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
         this.context.scale(1, -1);
         let cameraScreenSpacePosition = this.toScreenSpace(this.cameraPosition);
@@ -61,7 +73,7 @@ export class Renderer {
             let rocket = rockets[i];
 
             this.context.save();
-            this.context.globalAlpha *= (i == 0 ? 1.0 : 0.05);
+            this.context.globalAlpha *= (i == 0 ? 1.0 : 0.02);
             let screenSpacePosition = this.toScreenSpace(rocket.getPosition());
             this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
             this.context.rotate(rocket.getAngle());
@@ -77,6 +89,22 @@ export class Renderer {
         }
 
         this.fireGFX.update();
+    }
+
+    private drawSky() : void {
+        this.context.save();
+        this.context.drawImage(this.moonTexture, 100, 100, 50, 50);
+        this.context.fillStyle = 'white';
+        for(let i = 0; i < this.stars.length; i++) {
+            this.context.save();
+            this.context.fillRect(this.stars[i][0] - 1 , this.stars[i][1] - 1, 2, 2);
+            this.context.globalAlpha *= Math.random();
+            let coronaSize = Math.random() * 5;
+            let halfCoronaSize = coronaSize/2;
+            this.context.fillRect(this.stars[i][0] - halfCoronaSize, this.stars[i][1] - halfCoronaSize, coronaSize, coronaSize);
+            this.context.restore();    
+        }
+        this.context.restore();
     }
 
     private drawGround() {
