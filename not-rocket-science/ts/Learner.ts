@@ -43,8 +43,8 @@ export class Learner {
         let firstPlace = this.getAndRemoveBestCandidate();
         let secondPlace = this.getAndRemoveBestCandidate();
         this.currentGeneration++;
-        this.genomes = [];
-        for(let i = 0; i < LearnerConfig.generationSize; i++) {
+        this.genomes = [firstPlace, secondPlace];
+        for(let i = 2; i < LearnerConfig.generationSize; i++) {
             let rocket = this.simulator.addRocket();
             let genomeId = `${this.currentGeneration}.${i}`;
             let genome = new Genome(this.currentGeneration, genomeId, rocket);
