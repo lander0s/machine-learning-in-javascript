@@ -6,11 +6,15 @@ define("Config", ["require", "exports"], function (require, exports) {
         rocketSize: [1, 8],
         thrusterFreedomInDegrees: 90,
         thrusterMaxIntensity: 20,
-        fuelTankCapacity: 3 * 60,
-        fuelConsumptionRate: 1
+        fuelTankCapacity: 5 * 60,
+        fuelConsumptionRate: 1,
+        secondsToRemoveDeadRockets: 0
     };
     exports.RenderConfig = {
         initialCameraPosition: [0, 20]
+    };
+    exports.LearnerConfig = {
+        generationSize: 12
     };
 });
 define("Rocket", ["require", "exports", "Config"], function (require, exports, Config_1) {
@@ -25,7 +29,6 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             this.desiredThrusterAngle = 0;
             this.thrusterIntensity = 0;
             this.desiredThrusterIntensity = 0;
-            this.finishSimulationCallbacks = [];
             this.fuelTankReserve = Config_1.SimulatorConfig.fuelTankCapacity;
         }
         Rocket.prototype.update = function (elapsedSeconds) {
@@ -50,23 +53,13 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             var normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
             return normalized;
         };
-        Rocket.prototype.getAngleFactor = function () {
-            var angle = this.getAngle();
-            var min = -Math.PI;
-            var max = Math.PI;
-            return ((angle - min) / (max - min));
+        Rocket.prototype.getAngularVelocity = function () {
+            return this.body.angularVelocity;
         };
         Rocket.prototype.getThrusterAngle = function () {
             var angle = this.thrusterAngle;
             var normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
             return normalized;
-        };
-        Rocket.prototype.getThrusterAngleFactor = function () {
-            var halfFreedomInRadians = (Config_1.SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
-            var angle = this.getThrusterAngle();
-            var min = -halfFreedomInRadians;
-            var max = halfFreedomInRadians;
-            return ((angle - min) / (max - min));
         };
         Rocket.prototype.getThrusterIntensity = function () {
             return this.thrusterIntensity;
@@ -134,21 +127,6 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
                 if (currentValue + step > desiredValue)
                     return desiredValue;
                 return currentValue + step;
-            }
-        };
-        Rocket.prototype.notifySimulationFinished = function () {
-            this.finishSimulationCallbacks.forEach(function (callback) { return callback(); });
-        };
-        Rocket.prototype.on = function (eventType, callback) {
-            switch (eventType) {
-                case 'finishSimulation': {
-                    this.finishSimulationCallbacks.push(callback);
-                    break;
-                }
-                default: {
-                    console.error('unknown event type');
-                    break;
-                }
             }
         };
         return Rocket;
@@ -245,11 +223,10 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
         };
         Simulator.prototype.removeDeadRockets = function () {
             for (var i = this.rockets.length - 1; i >= 0; i--) {
-                if (this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= 2) {
+                if (this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= Config_2.SimulatorConfig.secondsToRemoveDeadRockets) {
                     var rocket = this.rockets[i];
                     this.world.removeBody(rocket.getPhysicsObject());
                     this.rockets.splice(i, 1);
-                    rocket.notifySimulationFinished();
                 }
             }
         };
@@ -274,7 +251,7 @@ define("FireGFX", ["require", "exports"], function (require, exports) {
                 var degreeOffset = (this.time + i * 20) * Math.PI / 180;
                 var scale = (Math.cos(degreeOffset) + 4) * 0.5;
                 this.context.save();
-                this.context.globalAlpha = 0.1;
+                this.context.globalAlpha *= 0.1;
                 this.context.scale(scale * 2, scale);
                 this.context.scale(factor, factor);
                 this.context.rotate((Math.random() - 0.5) * 0.04);
@@ -327,20 +304,21 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.context.restore();
         };
         Renderer.prototype.drawRockets = function () {
-            var _this = this;
             var rockets = this.simulator.getAllRockets();
-            rockets.forEach(function (rocket) {
-                _this.context.save();
-                var screenSpacePosition = _this.toScreenSpace(rocket.getPosition());
-                _this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
-                _this.context.rotate(rocket.getAngle());
-                var rocketSize = _this.toScreenSpace(Config_3.SimulatorConfig.rocketSize);
-                _this.context.strokeRect(-rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
-                _this.context.translate(0, -rocketSize[1] / 2);
-                _this.context.rotate(rocket.getThrusterAngle());
-                _this.fireGFX.draw(rocket.getThrusterIntensityFactor(), _this.toScreenSpace(Config_3.SimulatorConfig.rocketSize));
-                _this.context.restore();
-            });
+            for (var i = 0; i < rockets.length; i++) {
+                var rocket = rockets[i];
+                this.context.save();
+                this.context.globalAlpha *= (i == 0 ? 1.0 : 0.05);
+                var screenSpacePosition = this.toScreenSpace(rocket.getPosition());
+                this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
+                this.context.rotate(rocket.getAngle());
+                var rocketSize = this.toScreenSpace(Config_3.SimulatorConfig.rocketSize);
+                this.context.strokeRect(-rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
+                this.context.translate(0, -rocketSize[1] / 2);
+                this.context.rotate(rocket.getThrusterAngle());
+                this.fireGFX.draw(rocket.getThrusterIntensityFactor(), this.toScreenSpace(Config_3.SimulatorConfig.rocketSize));
+                this.context.restore();
+            }
             this.fireGFX.update();
         };
         Renderer.prototype.drawGround = function () {
@@ -367,17 +345,163 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
     }());
     exports.Renderer = Renderer;
 });
-define("Application", ["require", "exports", "Simulator", "Renderer"], function (require, exports, Simulator_1, Renderer_1) {
+define("Genome", ["require", "exports", "Config"], function (require, exports, Config_4) {
+    "use strict";
+    exports.__esModule = true;
+    var Genome = (function () {
+        function Genome(generation, uuid, rocket) {
+            this.generation = 0;
+            this.network = null;
+            this.rocket = null;
+            this.generation = generation;
+            this.uuid = uuid;
+            this.rocket = rocket;
+        }
+        Genome.prototype.update = function () {
+            var angularVelocityClamp = 30;
+            var isRotatingClockWise = this.rocket.getAngularVelocity() < 0;
+            var isTiltedToRight = this.rocket.getAngle() < 0;
+            var absAngularVelocity = Math.min(Math.abs(this.rocket.getAngularVelocity()), angularVelocityClamp);
+            var absAngle = Math.abs(this.rocket.getAngle());
+            var input = [
+                isRotatingClockWise ? 1.0 : 0.0,
+                isTiltedToRight ? 1.0 : 0.0,
+                absAngularVelocity / angularVelocityClamp,
+                absAngle / Math.PI
+            ];
+            var output = this.network.activate(input);
+            this.rocket.setDesiredThrusterAngleFactor(output[0]);
+            this.rocket.setDesiredThrusterIntensityFactor(output[1]);
+        };
+        Genome.prototype.didFinish = function () {
+            return this.rocket.isDead() && this.rocket.getSecondsSinceDeath() >= Config_4.SimulatorConfig.secondsToRemoveDeadRockets;
+        };
+        Genome.prototype.createNeuralNetworkFromScratch = function () {
+            this.network = new synaptic.Architect.Perceptron(4, 4, 4, 2);
+        };
+        Genome.prototype.fromParents = function (daddy, mum) {
+            var daddyNetworkJsonObj = JSON.parse(JSON.stringify(daddy.network.toJSON()));
+            var mumNetworkJsonObj = JSON.parse(JSON.stringify(mum.network.toJSON()));
+            var childNetworkJsonObj = this.crossOver(daddyNetworkJsonObj, mumNetworkJsonObj);
+            var mutatedNetworkJsonObj = this.mutate(childNetworkJsonObj);
+            this.network = synaptic.Network.fromJSON(mutatedNetworkJsonObj);
+        };
+        Genome.prototype.getFitness = function () {
+            return this.rocket.getScore();
+        };
+        Genome.prototype.getGeneration = function () {
+            return this.generation;
+        };
+        Genome.prototype.getUUID = function () {
+            return this.uuid;
+        };
+        Genome.prototype.crossOver = function (daddyNetworkJsonObj, mumNetworkJsonObj) {
+            var randomCut = (Math.random() * daddyNetworkJsonObj.neurons.length) | 0;
+            for (var i = randomCut; i < daddyNetworkJsonObj.neurons.length; i++) {
+                var aux = daddyNetworkJsonObj.neurons[i].bias;
+                daddyNetworkJsonObj.neurons[i].bias = mumNetworkJsonObj.neurons[i].bias;
+                mumNetworkJsonObj.neurons[i].bias = aux;
+            }
+            if (Math.random() > 0.5) {
+                return daddyNetworkJsonObj;
+            }
+            else {
+                return mumNetworkJsonObj;
+            }
+        };
+        Genome.prototype.mutate = function (networkJsonObj) {
+            for (var i = 0; i < networkJsonObj.neurons.length; i++) {
+                if (Math.random() > 0.5) {
+                    networkJsonObj.neurons[i].bias +=
+                        networkJsonObj.neurons[i].bias * (Math.random() - 0.5) * 3 + (Math.random() - 0.5);
+                }
+            }
+            for (var i = 0; i < networkJsonObj.connections.length; i++) {
+                if (Math.random() > 0.5) {
+                    networkJsonObj.connections[i].weight +=
+                        networkJsonObj.connections[i].weight * (Math.random() - 0.5) * 3 + (Math.random() - 0.5);
+                }
+            }
+            return networkJsonObj;
+        };
+        return Genome;
+    }());
+    exports.Genome = Genome;
+});
+define("Learner", ["require", "exports", "Genome", "Config"], function (require, exports, Genome_1, Config_5) {
+    "use strict";
+    exports.__esModule = true;
+    var Learner = (function () {
+        function Learner(simulator) {
+            this.simulator = simulator;
+            this.genomes = [];
+            this.currentGeneration = 0;
+        }
+        Learner.prototype.init = function () {
+            this.genomes = [];
+            for (var i = 0; i < Config_5.LearnerConfig.generationSize; i++) {
+                var rocket = this.simulator.addRocket();
+                var genomeId = this.currentGeneration + "." + i;
+                var genome = new Genome_1.Genome(this.currentGeneration, genomeId, rocket);
+                genome.createNeuralNetworkFromScratch();
+                this.genomes.push(genome);
+            }
+        };
+        Learner.prototype.update = function () {
+            var genomesThatFinished = 0;
+            this.genomes.forEach(function (genome) {
+                genome.update();
+                if (genome.didFinish()) {
+                    genomesThatFinished++;
+                }
+            });
+            if (genomesThatFinished == this.genomes.length) {
+                this.createNextGeneration();
+            }
+        };
+        Learner.prototype.createNextGeneration = function () {
+            var firstPlace = this.getAndRemoveBestCandidate();
+            var secondPlace = this.getAndRemoveBestCandidate();
+            this.currentGeneration++;
+            this.genomes = [firstPlace, secondPlace];
+            for (var i = 2; i < Config_5.LearnerConfig.generationSize; i++) {
+                var rocket = this.simulator.addRocket();
+                var genomeId = this.currentGeneration + "." + i;
+                var genome = new Genome_1.Genome(this.currentGeneration, genomeId, rocket);
+                genome.fromParents(firstPlace, secondPlace);
+                this.genomes.push(genome);
+            }
+        };
+        Learner.prototype.getAndRemoveBestCandidate = function () {
+            var bestCandidateIndex = 0;
+            var bestCandidate = this.genomes[bestCandidateIndex];
+            for (var i = 0; i < this.genomes.length; i++) {
+                var crtGenome = this.genomes[i];
+                if (bestCandidate.getFitness() < crtGenome.getFitness()) {
+                    bestCandidateIndex = i;
+                    bestCandidate = crtGenome;
+                }
+            }
+            this.genomes.splice(bestCandidateIndex, 1);
+            return bestCandidate;
+        };
+        return Learner;
+    }());
+    exports.Learner = Learner;
+});
+define("Application", ["require", "exports", "Simulator", "Renderer", "Learner"], function (require, exports, Simulator_1, Renderer_1, Learner_1) {
     "use strict";
     exports.__esModule = true;
     var Application = (function () {
         function Application() {
             this.simulator = new Simulator_1.Simulator();
             this.renderer = new Renderer_1.Renderer('#render-surface', this.simulator);
+            this.learner = new Learner_1.Learner(this.simulator);
         }
         Application.prototype.init = function () {
             this.renderer.init();
             this.simulator.init();
+            this.learner.init();
             var rocket = this.simulator.addRocket();
             rocket.setDesiredThrusterIntensityFactor(0.0);
             rocket.setDesiredThrusterAngleFactor(0.5);
@@ -387,6 +511,7 @@ define("Application", ["require", "exports", "Simulator", "Renderer"], function 
         };
         Application.prototype.update = function () {
             this.simulator.update();
+            this.learner.update();
             this.renderer.draw();
         };
         return Application;
