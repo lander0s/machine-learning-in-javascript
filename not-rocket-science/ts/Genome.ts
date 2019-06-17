@@ -1,4 +1,5 @@
 import { Rocket } from "./Rocket";
+import { SimulatorConfig } from "./Config";
 declare var synaptic : any;
 
 export class Genome {
@@ -17,22 +18,31 @@ export class Genome {
     }
 
     public update() : void {
+
+        let angularVelocityClamp  = 30;
+
+        let isRotatingClockWise = this.rocket.getAngularVelocity() < 0;
+        let isTiltedToRight = this.rocket.getAngle() < 0;
+        let absAngularVelocity = Math.min(Math.abs(this.rocket.getAngularVelocity()), angularVelocityClamp);
+        let absAngle = Math.abs(this.rocket.getAngle());
+
         let input = [
-            /*this.rocket.getAngleFactor(),*/ 0.0,
-            /*this.rocket.getAngularVelocityFactor()*/ 0.0,
-            this.rocket.getPosition()[1] / 100,
+            isRotatingClockWise ? 1.0 : 0.0,
+            isTiltedToRight ? 1.0 : 0.0,
+            absAngularVelocity / angularVelocityClamp,
+            absAngle /  Math.PI
         ];
         let output = this.network.activate(input);
-        this.rocket.setDesiredThrusterAngleFactor(output[0]);
+        this.rocket.setDesiredThrusterAngleFactor(output[0] > 0.5 ? 1.0 : 0.0);
         this.rocket.setDesiredThrusterIntensityFactor(output[1]);
     }
 
     public didFinish() : boolean {
-        return this.rocket.isDead() && this.rocket.getSecondsSinceDeath() >= 2;
+        return this.rocket.isDead() && this.rocket.getSecondsSinceDeath() >= SimulatorConfig.secondsToRemoveDeadRockets;
     }
 
     public createNeuralNetworkFromScratch() {
-        this.network = new synaptic.Architect.Perceptron(3, 4, 4, 2);
+        this.network = new synaptic.Architect.Perceptron(4, 4, 4, 2);
     }
 
     public fromParents(daddy:Genome, mum:Genome) : void {

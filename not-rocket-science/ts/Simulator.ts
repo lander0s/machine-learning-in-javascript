@@ -113,7 +113,7 @@ export class Simulator {
 
     private removeDeadRockets() : void {
         for(let i = this.rockets.length -1; i >= 0; i--) {
-            if(this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= 2) {
+            if(this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= SimulatorConfig.secondsToRemoveDeadRockets) {
                 let rocket = this.rockets[i];
                 this.world.removeBody(rocket.getPhysicsObject());
                 this.rockets.splice(i,1);

@@ -63,6 +63,10 @@ export class Rocket {
         return normalized;
     }
 
+    public getAngularVelocity() : number {
+        return this.body.angularVelocity;
+    }
+
     public getThrusterAngle() :number {
         let angle = this.thrusterAngle;
         let normalized = Math.atan2(Math.sin(angle), Math.cos(angle));
