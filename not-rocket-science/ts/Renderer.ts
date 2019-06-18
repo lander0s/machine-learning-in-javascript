@@ -1,5 +1,5 @@
 import { Simulator } from './Simulator'
-import { RenderConfig, SimulatorConfig } from './Config';
+import { SimulatorConfig } from './Config';
 import { FireGFX } from './FireGFX';
 
 export class Renderer {    
@@ -12,6 +12,8 @@ export class Renderer {
     private fireGFX        : FireGFX;
     private rocketTexture  : HTMLImageElement;
     private moonTexture    : HTMLImageElement;
+    private marsTexture    : HTMLImageElement;
+    private marsTexturePattern: CanvasPattern;
     private stars          : Array<Array<number>>;
 
     constructor(selector:string, simulator: Simulator) {
@@ -28,21 +30,27 @@ export class Renderer {
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.backgroundColor = '#1b2124';
-        this.cameraPosition = RenderConfig.initialCameraPosition;
         this.fireGFX = new FireGFX(this.canvas, this.context);
         window.addEventListener('wheel', (e) => this.onMouseWheel(e) );
         this.scale = 20;
         this.rocketTexture = new Image();
         this.rocketTexture.src = './res/rocket-texture.png';
         this.moonTexture = new Image();
-        this.stars = [];
         this.moonTexture.src = './res/moon.png';
+        this.marsTexture = new Image();
+        this.marsTexture.src = './res/mars-texture.jpg';
+        this.marsTexture.onload = () => {
+            this.marsTexturePattern = this.context.createPattern(this.marsTexture, 'repeat');
+        }
+        this.stars = [];
         for(let i = 0; i  < 100; i++) {
             this.stars.push([
                 Math.random() * window.innerWidth,
                 Math.random() * window.innerHeight,
             ]);
         }
+        this.cameraPosition = [];
+        this.updateCameraPosition();
     }
 
     public init() : void {
@@ -124,11 +132,19 @@ export class Renderer {
     }
 
     private drawGround() {
-        this.context.beginPath();
-        this.context.moveTo(- this.canvas.width*100, 0);
-        this.context.lineTo(this.canvas.width*100, 0);
-        this.context.strokeStyle = 'black';
-        this.context.stroke();
+        this.context.save();
+        this.context.fillStyle = this.marsTexturePattern;
+        let scaleFactor = this.scale / 20;
+        let min = 0.5;
+        let max = 1.0;
+        let textureScale = min +  scaleFactor * (max - min);
+        let x = (-this.canvas.width/2) * textureScale;
+        let y = 0 * textureScale;
+        let width = this.canvas.width * textureScale;
+        let height = this.canvas.height * textureScale;
+        this.context.scale(textureScale, textureScale);
+        this.context.fillRect(x / scaleFactor, y, width / scaleFactor, -height);
+        this.context.restore();
     }
 
     private toScreenSpace(worldSpacePosition:Array<number>) : Array<number> {
@@ -144,5 +160,20 @@ export class Renderer {
         if(this.scale < 1) {
             this.scale = 1;
         }
+        if(this.scale > 20) {
+            this.scale = 20;
+        }
+        this.updateCameraPosition();
+    }
+
+    private updateCameraPosition() : void {
+        let screenHeightInMts = window.innerHeight / this.scale;
+        this.cameraPosition[0] = 0;
+        this.cameraPosition[1] = (screenHeightInMts / 2);
+        let scaleFactor = 1.0 - (this.scale / 20.0);
+        let min = 10;
+        let max = 100;
+        let cameraOffset = min +  scaleFactor * (max - min);
+        this.cameraPosition[1] -= cameraOffset / this.scale;
     }
 }

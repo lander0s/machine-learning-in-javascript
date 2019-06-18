@@ -6,11 +6,7 @@ export const SimulatorConfig = {
     thrusterMaxIntensity       : 20,
     fuelTankCapacity           : 5 * 60,
     fuelConsumptionRate        : 1, 
-    secondsToRemoveDeadRockets : 0, 
-}
-
-export const RenderConfig = {
-    initialCameraPosition : [0, 20],
+    secondsToRemoveDeadRockets : 3, 
 }
 
 export const LearnerConfig = {
