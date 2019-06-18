@@ -77,11 +77,12 @@ export class Renderer {
 
     private drawRockets() {
         let rockets = this.simulator.getAllRockets();
+        let bestRocketIdx = this.getBestRocketIndex();
         for(let i = 0; i < rockets.length; i++) {
             let rocket = rockets[i];
 
             this.context.save();
-            this.context.globalAlpha *= (i == 0 ? 1.0 : 0.02);
+            this.context.globalAlpha *= (i == bestRocketIdx ? 1.0 : 0.02);
             let screenSpacePosition = this.toScreenSpace(rocket.getPosition());
             this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
             this.context.rotate(rocket.getAngle());
@@ -113,6 +114,19 @@ export class Renderer {
         }
 
         this.fireGFX.update();
+    }
+
+    private getBestRocketIndex() : number {
+        let idx = 0;
+        let bestScore = -99999999;
+        for(let i = 0; i < this.simulator.getAllRockets().length; i++) {
+            let crtScore = this.simulator.getAllRockets()[i].getScore();
+            if(this.simulator.getAllRockets()[i].getScore() > bestScore) {
+                idx = i;
+                bestScore = crtScore;
+            }
+        }
+        return idx;
     }
 
     private drawSky() : void {
