@@ -90,6 +90,19 @@ export class Simulator {
         return null;
     }
 
+    public getBestRocketIndex() : number {
+        let idx = 0;
+        let bestScore = -99999999;
+        for(let i = 0; i < this.rockets.length; i++) {
+            let crtScore = this.rockets[i].getScore();
+            if(this.rockets[i].getScore() > bestScore) {
+                idx = i;
+                bestScore = crtScore;
+            }
+        }
+        return idx;
+    }
+
     private removeDeadRockets() : void {
         for(let i = this.rockets.length -1; i >= 0; i--) {
             if(this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= SimulatorConfig.secondsToRemoveDeadRockets) {

@@ -77,7 +77,7 @@ export class Renderer {
 
     private drawRockets() {
         let rockets = this.simulator.getAllRockets();
-        let bestRocketIdx = this.getBestRocketIndex();
+        let bestRocketIdx = this.simulator.getBestRocketIndex();
         for(let i = 0; i < rockets.length; i++) {
             let rocket = rockets[i];
 
@@ -114,19 +114,6 @@ export class Renderer {
         }
 
         this.fireGFX.update();
-    }
-
-    private getBestRocketIndex() : number {
-        let idx = 0;
-        let bestScore = -99999999;
-        for(let i = 0; i < this.simulator.getAllRockets().length; i++) {
-            let crtScore = this.simulator.getAllRockets()[i].getScore();
-            if(this.simulator.getAllRockets()[i].getScore() > bestScore) {
-                idx = i;
-                bestScore = crtScore;
-            }
-        }
-        return idx;
     }
 
     private drawSky() : void {
