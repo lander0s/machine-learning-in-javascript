@@ -92,10 +92,15 @@ export class Rocket {
     }
 
     public setDesiredThrusterAngleFactor(factor:number) : void {
+        factor = this.thrusterAngleFilter(factor);
         let halfFreedomInRadians = (SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
         let min = -halfFreedomInRadians;
         let max = halfFreedomInRadians;
         this.desiredThrusterAngle = min + factor * (max - min);
+    }
+
+    private thrusterAngleFilter(f : number) : number {
+        return (1)/(1 + (Math.pow(100000,0.5 - f)) );
     }
 
     public getFuelTankReservePercentage() : number {
