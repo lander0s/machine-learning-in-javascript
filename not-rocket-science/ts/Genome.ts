@@ -20,17 +20,20 @@ export class Genome {
     public update() : void {
 
         let angularVelocityClamp  = 30;
+        let heightClamp = 100;
 
         let isRotatingClockWise = this.rocket.getAngularVelocity() < 0;
         let isTiltedToRight = this.rocket.getAngle() < 0;
         let absAngularVelocity = Math.min(Math.abs(this.rocket.getAngularVelocity()), angularVelocityClamp);
         let absAngle = Math.abs(this.rocket.getAngle());
+        let heightFactor = Math.min(this.rocket.getPosition()[1] / heightClamp, 1.0);
 
         let input = [
             isRotatingClockWise ? 1.0 : 0.0,
             isTiltedToRight ? 1.0 : 0.0,
             absAngularVelocity / angularVelocityClamp,
-            absAngle /  Math.PI
+            absAngle /  Math.PI,
+            heightFactor
         ];
         let output = this.network.activate(input);
         this.rocket.setDesiredThrusterAngleFactor(output[0]);
@@ -42,7 +45,7 @@ export class Genome {
     }
 
     public createNeuralNetworkFromScratch() {
-        this.network = new synaptic.Architect.Perceptron(4, 4, 4, 2);
+        this.network = new synaptic.Architect.Perceptron(5, 4, 4, 2);
     }
 
     public fromParents(daddy:Genome, mum:Genome) : void {
