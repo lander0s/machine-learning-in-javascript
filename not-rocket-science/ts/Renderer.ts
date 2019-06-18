@@ -105,7 +105,7 @@ export class Renderer {
             this.context.scale(1,-1);
             let offset = [0, -(SimulatorConfig.rocketSize[0] + 1)];
             offset = this.toScreenSpace(offset);
-            let text = (rocket.getScore() > 0 ? '+' : '') + rocket.getScore();
+            let text = (rocket.getScore() > 0 ? '+' : '') + (rocket.getScore()|0);
             this.context.fillText( text , offset[0], offset[1]);
             this.context.restore();
 
