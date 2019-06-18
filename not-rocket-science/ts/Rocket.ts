@@ -55,7 +55,7 @@ export class Rocket {
                     this.score += (vel - Math.abs(this.getAngularVelocity())) / vel;
                 }
             }
-            if(this.score < -50) {
+            if(this.score < -200) {
                 this.markAsDead();
             } 
         }       

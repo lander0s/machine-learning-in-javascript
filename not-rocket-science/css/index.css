@@ -3,3 +3,21 @@ html, body {
     padding: 0;
     overflow: hidden;
 }
+
+#render-surface {
+    z-index : -1;
+}
+
+#hud-container {
+    font-family: 'Domine', serif;
+    float       : right;
+    text-align  : right;
+    line-height : 30px;
+    padding     : 20px;
+    color       : white;
+    float       : right;
+}
+
+td {
+    min-width: 80px;
+}

@@ -38,7 +38,8 @@ export class Simulator {
 
         let rocket = new Rocket(rocketBody);
         this.rockets.push(rocket);
-        this.applyRandomImpulse(rocket);
+        //this.applyRandomImpulse(rocket);
+        rocket.getPhysicsObject().angle = Math.PI;
         return rocket;
     }
 

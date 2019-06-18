@@ -7,6 +7,7 @@ export class Learner {
     private simulator : Simulator;
     private genomes   : Array<Genome>
     private currentGeneration : number;
+    private topFitness : number;
 
     constructor(simulator:Simulator) {
         this.simulator = simulator;
@@ -23,6 +24,7 @@ export class Learner {
             genome.createNeuralNetworkFromScratch();
             this.genomes.push(genome);
         }
+        this.topFitness = -99999;
     }
 
     public update() : void {
@@ -51,6 +53,11 @@ export class Learner {
             genome.fromParents(firstPlace, secondPlace);
             this.genomes.push(genome);
         }
+        if(this.topFitness < firstPlace.getFitness()) {
+            this.topFitness = firstPlace.getFitness();
+            document.querySelector('#top-fitness-label').innerHTML = `Top Fitness : <b>${this.topFitness|0}</b>`;
+        }
+        document.querySelector('#generation-label').innerHTML = `Generation : <b>${this.currentGeneration}</b>`;
     }
 
     private getAndRemoveBestCandidate() : Genome {

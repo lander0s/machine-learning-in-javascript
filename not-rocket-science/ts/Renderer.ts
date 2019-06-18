@@ -32,7 +32,7 @@ export class Renderer {
         this.canvas.style.backgroundColor = '#1b2124';
         this.fireGFX = new FireGFX(this.canvas, this.context);
         window.addEventListener('wheel', (e) => this.onMouseWheel(e) );
-        this.scale = 20;
+        this.scale = 10;
         this.rocketTexture = new Image();
         this.rocketTexture.src = './res/rocket-texture.png';
         this.moonTexture = new Image();
