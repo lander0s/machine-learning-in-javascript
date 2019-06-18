@@ -20,4 +20,5 @@ html, body {
 
 td {
     min-width: 80px;
+    text-align: center;
 }

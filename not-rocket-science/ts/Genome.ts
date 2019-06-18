@@ -102,4 +102,8 @@ export class Genome {
         return networkJsonObj;
     }
 
+    public toJson() : any {
+        return this.network.toJSON();
+    }
+
 }
