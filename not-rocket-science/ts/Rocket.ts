@@ -71,10 +71,6 @@ export class Rocket {
         this.score += spinScore + angularScore + speedScore;
     }
 
-    public setScore(value: number) : void {
-        this.score = value;
-    }
-
     public getScore() : number {
         return this.score;
     }
