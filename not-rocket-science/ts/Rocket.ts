@@ -43,6 +43,13 @@ export class Rocket {
         this.thrusterIntensity *= this.getEngineEfficiency();
 
         this.consumeFuel();
+        this.updateScore();
+    }
+
+    private updateScore() {
+        if(this.isAlive) {
+            this.score += Math.cos(this.getAngle());
+        }
     }
 
     public setScore(value: number) : void {

@@ -74,11 +74,6 @@ export class Simulator {
     private onBeginContact(evt : any) : void {
         let theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
         let rocket = this.getRocketById(theRocket.id);
-    
-        if (!rocket.isDead()) {
-            let score = this.judgeLanding(rocket.getPhysicsObject());
-            rocket.setScore(score);
-        }
         rocket.markAsDead();
     }
 
