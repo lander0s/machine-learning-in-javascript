@@ -45,7 +45,7 @@ export class Genome {
     }
 
     public createNeuralNetworkFromScratch() {
-        this.network = new synaptic.Architect.Perceptron(5, 4, 4, 2);
+        this.network = new synaptic.Architect.Perceptron(5, 4, 2);
     }
 
     public fromParents(daddy:Genome, mum:Genome) : void {
