@@ -48,8 +48,17 @@ export class Rocket {
 
     private updateScore() {
         if(this.isAlive) {
-            this.score += Math.cos(this.getAngle());
-        }
+            if(this.getFuelTankReservePercentage() > 0) {
+                if(this.body.velocity[1] < 0) {
+                    this.score += (Math.cos(this.getAngle()) * 2) - 1.0;
+                    let vel = 5.0;
+                    this.score += (vel - Math.abs(this.getAngularVelocity())) / vel;
+                }
+            }
+            if(this.score < -50) {
+                this.markAsDead();
+            } 
+        }       
     }
 
     public judgeLanding() : void {
@@ -68,7 +77,7 @@ export class Rocket {
             this.body.velocity[1] * this.body.velocity[1]);
         let speedScore = speedWeight - speed * speedRatio;
 
-        this.score += spinScore + angularScore + speedScore;
+        //this.score += spinScore + angularScore + speedScore;
     }
 
     public getScore() : number {
