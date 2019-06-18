@@ -52,6 +52,25 @@ export class Rocket {
         }
     }
 
+    public judgeLanding() : void {
+        let spinWeight = 1600;
+        let spinRatio = 600;
+        let spinScore = spinWeight - Math.abs(this.body.angularVelocity) * spinRatio;
+
+        let angularWeight = 800;
+        let angularRatio = 2000;
+        let angularScore = angularWeight - Math.abs(this.body.angle) * angularRatio;
+
+        let speedWeight = 400;
+        let speedRatio = 10;
+        let speed = Math.sqrt(
+            this.body.velocity[0] * this.body.velocity[0] +
+            this.body.velocity[1] * this.body.velocity[1]);
+        let speedScore = speedWeight - speed * speedRatio;
+
+        this.score += spinScore + angularScore + speedScore;
+    }
+
     public setScore(value: number) : void {
         this.score = value;
     }
