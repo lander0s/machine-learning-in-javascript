@@ -1,6 +1,7 @@
 import { Simulator } from './Simulator'
 import { Genome } from './Genome'
 import { LearnerConfig } from './Config'
+import { Leaderboard } from './Leaderboard'
 
 export class Learner {
 
@@ -8,11 +9,13 @@ export class Learner {
     private genomes   : Array<Genome>
     private currentGeneration : number;
     private topFitness : number;
+    private leaderboard : Leaderboard;
 
-    constructor(simulator:Simulator) {
+    constructor(simulator:Simulator, leaderboard: Leaderboard) {
         this.simulator = simulator;
         this.genomes = [];
         this.currentGeneration = 0;
+        this.leaderboard = leaderboard;
     }
 
     public init() {
@@ -37,6 +40,9 @@ export class Learner {
         });
 
         if(genomesThatFinished == this.genomes.length) {
+            this.genomes.forEach((genome) =>{
+                this.leaderboard.registerGenome(genome);
+            });
             this.createNextGeneration();
         }
     }

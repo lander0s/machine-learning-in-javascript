@@ -15,6 +15,7 @@
         "FireGFX.ts",
         "Genome.ts",
         "Learner.ts",
+        "Leaderboard.ts",
         "p2.d.ts"
     ]
 }

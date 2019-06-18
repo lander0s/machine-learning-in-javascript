@@ -1,29 +1,27 @@
 import { Simulator } from './Simulator'
 import { Renderer } from './Renderer'
 import { Learner } from './Learner'
+import { Leaderboard } from './Leaderboard'
 
 export class Application {
 
-    private simulator : Simulator;
-    private renderer  : Renderer;
-    private learner   : Learner;
+    private simulator   : Simulator;
+    private renderer    : Renderer;
+    private learner     : Learner;
+    private leaderboard : Leaderboard;
 
     constructor() {
         this.simulator = new Simulator();
         this.renderer = new Renderer('#render-surface', this.simulator);
-        this.learner = new Learner(this.simulator);
+        this.leaderboard =  new Leaderboard();
+        this.learner = new Learner(this.simulator, this.leaderboard);
     }
 
     public init() {
+        this.leaderboard.init();
         this.renderer.init();
         this.simulator.init();
         this.learner.init();
-        let rocket = this.simulator.addRocket();
-        rocket.setDesiredThrusterIntensityFactor(0.0);
-        rocket.setDesiredThrusterAngleFactor(0.5);
-        setTimeout( ()=>{
-            rocket.setDesiredThrusterIntensityFactor(1.0);
-        }, 1500);
     }
 
     public update() {
