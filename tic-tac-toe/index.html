@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Artificial intelligence that learns how to play tic-tac-toe</title>
+        <link rel="stylesheet" href="css/index.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Domine&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <script src="libs/synaptic/synaptic.min.js"></script>
+        <script src="libs/requirejs/require.min.js"></script>
+        <script src="js/application.js"></script>
+        <script>
+            require(["Application"], (module) => {
+                let app = new module.Application();
+                app.main();
+            });
+        </script>
+    </body>
+</html>
