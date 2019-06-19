@@ -22,3 +22,11 @@ td {
     min-width: 80px;
     text-align: center;
 }
+
+button {
+    width: 150px;
+}
+
+fieldset {
+    color: pink;
+}
