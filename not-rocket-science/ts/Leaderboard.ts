@@ -46,6 +46,7 @@ export class Leaderboard {
         this.leadGenomes = [];
         this.loadFromLocalStorage();
         this.saveToLocalStorage();
+        this.updateHud();
     }
 
     private updateHud() : void {
