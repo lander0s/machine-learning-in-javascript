@@ -49,35 +49,26 @@ export class Rocket {
     private updateScore() {
         if(this.isAlive) {
             if(this.getFuelTankReservePercentage() > 0) {
-                if(this.body.velocity[1] < 0) {
-                    this.score += (Math.cos(this.getAngle()) * 2) - 1.0;
-                    let vel = 5.0;
-                    this.score += (vel - Math.abs(this.getAngularVelocity())) / vel;
+                if (this.body.velocity[1] <= 0) {
+                    let angularScore = 2.0 * Math.cos(this.getAngle()) - 1.0;
+                    let deadlySpeed = 5.0;
+                    let spinScore = 1.0 - Math.abs(this.getAngularVelocity()) / deadlySpeed;
+                    this.score += spinScore + angularScore;
                 }
             }
             if(this.score < -200) {
                 this.markAsDead();
-            } 
-        }       
+            }
+        }
     }
 
     public judgeLanding() : void {
-        let spinWeight = 1600;
-        let spinRatio = 600;
-        let spinScore = spinWeight - Math.abs(this.body.angularVelocity) * spinRatio;
-
-        let angularWeight = 800;
-        let angularRatio = 2000;
-        let angularScore = angularWeight - Math.abs(this.body.angle) * angularRatio;
-
-        let speedWeight = 400;
-        let speedRatio = 10;
-        let speed = Math.sqrt(
-            this.body.velocity[0] * this.body.velocity[0] +
-            this.body.velocity[1] * this.body.velocity[1]);
-        let speedScore = speedWeight - speed * speedRatio;
-
-        //this.score += spinScore + angularScore + speedScore;
+        let angularScore = 2.0 * Math.cos(this.getAngle()) - 1.0;
+        let deadlySpeed = 5.0;
+        let spinScore = 1.0 - Math.abs(this.getAngularVelocity()) / deadlySpeed;
+        let linearSpeed = Math.sqrt(this.body.velocity[0] * this.body.velocity[0] + this.body.velocity[1] * this.body.velocity[1]);
+        let speedScore = 1.0 - linearSpeed / deadlySpeed;
+        this.score += 1000 * (spinScore + angularScore + speedScore);
     }
 
     public getScore() : number {
