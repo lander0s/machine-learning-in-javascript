@@ -15,6 +15,7 @@ export class Application {
         this.renderer = new Renderer('#render-surface', this.simulator);
         this.leaderboard =  new Leaderboard();
         this.learner = new Learner(this.simulator, this.leaderboard);
+        document.querySelector('#reset-button').addEventListener('click', () => this.hardReset() );
     }
 
     public init() {
@@ -28,5 +29,11 @@ export class Application {
         this.simulator.update();
         this.learner.update();
         this.renderer.draw();
+    }
+
+    private hardReset() : void {
+        this.simulator.removeAllRockets();
+        this.learner.hardReset();
+        this.leaderboard.hardReset();
     }
 }

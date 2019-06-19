@@ -19,7 +19,32 @@ export class Learner {
     }
 
     public init() {
+        if(this.hasSave()) {
+            this.initFromSave();
+        } else {
+            this.initFromScratch();
+        }
+        this.updateHud();
+    }
+
+    private hasSave() : boolean {
+        return localStorage.getItem('learner-save') != null;
+    }
+
+    private initFromSave() : void {
         this.genomes = [];
+        let save = JSON.parse(localStorage.getItem('learner-save'));
+        this.currentGeneration = save.currentGeneration;
+        this.topFitness = save.topFitness;
+        this.genomes.push(Genome.fromJson(save.firstPlace));
+        this.genomes.push(Genome.fromJson(save.secondPlace));
+        this.topFitness = -99999;
+        this.createNextGeneration();
+    }
+
+    private initFromScratch() : void {
+        this.genomes = [];
+        this.currentGeneration = 0;
         for(let i = 0; i < LearnerConfig.generationSize; i++) {
             let rocket = this.simulator.addRocket();
             let genomeId = `${this.currentGeneration}.${i}`;
@@ -65,8 +90,12 @@ export class Learner {
         }
         if(this.topFitness < firstPlace.getFitness()) {
             this.topFitness = firstPlace.getFitness();
-            document.querySelector('#top-fitness-label').innerHTML = `Top Fitness : <b>${this.topFitness|0}</b>`;
         }
+        this.updateHud();
+    }
+
+    public updateHud() : void {
+        document.querySelector('#top-fitness-label').innerHTML = `Top Fitness : <b>${this.topFitness|0}</b>`;
         document.querySelector('#generation-label').innerHTML = `Generation : <b>${this.currentGeneration}</b>`;
     }
 
@@ -97,5 +126,10 @@ export class Learner {
             topFitness : this.topFitness,
         }
         localStorage.setItem('learner-save', JSON.stringify(save));
+    }
+
+    public hardReset() : void {
+        localStorage.removeItem('learner-save');
+        this.init();
     }
 }

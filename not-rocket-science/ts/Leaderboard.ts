@@ -67,4 +67,9 @@ export class Leaderboard {
         });
         localStorage.setItem('leaderboard', JSON.stringify(genomesAsJsonObjects));
     }
+
+    public hardReset() : void {
+        localStorage.removeItem('leaderboard');
+        this.init();
+    }    
 }

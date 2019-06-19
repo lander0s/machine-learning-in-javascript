@@ -113,4 +113,11 @@ export class Simulator {
             }
         }
     }
+
+    public removeAllRockets() {
+        this.rockets.forEach((rocket)=>{
+            this.world.removeBody(rocket.getPhysicsObject());
+        });
+        this.rockets = [];
+    }
 }
