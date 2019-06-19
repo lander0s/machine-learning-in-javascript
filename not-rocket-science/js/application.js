@@ -2,7 +2,7 @@ define("Config", ["require", "exports"], function (require, exports) {
     "use strict";
     exports.__esModule = true;
     exports.SimulatorConfig = {
-        rocketSpawnPoint: [0, 40],
+        rocketSpawnPoint: [0, 100],
         rocketSize: [1, 8],
         thrusterFreedomInDegrees: 90,
         thrusterMaxIntensity: 20,
@@ -10,14 +10,131 @@ define("Config", ["require", "exports"], function (require, exports) {
         fuelConsumptionRate: 1,
         secondsToRemoveDeadRockets: 0
     };
-    exports.RenderConfig = {
-        initialCameraPosition: [0, 20]
-    };
     exports.LearnerConfig = {
         generationSize: 12
     };
 });
-define("Rocket", ["require", "exports", "Config"], function (require, exports, Config_1) {
+define("Genome", ["require", "exports", "Config"], function (require, exports, Config_1) {
+    "use strict";
+    exports.__esModule = true;
+    var Genome = (function () {
+        function Genome(generation, id) {
+            this.generation = 0;
+            this.network = null;
+            this.rocket = null;
+            this.generation = generation;
+            this.id = id;
+            this.rocket = null;
+            this.fitness = -99999;
+        }
+        Genome.prototype.init = function (rocket, daddy, mum) {
+            if (daddy === void 0) { daddy = null; }
+            if (mum === void 0) { mum = null; }
+            this.rocket = rocket;
+            this.rocket.setGenome(this);
+            if (this.network == null) {
+                if (daddy != null && mum != null) {
+                    this.createNeuralNetworkFromParents(daddy, mum);
+                }
+                else {
+                    this.createNeuralNetworkFromScratch();
+                }
+            }
+        };
+        Genome.prototype.createNeuralNetworkFromScratch = function () {
+            this.network = new synaptic.Architect.Perceptron(5, 4, 2);
+        };
+        Genome.prototype.createNeuralNetworkFromParents = function (daddy, mum) {
+            var daddyNetworkJsonObj = JSON.parse(JSON.stringify(daddy.network.toJSON()));
+            var mumNetworkJsonObj = JSON.parse(JSON.stringify(mum.network.toJSON()));
+            var childNetworkJsonObj = this.crossOver(daddyNetworkJsonObj, mumNetworkJsonObj);
+            var mutatedNetworkJsonObj = this.mutate(childNetworkJsonObj);
+            this.network = synaptic.Network.fromJSON(mutatedNetworkJsonObj);
+        };
+        Genome.prototype.update = function () {
+            var angularVelocityClamp = 30;
+            var heightClamp = 100;
+            var isRotatingClockWise = this.rocket.getAngularVelocity() < 0;
+            var isTiltedToRight = this.rocket.getAngle() < 0;
+            var absAngularVelocity = Math.min(Math.abs(this.rocket.getAngularVelocity()), angularVelocityClamp);
+            var absAngle = Math.abs(this.rocket.getAngle());
+            var heightFactor = Math.min(this.rocket.getPosition()[1] / heightClamp, 1.0);
+            var input = [
+                isRotatingClockWise ? 1.0 : 0.0,
+                isTiltedToRight ? 1.0 : 0.0,
+                absAngularVelocity / angularVelocityClamp,
+                absAngle / Math.PI,
+                heightFactor
+            ];
+            var output = this.network.activate(input);
+            this.rocket.setDesiredThrusterAngleFactor(output[0]);
+            this.rocket.setDesiredThrusterIntensityFactor(output[1]);
+            if (this.rocket.isDead()) {
+                this.fitness = this.rocket.getScore();
+            }
+        };
+        Genome.prototype.didFinish = function () {
+            return this.rocket.isDead() && this.rocket.getSecondsSinceDeath() >= Config_1.SimulatorConfig.secondsToRemoveDeadRockets;
+        };
+        Genome.prototype.getFitness = function () {
+            return this.fitness;
+        };
+        Genome.prototype.getGeneration = function () {
+            return this.generation;
+        };
+        Genome.prototype.getId = function () {
+            return this.id;
+        };
+        Genome.prototype.crossOver = function (daddyNetworkJsonObj, mumNetworkJsonObj) {
+            var randomCut = (Math.random() * daddyNetworkJsonObj.neurons.length) | 0;
+            for (var i = randomCut; i < daddyNetworkJsonObj.neurons.length; i++) {
+                var aux = daddyNetworkJsonObj.neurons[i].bias;
+                daddyNetworkJsonObj.neurons[i].bias = mumNetworkJsonObj.neurons[i].bias;
+                mumNetworkJsonObj.neurons[i].bias = aux;
+            }
+            if (Math.random() > 0.5) {
+                return daddyNetworkJsonObj;
+            }
+            else {
+                return mumNetworkJsonObj;
+            }
+        };
+        Genome.prototype.mutate = function (networkJsonObj) {
+            for (var i = 0; i < networkJsonObj.neurons.length; i++) {
+                if (Math.random() > 0.5) {
+                    networkJsonObj.neurons[i].bias +=
+                        networkJsonObj.neurons[i].bias * (Math.random() - 0.5) * 3 + (Math.random() - 0.5);
+                }
+            }
+            for (var i = 0; i < networkJsonObj.connections.length; i++) {
+                if (Math.random() > 0.5) {
+                    networkJsonObj.connections[i].weight +=
+                        networkJsonObj.connections[i].weight * (Math.random() - 0.5) * 3 + (Math.random() - 0.5);
+                }
+            }
+            return networkJsonObj;
+        };
+        Genome.prototype.toJson = function () {
+            return {
+                generation: this.generation,
+                id: this.id,
+                fitness: this.fitness,
+                network: this.network.toJSON()
+            };
+        };
+        Genome.fromJson = function (jsonObj) {
+            var genome = new Genome(-1, '');
+            genome.generation = jsonObj.generation;
+            genome.id = jsonObj.id;
+            genome.network = synaptic.Network.fromJSON(jsonObj.network);
+            genome.fitness = jsonObj.fitness;
+            return genome;
+        };
+        return Genome;
+    }());
+    exports.Genome = Genome;
+});
+define("Rocket", ["require", "exports", "Config"], function (require, exports, Config_2) {
     "use strict";
     exports.__esModule = true;
     var Rocket = (function () {
@@ -29,7 +146,8 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             this.desiredThrusterAngle = 0;
             this.thrusterIntensity = 0;
             this.desiredThrusterIntensity = 0;
-            this.fuelTankReserve = Config_1.SimulatorConfig.fuelTankCapacity;
+            this.fuelTankReserve = Config_2.SimulatorConfig.fuelTankCapacity;
+            this.genome = null;
         }
         Rocket.prototype.update = function (elapsedSeconds) {
             var thrusterRotationSpeed = 5;
@@ -38,9 +156,31 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             this.thrusterIntensity = this.stepValue(this.desiredThrusterIntensity, this.thrusterIntensity, thrusterIntensityAcc, elapsedSeconds);
             this.thrusterIntensity *= this.getEngineEfficiency();
             this.consumeFuel();
+            this.updateScore();
         };
-        Rocket.prototype.setScore = function (value) {
-            this.score = value;
+        Rocket.prototype.updateScore = function () {
+            if (this.isAlive) {
+                if (this.getFuelTankReservePercentage() > 0) {
+                    if (this.body.velocity[1] <= 0) {
+                        var angularScore = 2.0 * Math.cos(this.getAngle()) - 1.0;
+                        var deadlySpeed = 5.0;
+                        var spinScore = 1.0 - Math.abs(this.getAngularVelocity()) / deadlySpeed;
+                        this.score += spinScore + angularScore;
+                    }
+                }
+                if (this.score < -250) {
+                    this.score -= 9750;
+                    this.markAsDead();
+                }
+            }
+        };
+        Rocket.prototype.judgeLanding = function () {
+            var angularScore = 2.0 * Math.cos(this.getAngle()) - 1.0;
+            var deadlySpeed = 5.0;
+            var spinScore = 1.0 - Math.abs(this.getAngularVelocity()) / deadlySpeed;
+            var linearSpeed = Math.sqrt(this.body.velocity[0] * this.body.velocity[0] + this.body.velocity[1] * this.body.velocity[1]);
+            var speedScore = 1.0 - linearSpeed / deadlySpeed;
+            this.score += 1000 * (spinScore + angularScore + speedScore);
         };
         Rocket.prototype.getScore = function () {
             return this.score;
@@ -65,27 +205,27 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             return this.thrusterIntensity;
         };
         Rocket.prototype.getThrusterIntensityFactor = function () {
-            return this.thrusterIntensity / Config_1.SimulatorConfig.thrusterMaxIntensity;
+            return this.thrusterIntensity / Config_2.SimulatorConfig.thrusterMaxIntensity;
         };
         Rocket.prototype.getPosition = function () {
             return this.body.position;
         };
         Rocket.prototype.setDesiredThrusterIntensityFactor = function (factor) {
             var min = 0;
-            var max = Config_1.SimulatorConfig.thrusterMaxIntensity;
+            var max = Config_2.SimulatorConfig.thrusterMaxIntensity;
             this.desiredThrusterIntensity = min + factor * (max - min);
         };
         Rocket.prototype.setDesiredThrusterAngleFactor = function (factor) {
-            var halfFreedomInRadians = (Config_1.SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
+            var halfFreedomInRadians = (Config_2.SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
             var min = -halfFreedomInRadians;
             var max = halfFreedomInRadians;
             this.desiredThrusterAngle = min + factor * (max - min);
         };
         Rocket.prototype.getFuelTankReservePercentage = function () {
-            return this.fuelTankReserve / Config_1.SimulatorConfig.fuelTankCapacity;
+            return this.fuelTankReserve / Config_2.SimulatorConfig.fuelTankCapacity;
         };
         Rocket.prototype.consumeFuel = function () {
-            var fuelConsumption = this.getThrusterIntensityFactor() * Config_1.SimulatorConfig.fuelConsumptionRate;
+            var fuelConsumption = this.getThrusterIntensityFactor() * Config_2.SimulatorConfig.fuelConsumptionRate;
             this.fuelTankReserve -= fuelConsumption;
             if (this.fuelTankReserve < 0) {
                 this.fuelTankReserve = 0;
@@ -129,11 +269,17 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
                 return currentValue + step;
             }
         };
+        Rocket.prototype.getGenome = function () {
+            return this.genome;
+        };
+        Rocket.prototype.setGenome = function (genome) {
+            this.genome = genome;
+        };
         return Rocket;
     }());
     exports.Rocket = Rocket;
 });
-define("Simulator", ["require", "exports", "Rocket", "Config"], function (require, exports, Rocket_1, Config_2) {
+define("Simulator", ["require", "exports", "Rocket", "Config"], function (require, exports, Rocket_1, Config_3) {
     "use strict";
     exports.__esModule = true;
     var COLLISION_GROUP_GROUND = Math.pow(2, 0);
@@ -154,15 +300,15 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             this.world.on('beginContact', function (e) { return _this.onBeginContact(e); });
         };
         Simulator.prototype.addRocket = function () {
-            var rocketShape = new p2.Box({ width: Config_2.SimulatorConfig.rocketSize[0], height: Config_2.SimulatorConfig.rocketSize[1] });
-            var rocketBody = new p2.Body({ mass: 1, position: Config_2.SimulatorConfig.rocketSpawnPoint });
+            var rocketShape = new p2.Box({ width: Config_3.SimulatorConfig.rocketSize[0], height: Config_3.SimulatorConfig.rocketSize[1] });
+            var rocketBody = new p2.Body({ mass: 1, position: Config_3.SimulatorConfig.rocketSpawnPoint });
             rocketBody.addShape(rocketShape);
             rocketShape.collisionMask = COLLISION_GROUP_GROUND;
             rocketShape.collisionGroup = COLLISION_GROUP_ROCKET;
             this.world.addBody(rocketBody);
             var rocket = new Rocket_1.Rocket(rocketBody);
             this.rockets.push(rocket);
-            this.applyRandomImpulse(rocket);
+            rocket.getPhysicsObject().angle = Math.PI;
             return rocket;
         };
         Simulator.prototype.getAllRockets = function () {
@@ -176,7 +322,7 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
                 var forceX = rocket.getThrusterIntensity() * Math.cos(effectiveAngle);
                 var forceY = rocket.getThrusterIntensity() * Math.sin(effectiveAngle);
                 var posX = 0;
-                var posY = -Config_2.SimulatorConfig.rocketSize[1] / 2;
+                var posY = -Config_3.SimulatorConfig.rocketSize[1] / 2;
                 rocket.getPhysicsObject().applyForceLocal([forceX, forceY], [posX, posY]);
             });
             this.world.step(elapsedSeconds);
@@ -185,7 +331,7 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
         Simulator.prototype.applyRandomImpulse = function (rocket) {
             var forceX = (Math.random() * 2 - 1) * 20;
             var forceY = (Math.random() * 2 - 1) * 20;
-            var posX = (Math.random() * 2 + 1) * Config_2.SimulatorConfig.rocketSize[0];
+            var posX = (Math.random() * 2 + 1) * Config_3.SimulatorConfig.rocketSize[0];
             var posY = 0;
             rocket.getPhysicsObject().applyImpulseLocal([forceX, forceY], [posX, posY]);
         };
@@ -193,24 +339,9 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             var theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
             var rocket = this.getRocketById(theRocket.id);
             if (!rocket.isDead()) {
-                var score = this.judgeLanding(rocket.getPhysicsObject());
-                rocket.setScore(score);
+                rocket.markAsDead();
+                rocket.judgeLanding();
             }
-            rocket.markAsDead();
-        };
-        Simulator.prototype.judgeLanding = function (obj) {
-            var spinWeight = 1600;
-            var spinRatio = 600;
-            var spinScore = spinWeight - Math.abs(obj.angularVelocity) * spinRatio;
-            var angularWeight = 800;
-            var angularRatio = 2000;
-            var angularScore = angularWeight - Math.abs(obj.angle) * angularRatio;
-            var speedWeight = 400;
-            var speedRatio = 10;
-            var speed = Math.sqrt(obj.velocity[0] * obj.velocity[0] +
-                obj.velocity[1] * obj.velocity[1]);
-            var speedScore = speedWeight - speed * speedRatio;
-            return spinScore + angularScore + speedScore;
         };
         Simulator.prototype.getRocketById = function (id) {
             for (var i = 0; i < this.rockets.length; i++) {
@@ -221,14 +352,33 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             console.error('attempt to access an unkown rocket');
             return null;
         };
+        Simulator.prototype.getBestRocketIndex = function () {
+            var idx = 0;
+            var bestScore = -99999999;
+            for (var i = 0; i < this.rockets.length; i++) {
+                var crtScore = this.rockets[i].getScore();
+                if (this.rockets[i].getScore() > bestScore) {
+                    idx = i;
+                    bestScore = crtScore;
+                }
+            }
+            return idx;
+        };
         Simulator.prototype.removeDeadRockets = function () {
             for (var i = this.rockets.length - 1; i >= 0; i--) {
-                if (this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= Config_2.SimulatorConfig.secondsToRemoveDeadRockets) {
+                if (this.rockets[i].isDead() && this.rockets[i].getSecondsSinceDeath() >= Config_3.SimulatorConfig.secondsToRemoveDeadRockets) {
                     var rocket = this.rockets[i];
                     this.world.removeBody(rocket.getPhysicsObject());
                     this.rockets.splice(i, 1);
                 }
             }
+        };
+        Simulator.prototype.removeAllRockets = function () {
+            var _this = this;
+            this.rockets.forEach(function (rocket) {
+                _this.world.removeBody(rocket.getPhysicsObject());
+            });
+            this.rockets = [];
         };
         return Simulator;
     }());
@@ -266,7 +416,7 @@ define("FireGFX", ["require", "exports"], function (require, exports) {
     }());
     exports.FireGFX = FireGFX;
 });
-define("Renderer", ["require", "exports", "Config", "FireGFX"], function (require, exports, Config_3, FireGFX_1) {
+define("Renderer", ["require", "exports", "Config", "FireGFX"], function (require, exports, Config_4, FireGFX_1) {
     "use strict";
     exports.__esModule = true;
     var Renderer = (function () {
@@ -285,21 +435,29 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.canvas.style.width = '100%';
             this.canvas.style.height = '100%';
             this.canvas.style.backgroundColor = '#1b2124';
-            this.cameraPosition = Config_3.RenderConfig.initialCameraPosition;
             this.fireGFX = new FireGFX_1.FireGFX(this.canvas, this.context);
             window.addEventListener('wheel', function (e) { return _this.onMouseWheel(e); });
-            this.scale = 20;
+            this.scale = 10;
+            this.fuelIcon = new Image();
+            this.fuelIcon.src = './res/fuel-icon.png';
             this.rocketTexture = new Image();
             this.rocketTexture.src = './res/rocket-texture.png';
             this.moonTexture = new Image();
-            this.stars = [];
             this.moonTexture.src = './res/moon.png';
+            this.marsTexture = new Image();
+            this.marsTexture.src = './res/mars-texture.jpg';
+            this.marsTexture.onload = function () {
+                _this.marsTexturePattern = _this.context.createPattern(_this.marsTexture, 'repeat');
+            };
+            this.stars = [];
             for (var i = 0; i < 100; i++) {
                 this.stars.push([
                     Math.random() * window.innerWidth,
                     Math.random() * window.innerHeight,
                 ]);
             }
+            this.cameraPosition = [];
+            this.updateCameraPosition();
         }
         Renderer.prototype.init = function () {
         };
@@ -318,18 +476,41 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
         };
         Renderer.prototype.drawRockets = function () {
             var rockets = this.simulator.getAllRockets();
+            var bestRocketIdx = this.simulator.getBestRocketIndex();
             for (var i = 0; i < rockets.length; i++) {
                 var rocket = rockets[i];
                 this.context.save();
-                this.context.globalAlpha *= (i == 0 ? 1.0 : 0.02);
+                this.context.globalAlpha *= (i == bestRocketIdx ? 1.0 : 0.1);
                 var screenSpacePosition = this.toScreenSpace(rocket.getPosition());
                 this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
                 this.context.rotate(rocket.getAngle());
-                var rocketSize = this.toScreenSpace(Config_3.SimulatorConfig.rocketSize);
+                var rocketSize = this.toScreenSpace(Config_4.SimulatorConfig.rocketSize);
                 this.context.drawImage(this.rocketTexture, -rocketSize[0] / 2, -rocketSize[1] / 2, rocketSize[0], rocketSize[1]);
+                this.context.save();
                 this.context.translate(0, -rocketSize[1] / 2);
                 this.context.rotate(rocket.getThrusterAngle());
-                this.fireGFX.draw(rocket.getThrusterIntensityFactor(), this.toScreenSpace(Config_3.SimulatorConfig.rocketSize));
+                this.fireGFX.draw(rocket.getThrusterIntensityFactor(), this.toScreenSpace(Config_4.SimulatorConfig.rocketSize));
+                this.context.restore();
+                this.context.save();
+                this.context.translate(0, rocketSize[1] / 2);
+                this.context.rotate(-rocket.getAngle());
+                this.context.font = '20px arial';
+                this.context.textAlign = 'center';
+                this.context.scale(1, -1);
+                this.context.lineWidth = 2;
+                var offsetLine1 = [0, -(Config_4.SimulatorConfig.rocketSize[0] + 10)];
+                var offsetLine2 = [0, -(Config_4.SimulatorConfig.rocketSize[0] + 40)];
+                var offsetLine3 = [0, -(Config_4.SimulatorConfig.rocketSize[0] + 80)];
+                this.context.fillStyle = rocket.getScore() > 0 ? '#00FF00' : '#FF0000';
+                var plusSign = rocket.getScore() > 0 ? "+" : "";
+                this.context.fillText("" + plusSign + (rocket.getScore() | 0), offsetLine1[0], offsetLine1[1]);
+                this.context.fillStyle = '#FFFFFF';
+                this.context.strokeStyle = '#FFFFFF';
+                this.context.fillText("" + rocket.getGenome().getId(), offsetLine2[0], offsetLine2[1]);
+                this.context.strokeRect(offsetLine3[0] - 50, offsetLine3[1], 100, 10);
+                this.context.fillRect(offsetLine3[0] - 50, offsetLine3[1], 100 * rocket.getFuelTankReservePercentage(), 10);
+                this.context.drawImage(this.fuelIcon, offsetLine3[0] - 80, offsetLine3[1] - 5, 20, 20);
+                this.context.restore();
                 this.context.restore();
             }
             this.fireGFX.update();
@@ -350,11 +531,19 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             this.context.restore();
         };
         Renderer.prototype.drawGround = function () {
-            this.context.beginPath();
-            this.context.moveTo(-this.canvas.width * 100, 0);
-            this.context.lineTo(this.canvas.width * 100, 0);
-            this.context.strokeStyle = 'black';
-            this.context.stroke();
+            this.context.save();
+            this.context.fillStyle = this.marsTexturePattern;
+            var scaleFactor = this.scale / 20;
+            var min = 0.5;
+            var max = 1.0;
+            var textureScale = min + scaleFactor * (max - min);
+            var x = (-this.canvas.width / 2) * textureScale;
+            var y = 0 * textureScale;
+            var width = this.canvas.width * textureScale;
+            var height = this.canvas.height * textureScale;
+            this.context.scale(textureScale, textureScale);
+            this.context.fillRect(x / scaleFactor, y, width / scaleFactor, -height);
+            this.context.restore();
         };
         Renderer.prototype.toScreenSpace = function (worldSpacePosition) {
             var screenSpacePosition = [
@@ -368,114 +557,140 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             if (this.scale < 1) {
                 this.scale = 1;
             }
+            if (this.scale > 20) {
+                this.scale = 20;
+            }
+            this.updateCameraPosition();
+        };
+        Renderer.prototype.updateCameraPosition = function () {
+            var screenHeightInMts = window.innerHeight / this.scale;
+            this.cameraPosition[0] = 0;
+            this.cameraPosition[1] = (screenHeightInMts / 2);
+            var scaleFactor = 1.0 - (this.scale / 20.0);
+            var min = 10;
+            var max = 100;
+            var cameraOffset = min + scaleFactor * (max - min);
+            this.cameraPosition[1] -= cameraOffset / this.scale;
         };
         return Renderer;
     }());
     exports.Renderer = Renderer;
 });
-define("Genome", ["require", "exports", "Config"], function (require, exports, Config_4) {
+define("Leaderboard", ["require", "exports", "Genome"], function (require, exports, Genome_1) {
     "use strict";
     exports.__esModule = true;
-    var Genome = (function () {
-        function Genome(generation, uuid, rocket) {
-            this.generation = 0;
-            this.network = null;
-            this.rocket = null;
-            this.generation = generation;
-            this.uuid = uuid;
-            this.rocket = rocket;
+    var Leaderboard = (function () {
+        function Leaderboard() {
         }
-        Genome.prototype.update = function () {
-            var angularVelocityClamp = 30;
-            var isRotatingClockWise = this.rocket.getAngularVelocity() < 0;
-            var isTiltedToRight = this.rocket.getAngle() < 0;
-            var absAngularVelocity = Math.min(Math.abs(this.rocket.getAngularVelocity()), angularVelocityClamp);
-            var absAngle = Math.abs(this.rocket.getAngle());
-            var input = [
-                isRotatingClockWise ? 1.0 : 0.0,
-                isTiltedToRight ? 1.0 : 0.0,
-                absAngularVelocity / angularVelocityClamp,
-                absAngle / Math.PI
-            ];
-            var output = this.network.activate(input);
-            this.rocket.setDesiredThrusterAngleFactor(output[0]);
-            this.rocket.setDesiredThrusterIntensityFactor(output[1]);
+        Leaderboard.prototype.registerGenome = function (newGenome) {
+            this.removeFromLeaderboard(newGenome);
+            this.leadGenomes.push(newGenome);
+            this.leadGenomes.sort(function (a, b) {
+                if (a.getFitness() < b.getFitness())
+                    return 1;
+                if (a.getFitness() > b.getFitness())
+                    return -1;
+                return 0;
+            });
+            this.leadGenomes = this.leadGenomes.splice(0, 10);
+            this.saveToLocalStorage();
+            this.updateHud();
         };
-        Genome.prototype.didFinish = function () {
-            return this.rocket.isDead() && this.rocket.getSecondsSinceDeath() >= Config_4.SimulatorConfig.secondsToRemoveDeadRockets;
-        };
-        Genome.prototype.createNeuralNetworkFromScratch = function () {
-            this.network = new synaptic.Architect.Perceptron(4, 4, 4, 2);
-        };
-        Genome.prototype.fromParents = function (daddy, mum) {
-            var daddyNetworkJsonObj = JSON.parse(JSON.stringify(daddy.network.toJSON()));
-            var mumNetworkJsonObj = JSON.parse(JSON.stringify(mum.network.toJSON()));
-            var childNetworkJsonObj = this.crossOver(daddyNetworkJsonObj, mumNetworkJsonObj);
-            var mutatedNetworkJsonObj = this.mutate(childNetworkJsonObj);
-            this.network = synaptic.Network.fromJSON(mutatedNetworkJsonObj);
-        };
-        Genome.prototype.getFitness = function () {
-            return this.rocket.getScore();
-        };
-        Genome.prototype.getGeneration = function () {
-            return this.generation;
-        };
-        Genome.prototype.getUUID = function () {
-            return this.uuid;
-        };
-        Genome.prototype.crossOver = function (daddyNetworkJsonObj, mumNetworkJsonObj) {
-            var randomCut = (Math.random() * daddyNetworkJsonObj.neurons.length) | 0;
-            for (var i = randomCut; i < daddyNetworkJsonObj.neurons.length; i++) {
-                var aux = daddyNetworkJsonObj.neurons[i].bias;
-                daddyNetworkJsonObj.neurons[i].bias = mumNetworkJsonObj.neurons[i].bias;
-                mumNetworkJsonObj.neurons[i].bias = aux;
-            }
-            if (Math.random() > 0.5) {
-                return daddyNetworkJsonObj;
-            }
-            else {
-                return mumNetworkJsonObj;
-            }
-        };
-        Genome.prototype.mutate = function (networkJsonObj) {
-            for (var i = 0; i < networkJsonObj.neurons.length; i++) {
-                if (Math.random() > 0.5) {
-                    networkJsonObj.neurons[i].bias +=
-                        networkJsonObj.neurons[i].bias * (Math.random() - 0.5) * 3 + (Math.random() - 0.5);
+        Leaderboard.prototype.removeFromLeaderboard = function (genome) {
+            for (var i = 0; i < this.leadGenomes.length; i++) {
+                if (this.leadGenomes[i].getId() == genome.getId()) {
+                    this.leadGenomes.splice(i, 1);
+                    break;
                 }
             }
-            for (var i = 0; i < networkJsonObj.connections.length; i++) {
-                if (Math.random() > 0.5) {
-                    networkJsonObj.connections[i].weight +=
-                        networkJsonObj.connections[i].weight * (Math.random() - 0.5) * 3 + (Math.random() - 0.5);
-                }
-            }
-            return networkJsonObj;
         };
-        return Genome;
+        Leaderboard.prototype.init = function () {
+            this.leadGenomes = [];
+            this.loadFromLocalStorage();
+            this.saveToLocalStorage();
+            this.updateHud();
+        };
+        Leaderboard.prototype.updateHud = function () {
+            var html = '<br> Leaderboard <hr> <table>';
+            html += '<tr><td>Genome</td><td>Fitness</td></tr>';
+            for (var i = 0; i < this.leadGenomes.length; i++) {
+                html += "<tr><td>" + this.leadGenomes[i].getId() + "</td>";
+                html += "<td>" + (this.leadGenomes[i].getFitness() | 0) + "</td></tr>";
+            }
+            html += '</table>';
+            document.querySelector('#leaderboard-div').innerHTML = html;
+        };
+        Leaderboard.prototype.loadFromLocalStorage = function () {
+            var _this = this;
+            this.leadGenomes = [];
+            if (localStorage.getItem('leaderboard') != null) {
+                var genomesAsJsonObjects = JSON.parse(localStorage.getItem('leaderboard'));
+                genomesAsJsonObjects.forEach(function (genomeJsonObj) {
+                    _this.leadGenomes.push(Genome_1.Genome.fromJson(genomeJsonObj));
+                });
+            }
+        };
+        Leaderboard.prototype.saveToLocalStorage = function () {
+            var genomesAsJsonObjects = [];
+            this.leadGenomes.forEach(function (genome) {
+                genomesAsJsonObjects.push(genome.toJson());
+            });
+            localStorage.setItem('leaderboard', JSON.stringify(genomesAsJsonObjects));
+        };
+        Leaderboard.prototype.hardReset = function () {
+            localStorage.removeItem('leaderboard');
+            this.init();
+        };
+        return Leaderboard;
     }());
-    exports.Genome = Genome;
+    exports.Leaderboard = Leaderboard;
 });
-define("Learner", ["require", "exports", "Genome", "Config"], function (require, exports, Genome_1, Config_5) {
+define("Learner", ["require", "exports", "Genome", "Config"], function (require, exports, Genome_2, Config_5) {
     "use strict";
     exports.__esModule = true;
     var Learner = (function () {
-        function Learner(simulator) {
+        function Learner(simulator, leaderboard) {
             this.simulator = simulator;
             this.genomes = [];
             this.currentGeneration = 0;
+            this.leaderboard = leaderboard;
         }
         Learner.prototype.init = function () {
+            if (this.hasSave()) {
+                this.initFromSave();
+            }
+            else {
+                this.initFromScratch();
+            }
+            this.updateHud();
+        };
+        Learner.prototype.hasSave = function () {
+            return localStorage.getItem('learner-save') != null;
+        };
+        Learner.prototype.initFromSave = function () {
             this.genomes = [];
+            var save = JSON.parse(localStorage.getItem('learner-save'));
+            this.currentGeneration = save.currentGeneration;
+            this.topFitness = save.topFitness;
+            this.genomes.push(Genome_2.Genome.fromJson(save.firstPlace));
+            this.genomes.push(Genome_2.Genome.fromJson(save.secondPlace));
+            this.topFitness = -99999;
+            this.createNextGeneration();
+        };
+        Learner.prototype.initFromScratch = function () {
+            this.genomes = [];
+            this.currentGeneration = 0;
             for (var i = 0; i < Config_5.LearnerConfig.generationSize; i++) {
                 var rocket = this.simulator.addRocket();
-                var genomeId = this.currentGeneration + "." + i;
-                var genome = new Genome_1.Genome(this.currentGeneration, genomeId, rocket);
-                genome.createNeuralNetworkFromScratch();
+                var genomeId = "G" + this.currentGeneration + "E" + i;
+                var genome = new Genome_2.Genome(this.currentGeneration, genomeId);
+                genome.init(rocket);
                 this.genomes.push(genome);
             }
+            this.topFitness = -99999;
         };
         Learner.prototype.update = function () {
+            var _this = this;
             var genomesThatFinished = 0;
             this.genomes.forEach(function (genome) {
                 genome.update();
@@ -484,63 +699,98 @@ define("Learner", ["require", "exports", "Genome", "Config"], function (require,
                 }
             });
             if (genomesThatFinished == this.genomes.length) {
+                this.genomes.forEach(function (genome) {
+                    _this.leaderboard.registerGenome(genome);
+                });
+                this.saveGenerationResult();
                 this.createNextGeneration();
             }
         };
         Learner.prototype.createNextGeneration = function () {
-            var firstPlace = this.getAndRemoveBestCandidate();
-            var secondPlace = this.getAndRemoveBestCandidate();
+            var bestCandidates = this.selectBestCandidates();
+            var firstPlace = bestCandidates[0];
+            var secondPlace = bestCandidates[1];
+            firstPlace.init(this.simulator.addRocket());
+            secondPlace.init(this.simulator.addRocket());
             this.currentGeneration++;
             this.genomes = [firstPlace, secondPlace];
             for (var i = 2; i < Config_5.LearnerConfig.generationSize; i++) {
                 var rocket = this.simulator.addRocket();
-                var genomeId = this.currentGeneration + "." + i;
-                var genome = new Genome_1.Genome(this.currentGeneration, genomeId, rocket);
-                genome.fromParents(firstPlace, secondPlace);
+                var genomeId = "G" + this.currentGeneration + "E" + i;
+                var genome = new Genome_2.Genome(this.currentGeneration, genomeId);
+                genome.init(rocket, firstPlace, secondPlace);
                 this.genomes.push(genome);
             }
-        };
-        Learner.prototype.getAndRemoveBestCandidate = function () {
-            var bestCandidateIndex = 0;
-            var bestCandidate = this.genomes[bestCandidateIndex];
-            for (var i = 0; i < this.genomes.length; i++) {
-                var crtGenome = this.genomes[i];
-                if (bestCandidate.getFitness() < crtGenome.getFitness()) {
-                    bestCandidateIndex = i;
-                    bestCandidate = crtGenome;
-                }
+            if (this.topFitness < firstPlace.getFitness()) {
+                this.topFitness = firstPlace.getFitness();
             }
-            this.genomes.splice(bestCandidateIndex, 1);
-            return bestCandidate;
+            this.updateHud();
+        };
+        Learner.prototype.updateHud = function () {
+            document.querySelector('#top-fitness-label').innerHTML = "Top Fitness : <b>" + (this.topFitness | 0) + "</b>";
+            document.querySelector('#generation-label').innerHTML = "Generation : <b>" + this.currentGeneration + "</b>";
+        };
+        Learner.prototype.selectBestCandidates = function () {
+            var firstPlace = null;
+            var secondPlace = null;
+            this.genomes.forEach(function (crtGenome) {
+                if (firstPlace == null || firstPlace.getFitness() < crtGenome.getFitness()) {
+                    firstPlace = crtGenome;
+                }
+            });
+            this.genomes.forEach(function (crtGenome) {
+                if (firstPlace != crtGenome) {
+                    if (secondPlace == null || secondPlace.getFitness() < crtGenome.getFitness())
+                        secondPlace = crtGenome;
+                }
+            });
+            return [firstPlace, secondPlace];
+        };
+        Learner.prototype.saveGenerationResult = function () {
+            var bestCandidates = this.selectBestCandidates();
+            var save = {
+                firstPlace: bestCandidates[0].toJson(),
+                secondPlace: bestCandidates[1].toJson(),
+                currentGeneration: this.currentGeneration,
+                topFitness: this.topFitness
+            };
+            localStorage.setItem('learner-save', JSON.stringify(save));
+        };
+        Learner.prototype.hardReset = function () {
+            localStorage.removeItem('learner-save');
+            this.init();
         };
         return Learner;
     }());
     exports.Learner = Learner;
 });
-define("Application", ["require", "exports", "Simulator", "Renderer", "Learner"], function (require, exports, Simulator_1, Renderer_1, Learner_1) {
+define("Application", ["require", "exports", "Simulator", "Renderer", "Learner", "Leaderboard"], function (require, exports, Simulator_1, Renderer_1, Learner_1, Leaderboard_1) {
     "use strict";
     exports.__esModule = true;
     var Application = (function () {
         function Application() {
+            var _this = this;
             this.simulator = new Simulator_1.Simulator();
             this.renderer = new Renderer_1.Renderer('#render-surface', this.simulator);
-            this.learner = new Learner_1.Learner(this.simulator);
+            this.leaderboard = new Leaderboard_1.Leaderboard();
+            this.learner = new Learner_1.Learner(this.simulator, this.leaderboard);
+            document.querySelector('#reset-button').addEventListener('click', function () { return _this.hardReset(); });
         }
         Application.prototype.init = function () {
+            this.leaderboard.init();
             this.renderer.init();
             this.simulator.init();
             this.learner.init();
-            var rocket = this.simulator.addRocket();
-            rocket.setDesiredThrusterIntensityFactor(0.0);
-            rocket.setDesiredThrusterAngleFactor(0.5);
-            setTimeout(function () {
-                rocket.setDesiredThrusterIntensityFactor(1.0);
-            }, 1500);
         };
         Application.prototype.update = function () {
             this.simulator.update();
             this.learner.update();
             this.renderer.draw();
+        };
+        Application.prototype.hardReset = function () {
+            this.simulator.removeAllRockets();
+            this.learner.hardReset();
+            this.leaderboard.hardReset();
         };
         return Application;
     }());
