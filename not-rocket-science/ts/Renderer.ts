@@ -14,6 +14,7 @@ export class Renderer {
     private moonTexture    : HTMLImageElement;
     private marsTexture    : HTMLImageElement;
     private marsTexturePattern: CanvasPattern;
+    private fuelIcon       : HTMLImageElement;
     private stars          : Array<Array<number>>;
 
     constructor(selector:string, simulator: Simulator) {
@@ -33,6 +34,8 @@ export class Renderer {
         this.fireGFX = new FireGFX(this.canvas, this.context);
         window.addEventListener('wheel', (e) => this.onMouseWheel(e) );
         this.scale = 10;
+        this.fuelIcon = new Image();
+        this.fuelIcon.src = './res/fuel-icon.png';
         this.rocketTexture = new Image();
         this.rocketTexture.src = './res/rocket-texture.png';
         this.moonTexture = new Image();
@@ -115,6 +118,7 @@ export class Renderer {
             this.context.fillText( `${rocket.getGenome().getId()}` , offsetLine2[0], offsetLine2[1]);
             this.context.strokeRect(offsetLine3[0]-50, offsetLine3[1] , 100, 10);
             this.context.fillRect(offsetLine3[0]-50, offsetLine3[1] , 100 * rocket.getFuelTankReservePercentage(), 10);
+            this.context.drawImage(this.fuelIcon, offsetLine3[0]-80, offsetLine3[1] - 5 , 20, 20);
             this.context.restore();
 
             this.context.restore();
