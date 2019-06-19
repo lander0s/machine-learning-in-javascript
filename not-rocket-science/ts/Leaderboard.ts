@@ -9,6 +9,7 @@ export class Leaderboard {
     }
 
     public registerGenome(newGenome : Genome) : void {
+        this.removeFromLeaderboard(newGenome);
         this.leadGenomes.push({
             id : newGenome.getUUID(),
             fitness : newGenome.getFitness(),
@@ -24,6 +25,15 @@ export class Leaderboard {
         this.leadGenomes = this.leadGenomes.splice(0,10);
         this.saveToLocalStorage();
         this.updateHud();
+    }
+
+    private removeFromLeaderboard(genome:Genome) : void {
+        for(let i = 0; i < this.leadGenomes.length; i++) {
+            if(this.leadGenomes[i].id == genome.getUUID()) {
+                this.leadGenomes.splice(i,1);
+                break;
+            }
+        }
     }
 
     public init() : void {
