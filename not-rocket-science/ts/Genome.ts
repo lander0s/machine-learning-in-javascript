@@ -44,7 +44,7 @@ export class Genome {
         return this.rocket.isDead() && this.rocket.getSecondsSinceDeath() >= SimulatorConfig.secondsToRemoveDeadRockets;
     }
 
-    public createNeuralNetworkFromScratch() {
+    public createNeuralNetworkFromScratch() : void {
         this.network = new synaptic.Architect.Perceptron(5, 4, 2);
     }
 
@@ -103,7 +103,19 @@ export class Genome {
     }
 
     public toJson() : any {
-        return this.network.toJSON();
+        return  {
+            generation : this.generation,
+            id         : this.uuid,
+            fitness    : this.getFitness(),
+            network    : this.network.toJSON()
+        }
     }
 
+    public static fromJson(jsonObj : any, rocket:Rocket) : Genome {
+        let genome = new Genome(-1,'', rocket);
+        genome.generation = jsonObj.generation;
+        genome.uuid = jsonObj.id;
+        genome.network = synaptic.fromJSON(jsonObj.network);
+        return genome;
+    }
 }
