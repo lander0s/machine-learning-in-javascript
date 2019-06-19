@@ -21,6 +21,7 @@ export class Genome {
 
     public init(rocket:Rocket, daddy:Genome = null, mum:Genome = null) : void {
         this.rocket = rocket;
+        this.rocket.setGenome(this);
         if(this.network == null) {
             if(daddy != null && mum != null) {
                 this.createNeuralNetworkFromParents(daddy, mum);

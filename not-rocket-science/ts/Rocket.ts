@@ -1,4 +1,5 @@
 import { SimulatorConfig } from "./Config";
+import { Genome } from './Genome'
 
 export class Rocket {
     private score                     : number;
@@ -10,6 +11,7 @@ export class Rocket {
     private body                      : p2.Body;
     private isAlive                   : boolean;
     private deathTimestamp            : number;
+    private genome                    : Genome;
     
     constructor(body:p2.Body) {
         this.isAlive = true;
@@ -20,6 +22,7 @@ export class Rocket {
         this.thrusterIntensity = 0;
         this.desiredThrusterIntensity = 0;
         this.fuelTankReserve = SimulatorConfig.fuelTankCapacity;
+        this.genome = null;
     }
 
     public update(elapsedSeconds:number) : void {
@@ -56,7 +59,8 @@ export class Rocket {
                     this.score += spinScore + angularScore;
                 }
             }
-            if(this.score < -200) {
+            if(this.score < -250) {
+                this.score -= 9750;
                 this.markAsDead();
             }
         }
@@ -114,17 +118,12 @@ export class Rocket {
     }
 
     public setDesiredThrusterAngleFactor(factor:number) : void {
-        factor = this.thrusterAngleFilter(factor);
         let halfFreedomInRadians = (SimulatorConfig.thrusterFreedomInDegrees * Math.PI / 180.0) / 2.0;
         let min = -halfFreedomInRadians;
         let max = halfFreedomInRadians;
         this.desiredThrusterAngle = min + factor * (max - min);
     }
-
-    private thrusterAngleFilter(f : number) : number {
-        return (1)/(1 + (Math.pow(100000,0.5 - f)) );
-    }
-
+    
     public getFuelTankReservePercentage() : number {
         return this.fuelTankReserve / SimulatorConfig.fuelTankCapacity;
     }
@@ -181,5 +180,13 @@ export class Rocket {
                 return desiredValue;
             return currentValue + step;
         }
+    }
+
+    public getGenome() : Genome {
+        return this.genome;
+    }
+
+    public setGenome(genome:Genome) : void {
+        this.genome = genome;
     }
 }

@@ -82,7 +82,7 @@ export class Renderer {
             let rocket = rockets[i];
 
             this.context.save();
-            this.context.globalAlpha *= (i == bestRocketIdx ? 1.0 : 0.02);
+            this.context.globalAlpha *= (i == bestRocketIdx ? 1.0 : 0.1);
             let screenSpacePosition = this.toScreenSpace(rocket.getPosition());
             this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
             this.context.rotate(rocket.getAngle());
@@ -100,14 +100,14 @@ export class Renderer {
             this.context.save();
             this.context.translate(0, rocketSize[1]/2);
             this.context.rotate( - rocket.getAngle());
-            this.context.font = '30px arial';
+            this.context.font = '20px arial';
             this.context.textAlign = 'center';
             this.context.fillStyle = rocket.getScore() > 0 ? '#00FF00' : '#FF0000';
             this.context.scale(1,-1);
-            let offset = [0, -(SimulatorConfig.rocketSize[0] + 1)];
-            offset = this.toScreenSpace(offset);
-            let text = (rocket.getScore() > 0 ? '+' : '') + (rocket.getScore()|0);
-            this.context.fillText( text , offset[0], offset[1]);
+            let offsetLine1 = [0, -(SimulatorConfig.rocketSize[0] + 40)];
+            let offsetLine2 = [0, -(SimulatorConfig.rocketSize[0] + 10)];
+            this.context.fillText( `${rocket.getGenome().getId()}` , offsetLine1[0], offsetLine1[1]);
+            this.context.fillText( `${rocket.getScore()|0}` , offsetLine2[0], offsetLine2[1]);
             this.context.restore();
 
             this.context.restore();
