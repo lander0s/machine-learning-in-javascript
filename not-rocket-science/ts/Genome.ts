@@ -131,7 +131,7 @@ export class Genome {
         let genome        = new Genome(-1,'');
         genome.generation = jsonObj.generation;
         genome.id         = jsonObj.id;
-        genome.network    = synaptic.fromJSON(jsonObj.network);
+        genome.network    = synaptic.Network.fromJSON(jsonObj.network);
         genome.fitness    = jsonObj.fitness;
         return genome;
     }
