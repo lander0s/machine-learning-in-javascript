@@ -102,12 +102,19 @@ export class Renderer {
             this.context.rotate( - rocket.getAngle());
             this.context.font = '20px arial';
             this.context.textAlign = 'center';
-            this.context.fillStyle = rocket.getScore() > 0 ? '#00FF00' : '#FF0000';
             this.context.scale(1,-1);
-            let offsetLine1 = [0, -(SimulatorConfig.rocketSize[0] + 40)];
-            let offsetLine2 = [0, -(SimulatorConfig.rocketSize[0] + 10)];
-            this.context.fillText( `${rocket.getGenome().getId()}` , offsetLine1[0], offsetLine1[1]);
-            this.context.fillText( `${rocket.getScore()|0}` , offsetLine2[0], offsetLine2[1]);
+            this.context.lineWidth = 2;
+            let offsetLine1 = [0, -(SimulatorConfig.rocketSize[0] + 10)];
+            let offsetLine2 = [0, -(SimulatorConfig.rocketSize[0] + 40)];
+            let offsetLine3 = [0, -(SimulatorConfig.rocketSize[0] + 80)];
+            this.context.fillStyle = rocket.getScore() > 0 ? '#00FF00' : '#FF0000';
+            let plusSign = rocket.getScore() > 0 ? "+" : "";
+            this.context.fillText( `${plusSign}${rocket.getScore()|0}` , offsetLine1[0], offsetLine1[1]);
+            this.context.fillStyle = '#FFFFFF';
+            this.context.strokeStyle = '#FFFFFF';
+            this.context.fillText( `${rocket.getGenome().getId()}` , offsetLine2[0], offsetLine2[1]);
+            this.context.strokeRect(offsetLine3[0]-50, offsetLine3[1] , 100, 10);
+            this.context.fillRect(offsetLine3[0]-50, offsetLine3[1] , 100 * rocket.getFuelTankReservePercentage(), 10);
             this.context.restore();
 
             this.context.restore();

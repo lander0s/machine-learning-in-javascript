@@ -47,7 +47,7 @@ export class Learner {
         this.currentGeneration = 0;
         for(let i = 0; i < LearnerConfig.generationSize; i++) {
             let rocket = this.simulator.addRocket();
-            let genomeId = `${this.currentGeneration}.${i}`;
+            let genomeId = `G${this.currentGeneration}E${i}`;
             let genome = new Genome(this.currentGeneration, genomeId);
             genome.init(rocket);
             this.genomes.push(genome);
@@ -83,7 +83,7 @@ export class Learner {
         this.genomes = [firstPlace, secondPlace];
         for(let i = 2; i < LearnerConfig.generationSize; i++) {
             let rocket = this.simulator.addRocket();
-            let genomeId = `${this.currentGeneration}.${i}`;
+            let genomeId = `G${this.currentGeneration}E${i}`;
             let genome = new Genome(this.currentGeneration, genomeId);
             genome.init(rocket, firstPlace, secondPlace);
             this.genomes.push(genome);
