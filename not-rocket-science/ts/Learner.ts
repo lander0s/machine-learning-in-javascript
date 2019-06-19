@@ -23,8 +23,8 @@ export class Learner {
         for(let i = 0; i < LearnerConfig.generationSize; i++) {
             let rocket = this.simulator.addRocket();
             let genomeId = `${this.currentGeneration}.${i}`;
-            let genome = new Genome(this.currentGeneration, genomeId, rocket);
-            genome.createNeuralNetworkFromScratch();
+            let genome = new Genome(this.currentGeneration, genomeId);
+            genome.init(rocket);
             this.genomes.push(genome);
         }
         this.topFitness = -99999;
@@ -49,16 +49,18 @@ export class Learner {
     }
 
     private createNextGeneration() {
-        let bestCandidate = this.selectBestCandidates();
-        let firstPlace = bestCandidate[0];
-        let secondPlace = bestCandidate[1];
+        let bestCandidates = this.selectBestCandidates();
+        let firstPlace = bestCandidates[0];
+        let secondPlace = bestCandidates[1];
+        firstPlace.init(this.simulator.addRocket());
+        secondPlace.init(this.simulator.addRocket());
         this.currentGeneration++;
         this.genomes = [firstPlace, secondPlace];
         for(let i = 2; i < LearnerConfig.generationSize; i++) {
             let rocket = this.simulator.addRocket();
             let genomeId = `${this.currentGeneration}.${i}`;
-            let genome = new Genome(this.currentGeneration, genomeId, rocket);
-            genome.fromParents(firstPlace, secondPlace);
+            let genome = new Genome(this.currentGeneration, genomeId);
+            genome.init(rocket, firstPlace, secondPlace);
             this.genomes.push(genome);
         }
         if(this.topFitness < firstPlace.getFitness()) {

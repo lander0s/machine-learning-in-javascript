@@ -5,17 +5,43 @@ declare var synaptic : any;
 export class Genome {
     private generation : number;
     private network    : any;
-    private uuid       : string;
+    private id         : string;
     private rocket     : Rocket;
+    private fitness    : number;
 
-    constructor(generation:number, uuid:string, rocket:Rocket) {
+    constructor(generation:number, id:string) {
         this.generation = 0;
-        this.network = null;
-        this.rocket = null;
+        this.network    = null;
+        this.rocket     = null;
         this.generation = generation;
-        this.uuid = uuid;
-        this.rocket = rocket;
+        this.id         = id;
+        this.rocket     = null;
+        this.fitness    = -99999;
     }
+
+    public init(rocket:Rocket, daddy:Genome = null, mum:Genome = null) : void {
+        this.rocket = rocket;
+        if(this.network == null) {
+            if(daddy != null && mum != null) {
+                this.createNeuralNetworkFromParents(daddy, mum);
+            } else {
+                this.createNeuralNetworkFromScratch();
+            }
+        }
+    }
+
+    private createNeuralNetworkFromScratch() : void {
+        this.network = new synaptic.Architect.Perceptron(5, 4, 2);
+    }
+
+    private createNeuralNetworkFromParents(daddy:Genome, mum:Genome) : void {
+        let daddyNetworkJsonObj = JSON.parse(JSON.stringify(daddy.network.toJSON()));
+        let mumNetworkJsonObj = JSON.parse(JSON.stringify(mum.network.toJSON()));
+
+        let childNetworkJsonObj = this.crossOver(daddyNetworkJsonObj, mumNetworkJsonObj);
+        var mutatedNetworkJsonObj =  this.mutate(childNetworkJsonObj);
+        this.network = synaptic.Network.fromJSON(mutatedNetworkJsonObj);
+    }    
 
     public update() : void {
 
@@ -38,35 +64,25 @@ export class Genome {
         let output = this.network.activate(input);
         this.rocket.setDesiredThrusterAngleFactor(output[0]);
         this.rocket.setDesiredThrusterIntensityFactor(output[1]);
+        if(this.rocket.isDead()) {
+            this.fitness = this.rocket.getScore();
+        }
     }
 
     public didFinish() : boolean {
         return this.rocket.isDead() && this.rocket.getSecondsSinceDeath() >= SimulatorConfig.secondsToRemoveDeadRockets;
     }
 
-    public createNeuralNetworkFromScratch() : void {
-        this.network = new synaptic.Architect.Perceptron(5, 4, 2);
-    }
-
-    public fromParents(daddy:Genome, mum:Genome) : void {
-        let daddyNetworkJsonObj = JSON.parse(JSON.stringify(daddy.network.toJSON()));
-        let mumNetworkJsonObj = JSON.parse(JSON.stringify(mum.network.toJSON()));
-
-        let childNetworkJsonObj = this.crossOver(daddyNetworkJsonObj, mumNetworkJsonObj);
-        var mutatedNetworkJsonObj =  this.mutate(childNetworkJsonObj);
-        this.network = synaptic.Network.fromJSON(mutatedNetworkJsonObj);
-    }
-
     public getFitness() : number {
-        return this.rocket.getScore();
+        return this.fitness;
     }
 
     public getGeneration() : number {
         return this.generation;
     }
 
-    public getUUID() : string {
-        return this.uuid;
+    public getId() : string {
+        return this.id;
     }
 
     private crossOver(daddyNetworkJsonObj:any, mumNetworkJsonObj:any) : any {
@@ -105,17 +121,18 @@ export class Genome {
     public toJson() : any {
         return  {
             generation : this.generation,
-            id         : this.uuid,
-            fitness    : this.getFitness(),
+            id         : this.id,
+            fitness    : this.fitness,
             network    : this.network.toJSON()
         }
     }
 
-    public static fromJson(jsonObj : any, rocket:Rocket) : Genome {
-        let genome = new Genome(-1,'', rocket);
+    public static fromJson(jsonObj : any) : Genome {
+        let genome        = new Genome(-1,'');
         genome.generation = jsonObj.generation;
-        genome.uuid = jsonObj.id;
-        genome.network = synaptic.fromJSON(jsonObj.network);
+        genome.id         = jsonObj.id;
+        genome.network    = synaptic.fromJSON(jsonObj.network);
+        genome.fitness    = jsonObj.fitness;
         return genome;
     }
 }
