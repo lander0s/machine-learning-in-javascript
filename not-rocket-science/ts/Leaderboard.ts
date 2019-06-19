@@ -9,37 +9,21 @@ export class Leaderboard {
     }
 
     public registerGenome(newGenome : Genome) : void {
-        if(this.leadGenomes.length == 0) {
-            this.leadGenomes.push({
-                id : newGenome.getUUID(),
-                fitness : newGenome.getFitness(),
-                jsonObj : newGenome.toJson()
-            });
-        } else {
-            this.removeIfExists(newGenome);
-            for(let i = 0; i < this.leadGenomes.length; i++) {
-                if(this.leadGenomes[i].fitness < newGenome.getFitness()) {
-                    this.leadGenomes.splice(i,0, {
-                        id : newGenome.getUUID(),
-                        fitness : newGenome.getFitness(),
-                        jsonObj : newGenome.toJson()
-                    });
-                    break;
-                }
-            }
-            this.leadGenomes = this.leadGenomes.slice(0,10);
-        }
+        this.leadGenomes.push({
+            id : newGenome.getUUID(),
+            fitness : newGenome.getFitness(),
+            jsonObj : newGenome.toJson()
+        });
+        this.leadGenomes.sort((a:any, b:any) => {
+            if( a.fitness < b.fitness)
+                return 1;
+            if( a.fitness > b.fitness)
+                return -1;
+            return 0;
+        });
+        this.leadGenomes = this.leadGenomes.splice(0,10);
         this.saveToLocalStorage();
         this.updateHud();
-    }
-
-    private removeIfExists(genome:Genome) {
-        for(let i = 0; i < this.leadGenomes.length; i++) {
-            if(genome.getUUID() == this.leadGenomes[i].id) {
-                this.leadGenomes.splice(i,1);
-                return;
-            }
-        }
     }
 
     public init() : void {
