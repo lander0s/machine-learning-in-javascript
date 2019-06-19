@@ -43,13 +43,15 @@ export class Learner {
             this.genomes.forEach((genome) =>{
                 this.leaderboard.registerGenome(genome);
             });
+            this.saveGenerationResult();
             this.createNextGeneration();
         }
     }
 
     private createNextGeneration() {
-        let firstPlace = this.getAndRemoveBestCandidate();
-        let secondPlace = this.getAndRemoveBestCandidate();
+        let bestCandidate = this.selectBestCandidates();
+        let firstPlace = bestCandidate[0];
+        let secondPlace = bestCandidate[1];
         this.currentGeneration++;
         this.genomes = [firstPlace, secondPlace];
         for(let i = 2; i < LearnerConfig.generationSize; i++) {
@@ -66,18 +68,32 @@ export class Learner {
         document.querySelector('#generation-label').innerHTML = `Generation : <b>${this.currentGeneration}</b>`;
     }
 
-    private getAndRemoveBestCandidate() : Genome {
-        let bestCandidateIndex = 0;
-        let bestCandidate = this.genomes[bestCandidateIndex];
-
-        for(let i = 0; i < this.genomes.length; i++) {
-            let crtGenome = this.genomes[i];
-            if(bestCandidate.getFitness() < crtGenome.getFitness()) {
-                bestCandidateIndex = i;
-                bestCandidate = crtGenome;
+    private selectBestCandidates() : Array<Genome> {
+        let firstPlace : Genome = null;
+        let secondPlace : Genome = null;
+        this.genomes.forEach((crtGenome) => {
+            if(firstPlace == null || firstPlace.getFitness() < crtGenome.getFitness()) {
+                firstPlace = crtGenome;
             }
+        });
+
+        this.genomes.forEach((crtGenome) => {
+            if(firstPlace != crtGenome ) {
+                if(secondPlace == null || secondPlace.getFitness() < crtGenome.getFitness())
+                    secondPlace = crtGenome;
+            }
+        });
+        return [firstPlace, secondPlace];
+    }
+
+    private saveGenerationResult() : void {
+        let bestCandidates = this.selectBestCandidates();
+        let save = {
+            firstPlace : bestCandidates[0].toJson(),
+            secondPlace : bestCandidates[1].toJson(),
+            currentGeneration : this.currentGeneration,
+            topFitness : this.topFitness,
         }
-        this.genomes.splice(bestCandidateIndex, 1);
-        return bestCandidate;
+        localStorage.setItem('learner-save', JSON.stringify(save));
     }
 }
