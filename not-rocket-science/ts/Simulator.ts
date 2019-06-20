@@ -38,7 +38,6 @@ export class Simulator {
 
         let rocket = new Rocket(rocketBody);
         this.rockets.push(rocket);
-        //this.applyRandomImpulse(rocket);
         rocket.getPhysicsObject().angle = Math.PI;
         return rocket;
     }
@@ -64,19 +63,10 @@ export class Simulator {
         this.removeDeadRockets();
     }
 
-    private applyRandomImpulse(rocket:Rocket) : void {
-        let forceX = (Math.random() * 2 - 1) * 20;
-        let forceY = (Math.random() * 2 - 1) * 20;
-        let posX = (Math.random() * 2 + 1) * SimulatorConfig.rocketSize[0];
-        let posY = 0;
-        rocket.getPhysicsObject().applyImpulseLocal([forceX, forceY],[posX, posY]);
-    }
-
     private onBeginContact(evt : any) : void {
         let theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
         let rocket = this.getRocketById(theRocket.id);
-        if(!rocket.isDead()) {
-            rocket.markAsDead();
+        if(!rocket.hasLanded()) {
             rocket.judgeLanding();
         }
     }

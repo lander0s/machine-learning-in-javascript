@@ -10,11 +10,14 @@ export class Rocket {
     private fuelTankReserve           : number;
     private body                      : p2.Body;
     private isAlive                   : boolean;
+    private isLanded                  : boolean;
+    private landingTimestamp          : number;
     private deathTimestamp            : number;
     private genome                    : Genome;
     
     constructor(body:p2.Body) {
         this.isAlive = true;
+        this.isLanded = false;
         this.score = 0;
         this.body = body;
         this.thrusterAngle = 0;
@@ -51,7 +54,7 @@ export class Rocket {
 
     private updateScore() {
         if(this.isAlive) {
-            if(this.getFuelTankReservePercentage() > 0) {
+            if(this.getFuelTankReservePercentage() > 0 || (this.getFuelTankReservePercentage() == 0 && this.isLanded)) {
                 if (this.body.velocity[1] <= 0) {
                     let angularScore = 2.0 * Math.cos(this.getAngle()) - 1.0;
                     let deadlySpeed = 5.0;
@@ -63,6 +66,13 @@ export class Rocket {
                 this.score -= 9750;
                 this.markAsDead();
             }
+
+            if(this.isLanded) {
+                let elapsedtime = new Date().getTime() - this.landingTimestamp;
+                if(elapsedtime >= 3000) {
+                    this.markAsDead();
+                }
+            }
         }
     }
 
@@ -71,8 +81,14 @@ export class Rocket {
         let deadlySpeed = 5.0;
         let spinScore = 1.0 - Math.abs(this.getAngularVelocity()) / deadlySpeed;
         let linearSpeed = Math.sqrt(this.body.velocity[0] * this.body.velocity[0] + this.body.velocity[1] * this.body.velocity[1]);
-        let speedScore = 1.0 - linearSpeed / deadlySpeed;
+        let speedScore = 1.0 - linearSpeed / (deadlySpeed * 2.0);
         this.score += 1000 * (spinScore + angularScore + speedScore);
+
+        this.isLanded = true;
+        this.landingTimestamp = new Date().getTime();
+        if(speedScore < 0) {
+            this.markAsDead();
+        }
     }
 
     public getScore() : number {
@@ -161,6 +177,10 @@ export class Rocket {
 
     public isDead() : boolean {
         return !this.isAlive;
+    }
+
+    public hasLanded() : boolean {
+        return this.isLanded;
     }
 
     public getSecondsSinceDeath() : number {
