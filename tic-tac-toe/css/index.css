@@ -11,4 +11,5 @@ html, body {
     margin-left : -150px;
     position    : relative;
     border      : 1px solid #0000000d;
+    background-color : rgb(242, 235, 211);
 }

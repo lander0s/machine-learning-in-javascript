@@ -9,7 +9,8 @@ export class Renderer {
     private size                : number;
     private margin              : number;
     private gridLineStyle       : any;
-    private playerLineStyle     : any;
+    private crossLineStyle      : any;
+    private circleLineStyle     : any;
     private winnerLineStyle     : any;
     private winningLinesParams  : number[][];
 
@@ -19,18 +20,20 @@ export class Renderer {
         this.size = 300;
         this.margin = 10;
         this.svgDoc = SVG('drawing').size(this.size, this.size);
-        this.gridLineStyle = { width: 10, color: '#619196', linecap: 'round' };
-        this.playerLineStyle = { width: 10, color: '#555', linecap: 'round' };
-        this.winnerLineStyle = { width: 10, color: '#38908f', linecap: 'round' };
-        this.svgDoc.on('click', (e:any)=>{
-            let x = (e.offsetX / 100)|0;
-            let y = (e.offsetY / 100)|0;
-            this.cellClickedCallback(x, y);
-        });
+        this.gridLineStyle = { width: 10, color: '#619196', linecap: 'butt' };
+        this.circleLineStyle = { width: 10, color: '#14bdac', linecap: 'butt' };
+        this.crossLineStyle = { width: 10, color: '#555', linecap: 'butt' };
+        this.winnerLineStyle = { width: 10, color: '#38908f', linecap: 'butt' };
 
         let cellSize = (this.size / 3)|0;
         let halfCellSize = cellSize / 2;
         let sizeMinusMargin = this.size - this.margin;
+
+        this.svgDoc.on('click', (e:any)=>{
+            let x = (e.offsetX / cellSize)|0;
+            let y = (e.offsetY / cellSize)|0;
+            this.cellClickedCallback(x, y);
+        });
 
         this.winningLinesParams = [
             [ this.margin, cellSize * 0 + halfCellSize, sizeMinusMargin, cellSize * 0 + halfCellSize],
@@ -45,11 +48,12 @@ export class Renderer {
     }
 
     public draw() : void {
+        let cellSize = (this.size / 3)|0;
         this.svgDoc.clear();
-        this.svgDoc.line(this.margin, 100, this.size-this.margin, 100).stroke(this.gridLineStyle);
-        this.svgDoc.line(this.margin, 200, this.size-this.margin, 200).stroke(this.gridLineStyle);
-        this.svgDoc.line(100, this.margin, 100, this.size-this.margin ).stroke(this.gridLineStyle);
-        this.svgDoc.line(200, this.margin, 200, this.size-this.margin ).stroke(this.gridLineStyle);
+        this.svgDoc.line(this.margin, cellSize, this.size-this.margin, cellSize).stroke(this.gridLineStyle);
+        this.svgDoc.line(this.margin, cellSize * 2, this.size-this.margin, cellSize * 2).stroke(this.gridLineStyle);
+        this.svgDoc.line(cellSize, this.margin, cellSize, this.size-this.margin ).stroke(this.gridLineStyle);
+        this.svgDoc.line(cellSize * 2, this.margin, cellSize * 2, this.size-this.margin ).stroke(this.gridLineStyle);
 
         let board = this.game.getBoard();
         for(let i = 0; i < board.length; i++) {
@@ -81,7 +85,7 @@ export class Renderer {
         this.svgDoc.circle(halfCellSize)
             .move(x *  cellSize + cellSizeOffset, y * cellSize + cellSizeOffset)
             .fill('none')
-            .stroke(this.playerLineStyle);
+            .stroke(this.circleLineStyle);
     }
 
     private drawCross(x:number, y:number) {
@@ -90,10 +94,10 @@ export class Renderer {
         let cellSizeOffset = cellSize/4;
         this.svgDoc.line(0,0, halfCellSize, halfCellSize)
             .move(x *  cellSize + cellSizeOffset, y * cellSize + cellSizeOffset)
-            .stroke(this.playerLineStyle);
+            .stroke(this.crossLineStyle);
         this.svgDoc.line(halfCellSize,0, 0, halfCellSize)
             .move(x *  cellSize + cellSizeOffset, y * cellSize + cellSizeOffset)
-            .stroke(this.playerLineStyle);
+            .stroke(this.crossLineStyle);
     }
 
     private drawWinnerLine(x1 : number, y1 : number, x2 : number, y2 : number) : void {
