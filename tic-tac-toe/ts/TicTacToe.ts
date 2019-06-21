@@ -1,12 +1,12 @@
 export class TicTacToe {
-    private gameState: number;
-    private table: number[];
-    private plays: number[];
-    private movements: number;
+    private gameState      : TicTacToe.GameState;
+    private table          : TicTacToe.Players[];
+    private plays          : number[];
+    private movementsCount : number;
 
     constructor() {
         this.gameState = TicTacToe.GameState.Empty;
-        this.movements = 0;
+        this.movementsCount = 0;
     }
 
     public getTableState(): number[] {
@@ -24,14 +24,14 @@ export class TicTacToe {
         }
 
         let playIndex = y * 3 + x;
-        let currentPlayer = this.playersTurn();
+        let currentPlayer = this.getPlayersTurn();
         this.table[playIndex] = currentPlayer;
-        this.movements++;
+        this.movementsCount++;
         this.plays.push(playIndex);
     }
 
-    public playersTurn(): TicTacToe.Players {
-        if (this.movements % 2 == 0) {
+    public getPlayersTurn(): TicTacToe.Players {
+        if (this.movementsCount % 2 == 0) {
             return TicTacToe.Players.X_Player;
         }
         else {
@@ -41,6 +41,40 @@ export class TicTacToe {
 
     public evaluateTable(): void {
         //lots of "if" go here
+        let winningConditions = [
+            [0,1,2],
+            [3,4,5],
+            [6,7,8],
+            [0,3,6],
+            [1,4,7],
+            [2,5,8],
+            [0,4,8],
+            [2,4,6],
+        ];
+
+        winningConditions.forEach( (condition) => {
+            if(this.table[condition[0]] != TicTacToe.Players.None &&
+                this.table[condition[0]] == this.table[condition[1]] && 
+                this.table[condition[0]] == this.table[condition[2]]) {
+                if(this.table[condition[0]] == TicTacToe.Players.O_Player) {
+                    this.gameState = TicTacToe.GameState.O_Won;
+                } else {
+                    this.gameState = TicTacToe.GameState.X_Won;
+                }
+            }
+        });
+
+        if(this.gameState != TicTacToe.GameState.Playing && this.gameState != TicTacToe.GameState.Empty) {
+            let areThereEmptyCellsLeft = false;
+            this.table.forEach((cell) => {
+                if(cell == TicTacToe.Players.None) {
+                    areThereEmptyCellsLeft = true;
+                }
+            });
+            if(!areThereEmptyCellsLeft) {
+                this.gameState = TicTacToe.GameState.Draw;
+            }
+        }
     }
 }
 
