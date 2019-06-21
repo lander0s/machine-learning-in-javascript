@@ -3,6 +3,7 @@ export class TicTacToe {
     private board          : TicTacToe.Players[];
     private plays          : number[];
     private movementsCount : number;
+    private winnerCondIdx  : number;
     private winningConditions = [
         [0, 1, 2],
         [3, 4, 5],
@@ -17,6 +18,12 @@ export class TicTacToe {
     constructor() {
         this.state = TicTacToe.State.Playing;
         this.movementsCount = 0;
+        this.board = [];
+        this.plays = [];
+        this.winnerCondIdx = -1;
+        for(let i = 0; i < 9; i++) {
+            this.board.push(TicTacToe.Players.None);
+        }
     }
 
     public getBoard(): number[] {
@@ -76,6 +83,7 @@ export class TicTacToe {
                 } else {
                     this.state = TicTacToe.State.X_Won;
                 }
+                this.winnerCondIdx = i;                
                 return;
             }
         }
@@ -83,6 +91,10 @@ export class TicTacToe {
         if(this.movementsCount == 9) {
             this.state = TicTacToe.State.Draw;
         }
+    }
+
+    public getWinningConditionIndex(): number {
+        return this.winnerCondIdx;
     }
 }
 

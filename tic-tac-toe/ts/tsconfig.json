@@ -7,6 +7,8 @@
         "outFile" : "../js/application.js"
     },
     "files": [
-        "Application.ts"
+        "Application.ts",
+        "TicTacToe.ts",
+        "Renderer.ts"
     ]
 }
