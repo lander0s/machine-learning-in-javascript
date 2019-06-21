@@ -1,6 +1,6 @@
 export class TicTacToe {
-    private gameState      : TicTacToe.GameState;
-    private table          : TicTacToe.Players[];
+    private state      : TicTacToe.State;
+    private board          : TicTacToe.Players[];
     private plays          : number[];
     private movementsCount : number;
     private winningConditions = [
@@ -15,27 +15,31 @@ export class TicTacToe {
     ];
 
     constructor() {
-        this.gameState = TicTacToe.GameState.Empty;
+        this.state = TicTacToe.State.Empty;
         this.movementsCount = 0;
     }
 
-    public getTableState(): number[] {
-        return this.table;
+    public getBoard(): number[] {
+        return this.board;
+    }
+
+    public getState(): TicTacToe.State {
+        return this.state;
     }
 
     public makePlay(x: number, y: number): void {
-        if(this.gameState == TicTacToe.GameState.Draw
-            || this.gameState == TicTacToe.GameState.X_Won
-            || this.gameState == TicTacToe.GameState.O_Won) {
+        if(this.state == TicTacToe.State.Draw
+            || this.state == TicTacToe.State.X_Won
+            || this.state == TicTacToe.State.O_Won) {
             return;
         }
-        else if(this.gameState == TicTacToe.GameState.Empty) {
-            this.gameState = TicTacToe.GameState.Playing;
+        else if(this.state == TicTacToe.State.Empty) {
+            this.state = TicTacToe.State.Playing;
         }
 
         let playIndex = y * 3 + x;
         let currentPlayer = this.getPlayersTurn();
-        this.table[playIndex] = currentPlayer;
+        this.board[playIndex] = currentPlayer;
         this.movementsCount++;
         this.plays.push(playIndex);
         this.evaluateTable();
@@ -57,26 +61,26 @@ export class TicTacToe {
 
         for(let i = 0; i < this.winningConditions.length; i++) {
             let condition = this.winningConditions[i];
-            if(this.table[condition[0]] != TicTacToe.Players.None &&
-                this.table[condition[0]] == this.table[condition[1]] &&
-                this.table[condition[0]] == this.table[condition[2]]) {
-                if(this.table[condition[0]] == TicTacToe.Players.O_Player) {
-                    this.gameState = TicTacToe.GameState.O_Won;
+            if(this.board[condition[0]] != TicTacToe.Players.None &&
+                this.board[condition[0]] == this.board[condition[1]] &&
+                this.board[condition[0]] == this.board[condition[2]]) {
+                if(this.board[condition[0]] == TicTacToe.Players.O_Player) {
+                    this.state = TicTacToe.State.O_Won;
                 } else {
-                    this.gameState = TicTacToe.GameState.X_Won;
+                    this.state = TicTacToe.State.X_Won;
                 }
                 return;
             }
         }
 
         if(this.movementsCount == 9) {
-            this.gameState = TicTacToe.GameState.Draw;
+            this.state = TicTacToe.State.Draw;
         }
     }
 }
 
 export namespace TicTacToe {
-    export enum GameState {
+    export enum State {
         Empty,
         Playing,
         Draw,
