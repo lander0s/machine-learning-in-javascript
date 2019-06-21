@@ -9,6 +9,8 @@
     "files": [
         "Application.ts",
         "TicTacToe.ts",
-        "Renderer.ts"
+        "Renderer.ts",
+        "AIPlayer.ts",
+        "RandomAIPlayer.ts"
     ]
 }

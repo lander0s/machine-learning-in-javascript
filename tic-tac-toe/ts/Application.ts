@@ -1,11 +1,14 @@
 import { Renderer } from './Renderer'
 import { TicTacToe } from './TicTacToe'
+import { RandomAIPlayer } from './RandomAIPlayer'
 
 export class Application {
     private renderer : Renderer;
     private game     : TicTacToe;
+    private random   : RandomAIPlayer;
 
     public main() {
+        this.random = new RandomAIPlayer();
         this.game = new TicTacToe();
         this.renderer = new Renderer(this.game);
         this.renderer.onCellClicked((x:number, y:number)=> this.onCellClicked(x,y));
@@ -16,6 +19,13 @@ export class Application {
         if(!this.game.isFinished()) {
             this.game.makePlay(x, y);
             this.renderer.draw();
+            if(!this.game.isFinished()) {
+                let board = this.game.getBoard();
+                this.random.play(board, (x : number, y : number) => {
+                    this.game.makePlay(x, y);
+                    this.renderer.draw();
+                });
+            }
         }
     }
 }
