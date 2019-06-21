@@ -64,7 +64,7 @@ export class TicTacToe {
             }
         });
 
-        if(this.gameState != TicTacToe.GameState.Playing && this.gameState != TicTacToe.GameState.Empty) {
+        if(this.gameState == TicTacToe.GameState.Playing || this.gameState == TicTacToe.GameState.Empty) {
             let areThereEmptyCellsLeft = false;
             this.table.forEach((cell) => {
                 if(cell == TicTacToe.Players.None) {
