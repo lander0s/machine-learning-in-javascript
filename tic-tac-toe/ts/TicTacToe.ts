@@ -1,5 +1,5 @@
 export class TicTacToe {
-    private state      : TicTacToe.State;
+    private state          : TicTacToe.State;
     private board          : TicTacToe.Players[];
     private plays          : number[];
     private movementsCount : number;
@@ -15,7 +15,7 @@ export class TicTacToe {
     ];
 
     constructor() {
-        this.state = TicTacToe.State.Empty;
+        this.state = TicTacToe.State.Playing;
         this.movementsCount = 0;
     }
 
@@ -23,26 +23,33 @@ export class TicTacToe {
         return this.board;
     }
 
+    public getPlaysOrder(): number[] {
+        return this.plays;
+    }
+
     public getState(): TicTacToe.State {
         return this.state;
     }
 
-    public makePlay(x: number, y: number): void {
-        if(this.state == TicTacToe.State.Draw
-            || this.state == TicTacToe.State.X_Won
-            || this.state == TicTacToe.State.O_Won) {
+    public isFinished(): boolean {
+        return this.state != TicTacToe.State.Playing;
+    }
+
+    public makePlay(x: number, y: number): boolean {
+        if(this.isFinished()) {
             return;
-        }
-        else if(this.state == TicTacToe.State.Empty) {
-            this.state = TicTacToe.State.Playing;
         }
 
         let playIndex = y * 3 + x;
         let currentPlayer = this.getPlayersTurn();
+        if(this.board[playIndex] != TicTacToe.Players.None) {
+            return false;
+        }
         this.board[playIndex] = currentPlayer;
         this.movementsCount++;
         this.plays.push(playIndex);
         this.evaluateTable();
+        return true;
     }
 
     public getPlayersTurn(): TicTacToe.Players {
@@ -81,7 +88,6 @@ export class TicTacToe {
 
 export namespace TicTacToe {
     export enum State {
-        Empty,
         Playing,
         Draw,
         X_Won,
