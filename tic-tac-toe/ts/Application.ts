@@ -16,15 +16,16 @@ export class Application {
     }
 
     public onCellClicked(x:number, y:number) {
-        if(!this.game.isFinished()) {
-            this.game.makePlay(x, y);
-            this.renderer.draw();
-            if(!this.game.isFinished()) {
-                let board = this.game.getBoard();
-                this.aiPlayer.play(board, (x : number, y : number) => {
-                    this.game.makePlay(x, y);
-                    this.renderer.draw();
-                });
+        if(!this.game.isFinished() && this.game.getPlayersTurn() == TicTacToe.Players.X_Player) {
+            if(this.game.makePlay(x, y)) {
+                this.renderer.draw();
+                if(!this.game.isFinished()) {
+                    let board = this.game.getBoard();
+                    this.aiPlayer.play(board, (x : number, y : number) => {
+                        this.game.makePlay(x, y);
+                        this.renderer.draw();
+                    });
+                }
             }
         }
     }
