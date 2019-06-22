@@ -1,6 +1,6 @@
-import { TicTacToe } from './TicTacToe'
+import { TicTacToe } from '../TicTacToe'
 
-export abstract class AIPlayer {
+export abstract class AiPlayer {
     public abstract train() : void;
     public abstract play(board: TicTacToe.Players[], callback : Function) : void;
 }

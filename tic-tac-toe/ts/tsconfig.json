@@ -10,7 +10,8 @@
         "Application.ts",
         "TicTacToe.ts",
         "Renderer.ts",
-        "AIPlayer.ts",
-        "RandomAIPlayer.ts"
+        "AiPlayer/AiPlayer.ts",
+        "AiPlayer/implementations/ann/AnnPlayer.ts",
+        "AiPlayer/implementations/random/RandomAiPlayer.ts"
     ]
 }

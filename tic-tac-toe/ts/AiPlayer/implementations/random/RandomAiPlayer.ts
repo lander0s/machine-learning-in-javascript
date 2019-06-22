@@ -1,7 +1,7 @@
-import { AIPlayer } from './AIPlayer'
-import { TicTacToe } from './TicTacToe'
+import { AiPlayer } from '../../AiPlayer'
+import { TicTacToe } from '../../../TicTacToe'
 
-export class RandomAIPlayer extends AIPlayer {
+export class RandomAiPlayer extends AiPlayer {
 
     constructor() {
         super();

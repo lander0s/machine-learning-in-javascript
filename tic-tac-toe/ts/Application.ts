@@ -1,14 +1,15 @@
 import { Renderer } from './Renderer'
 import { TicTacToe } from './TicTacToe'
-import { RandomAIPlayer } from './RandomAIPlayer'
+import { AiPlayer } from './AiPlayer/AiPlayer'
+import { RandomAiPlayer } from './AiPlayer/implementations/random/RandomAiPlayer'
 
 export class Application {
     private renderer : Renderer;
     private game     : TicTacToe;
-    private aiPlayer : RandomAIPlayer;
+    private aiPlayer : AiPlayer;
 
     public main() {
-        this.aiPlayer = new RandomAIPlayer();
+        this.aiPlayer = new RandomAiPlayer();
         this.game = new TicTacToe();
         this.renderer = new Renderer(this.game);
         this.renderer.onCellClicked((x:number, y:number)=> this.onCellClicked(x,y));
