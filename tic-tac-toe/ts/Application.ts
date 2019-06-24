@@ -48,11 +48,27 @@ export class Application {
             console.error('ann not yet implemented');
         }
         
-        this.aiPlayer.train();
-        let board = this.game.getBoard();
-        this.aiPlayer.play(board, TicTacToe.Players.X_Player, (x : number, y : number) => {
-            this.game.makePlay(x, y);
-            this.renderer.draw();
-        });
+        this.showTrainingMessage();
+        setTimeout(() => {
+            this.aiPlayer.train();
+            this.hideTrainingMessage();
+            let board = this.game.getBoard();
+            this.aiPlayer.play(board, TicTacToe.Players.X_Player, (x : number, y : number) => {
+                this.game.makePlay(x, y);
+                this.renderer.draw();
+            });
+        },500);
+    }
+
+    public showTrainingMessage() : void {
+        let message : any = document.querySelector('#training-message');
+        message.style.zIndex =  1;
+        message.style.opacity = 1;
+    }
+
+    public hideTrainingMessage() : void {
+        let message : any = document.querySelector('#training-message');
+        message.style.zIndex = -1;
+        message.style.opacity = 0;
     }
 }

@@ -13,3 +13,21 @@ html, body {
     border      : 1px solid #0000000d;
     background-color : rgb(242, 235, 211);
 }
+
+#training-message {
+    line-height : 100px;
+    position    : absolute;
+    width       : 400px;
+    height      : 100px;
+    left        : 50%;
+    margin-left : -200px;
+    top         : 200px;
+    z-index     : -1;
+    opacity     : 0;
+    color       : white;
+    font-weight : bold;
+    font-size   : 20px;
+    font-family : 'Roboto', sans-serif;
+    border      : 1px solid #619196;
+    background-color: #38908f;
+}
