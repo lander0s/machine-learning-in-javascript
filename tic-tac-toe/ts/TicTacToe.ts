@@ -16,6 +16,10 @@ export class TicTacToe {
     ];
 
     constructor() {
+        this.restart();
+    }
+
+    public restart() : void {
         this.state = TicTacToe.State.Playing;
         this.movementsCount = 0;
         this.board = [];
