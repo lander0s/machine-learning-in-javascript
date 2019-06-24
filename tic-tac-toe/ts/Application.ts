@@ -60,6 +60,7 @@ export class Application {
             this.humanPlayer = TicTacToe.Players.O_Player;
             this.cpuPlayer = TicTacToe.Players.X_Player;
         }
+        this.restartGame();
     }
 
     public onOpponentSelected(e : any) : void {
