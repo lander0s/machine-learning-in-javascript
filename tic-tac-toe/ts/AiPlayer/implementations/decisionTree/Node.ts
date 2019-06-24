@@ -2,6 +2,7 @@ import { BoardBuilder } from './BoardBuilder'
 import { TicTacToe } from '../../../TicTacToe'
 
 export class Node {
+    public isWinnerNode : boolean;
     public weight       : number;
     public cellIndex    : number;
     public cellValue    : number;
@@ -44,17 +45,26 @@ export class Node {
 
     public getBestMoveFor(player:TicTacToe.Players) : number {
         let best = this.children[0];
-        this.children.forEach((node:Node)=> {
+        for(let i = 0; i < this.children.length; i++) {
+            let node = this.children[i];
             if(player == TicTacToe.Players.X_Player) {
                 if(best.weight < node.weight) {
                     best = node;
+                }
+                if(node.isWinnerNode) {
+                    best = node;
+                    break;
                 }
             } else {
                 if(best.weight > node.weight) {
                     best = node;
                 }
+                if(node.isWinnerNode) {
+                    best = node;
+                    break;
+                }
             }
-        });
+        }
         return best.cellIndex;
     }
 

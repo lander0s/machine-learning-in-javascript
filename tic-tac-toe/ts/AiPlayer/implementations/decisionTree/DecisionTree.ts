@@ -39,9 +39,11 @@ export class DecisionTree {
                 if(game.isFinished()) {
                     if(game.getState() == TicTacToe.State.X_Won) {
                         newNode.propagateWin(TicTacToe.Players.X_Player, 1/ i);
+                        newNode.isWinnerNode = true;
                     }
                     else if(game.getState() == TicTacToe.State.O_Won) {
                         newNode.propagateWin(TicTacToe.Players.O_Player, 1/ i);
+                        newNode.isWinnerNode = true;
                     }
                     break;
                 }
