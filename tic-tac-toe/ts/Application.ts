@@ -2,6 +2,7 @@ import { Renderer } from './Renderer'
 import { TicTacToe } from './TicTacToe'
 import { AiPlayer } from './AiPlayer/AiPlayer'
 import { RandomAiPlayer } from './AiPlayer/implementations/random/RandomAiPlayer'
+import { DecisionTreePlayer } from './AiPlayer/implementations/decisionTree/DecisionTreePlayer';
 
 export class Application {
     private renderer : Renderer;
@@ -9,7 +10,7 @@ export class Application {
     private aiPlayer : AiPlayer;
 
     public main() {
-        this.aiPlayer = new RandomAiPlayer();
+        this.aiPlayer = new DecisionTreePlayer();
         this.game = new TicTacToe();
         this.renderer = new Renderer(this.game);
         this.renderer.onCellClicked((x:number, y:number)=> this.onCellClicked(x,y));

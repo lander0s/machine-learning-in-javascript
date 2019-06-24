@@ -16,8 +16,9 @@
         <script src="libs/requirejs/require.min.js"></script>
         <script src="js/application.js"></script>
         <script>
+            var app = null;
             require(["Application"], (module) => {
-                let app = new module.Application();
+                app = new module.Application();
                 app.main();
             });
         </script>

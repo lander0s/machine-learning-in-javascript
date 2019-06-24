@@ -11,7 +11,10 @@
         "TicTacToe.ts",
         "Renderer.ts",
         "AiPlayer/AiPlayer.ts",
-        "AiPlayer/implementations/ann/AnnPlayer.ts",
+        "AiPlayer/implementations/decisionTree/DecisionTreePlayer.ts",
+        "AiPlayer/implementations/decisionTree/Node.ts",
+        "AiPlayer/implementations/decisionTree/Boardbuilder.ts",
+        "AiPlayer/implementations/decisionTree/DecisionTree.ts",
         "AiPlayer/implementations/random/RandomAiPlayer.ts"
     ]
 }
