@@ -11,7 +11,7 @@ export class RandomAiPlayer extends AiPlayer {
         /* nothing to do for random player */
     }
 
-    public play(board: TicTacToe.Players[], callback: Function) : void {
+    public play(board: TicTacToe.Players[], turn : TicTacToe.Players, callback: Function) : void {
         let emptyCellsIndices = [];
         for(let i = 0; i < 9; i++) {
             if(board[i] == TicTacToe.Players.None) {

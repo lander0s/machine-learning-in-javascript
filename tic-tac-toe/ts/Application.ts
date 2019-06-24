@@ -19,12 +19,16 @@ export class Application {
     }
 
     public onCellClicked(x:number, y:number) : void {
-        if(!this.game.isFinished() && this.game.getPlayersTurn() == TicTacToe.Players.X_Player) {
+        if(this.aiPlayer == null) {
+            return;
+        }
+
+        if(!this.game.isFinished() && this.game.getPlayersTurn() == TicTacToe.Players.O_Player) {
             if(this.game.makePlay(x, y)) {
                 this.renderer.draw();
                 if(!this.game.isFinished()) {
                     let board = this.game.getBoard();
-                    this.aiPlayer.play(board, (x : number, y : number) => {
+                    this.aiPlayer.play(board, TicTacToe.Players.X_Player, (x : number, y : number) => {
                         this.game.makePlay(x, y);
                         this.renderer.draw();
                     });
@@ -45,5 +49,10 @@ export class Application {
         }
         
         this.aiPlayer.train();
+        let board = this.game.getBoard();
+        this.aiPlayer.play(board, TicTacToe.Players.X_Player, (x : number, y : number) => {
+            this.game.makePlay(x, y);
+            this.renderer.draw();
+        });
     }
 }
