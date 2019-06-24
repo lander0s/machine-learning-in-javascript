@@ -58,14 +58,14 @@ export class Node {
         return best.cellIndex;
     }
 
-    public propagateWin(player:TicTacToe.Players) : void {
+    public propagateWin(player:TicTacToe.Players, value : number) : void {
         if(player == TicTacToe.Players.X_Player) {
-            this.weight++;
+            this.weight += value;
         } else {
-            this.weight--;
+            this.weight -= value;
         }
         if(this.parentNode != null) {
-            this.parentNode.propagateWin(player);
+            this.parentNode.propagateWin(player, value);
         }
     }
 }

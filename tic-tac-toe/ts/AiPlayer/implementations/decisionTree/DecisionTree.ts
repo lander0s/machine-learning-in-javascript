@@ -38,12 +38,11 @@ export class DecisionTree {
 
                 if(game.isFinished()) {
                     if(game.getState() == TicTacToe.State.X_Won) {
-                        newNode.propagateWin(TicTacToe.Players.X_Player);
+                        newNode.propagateWin(TicTacToe.Players.X_Player, 1/ i);
                     }
                     else if(game.getState() == TicTacToe.State.O_Won) {
-                        newNode.propagateWin(TicTacToe.Players.O_Player);
+                        newNode.propagateWin(TicTacToe.Players.O_Player, 1/ i);
                     }
-                    this.removePermutationsStartingWith(crtPermutation.splice(j+1));
                     break;
                 }
             }
@@ -70,9 +69,5 @@ export class DecisionTree {
             }
         }
         return ret;
-    }
-
-    private removePermutationsStartingWith(permutationPattern : number[]) : void {
-
     }
 }
