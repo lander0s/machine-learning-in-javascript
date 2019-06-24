@@ -5,12 +5,10 @@ import { BoardBuilder  } from './BoardBuilder'
 
 export class DecisionTreePlayer extends AiPlayer {
     private decisionTree : DecisionTree;
-    private isTrained    : boolean;
 
     constructor() {
         super();
         this.decisionTree = new DecisionTree();
-        this.isTrained = false;
     }
 
     public train() : void {
@@ -18,11 +16,6 @@ export class DecisionTreePlayer extends AiPlayer {
     }
 
     public play(board: TicTacToe.Players[], callback:Function) : void {
-        if(!this.isTrained) {
-            this.decisionTree.build();
-            this.isTrained = true;
-        }
-
         let bb = new BoardBuilder();
         bb.setBoard(board);
         let idx = this.decisionTree.getNodes()[bb.getHash()].getBestMoveFor(TicTacToe.Players.O_Player);

@@ -9,15 +9,16 @@ export class Application {
     private game     : TicTacToe;
     private aiPlayer : AiPlayer;
 
-    public main() {
-        this.aiPlayer = new DecisionTreePlayer();
+    public main() : void {
+        this.aiPlayer = null;
         this.game = new TicTacToe();
         this.renderer = new Renderer(this.game);
         this.renderer.onCellClicked((x:number, y:number)=> this.onCellClicked(x,y));
         this.renderer.draw();
+        document.querySelector('#opponent-selector').addEventListener('change', (e) => this.onOpponentSelected(e));
     }
 
-    public onCellClicked(x:number, y:number) {
+    public onCellClicked(x:number, y:number) : void {
         if(!this.game.isFinished() && this.game.getPlayersTurn() == TicTacToe.Players.X_Player) {
             if(this.game.makePlay(x, y)) {
                 this.renderer.draw();
@@ -30,5 +31,19 @@ export class Application {
                 }
             }
         }
+    }
+
+    public onOpponentSelected(e : any) : void {
+        if(e.srcElement.value == 'random') {
+            this.aiPlayer = new RandomAiPlayer();
+        }
+        else if(e.srcElement.value == 'tree') {
+            this.aiPlayer = new DecisionTreePlayer();
+        }
+        else if(e.srcElement.value == 'ann') {
+            console.error('ann not yet implemented');
+        }
+        
+        this.aiPlayer.train();
     }
 }

@@ -10,6 +10,14 @@
         <br/>
         <label>Artificial intelligence that learns how to play tic tac toe</label>
         <br/><br/>
+        <select id='opponent-selector'>
+            <option disabled selected value> -- Select an opponent -- </option>
+            <option value='random'>Random decision player</option>
+            <option value='tree'>Decision tree player</option>
+            <option value='ann'>Artificial neural network</option>
+        </select>
+        <br/>
+        <br/>
         <div id="drawing"></div>
         <script src="libs/svg.js/svg.js"></script>
         <script src="libs/synaptic/synaptic.min.js"></script>

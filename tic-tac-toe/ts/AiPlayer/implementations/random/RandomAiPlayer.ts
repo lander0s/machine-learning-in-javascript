@@ -22,8 +22,6 @@ export class RandomAiPlayer extends AiPlayer {
         let selectedIdx = (Math.random() / cellRange)|0;
         let y = (emptyCellsIndices[selectedIdx] / 3)|0;
         let x = (emptyCellsIndices[selectedIdx] % 3)|0;
-        setTimeout(()=>{
-            callback(x, y);
-        }, 500);
+        callback(x, y);
     }
 }
