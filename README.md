@@ -26,3 +26,10 @@ In this experiment, an artificial intelligence explores all the possible states 
 decision tree, then it is able to plays agains a human , it may win or may draw but it never loses  
   
 ![tic-tac-toe](https://user-images.githubusercontent.com/5791055/60117585-27e3ac00-972f-11e9-9e39-d8c889ba8b07.gif)
+
+#### libs and tools used on this project
+- <a href='https://github.com/cazala/synaptic'>synaptic</a> : The javascript architecture-free neural network library for node.js and the browser
+- <a href='https://requirejs.org/'> RequireJS </a> : JavaScript file and module loader
+- <a href='https://www.typescriptlang.org/'> TypeScript </a> : A typed superset of JavaScript that compiles to plain JavaScript
+- <a href='https://svgjs.com/docs/2.7/'> SVG.js </a> : The lightweight library for manipulating and animating SVG.
+- <a href='https://github.com/schteppe/p2.js/'> p2.js </a> : 2D rigid body physics engine written in JavaScript
