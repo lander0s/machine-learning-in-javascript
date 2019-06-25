@@ -1,7 +1,7 @@
-import { BoardBuilder } from './BoardBuilder'
 import { TicTacToe } from '../../../TicTacToe'
 
 export class Node {
+    public board        : number[];
     public isWinnerNode : boolean;
     public weight       : number;
     public cellIndex    : number;
@@ -10,6 +10,7 @@ export class Node {
     public children     : Node[];
 
     constructor() {
+        this.board = [0,0,0,0,0,0,0,0,0];
         this.weight = 0;
         this.cellIndex = -1;
         this.cellValue = 0;
@@ -23,24 +24,26 @@ export class Node {
                 return false;
             }
         }
+
         this.children.push(node);
         node.parentNode = this;
+        for(let i = 0; i < node.board.length; i++) {
+                 node.board[i] = this.board[i];
+        }
+        node.board[node.cellIndex] = node.cellValue;
         return true;
     }
 
-    public getBoard( bb : BoardBuilder) : void {
-        if(this.parentNode != null) {
-            this.parentNode.getBoard(bb);
-        }
-        if(this.cellIndex >= 0) {
-            bb.setCellValue(this.cellIndex, this.cellValue);
-        }
+    public getBoard() : number[] {
+        return this.board;
     }
 
     public getBoardHash() : string {
-        let bb = new BoardBuilder();
-        this.getBoard(bb);
-        return bb.getHash();
+        let hash : string = '';
+        for(let i = 0; i < 9; i++) {
+            hash += this.board[i].toString();
+        }
+        return hash;
     }
 
     public getBestMoveFor(player:TicTacToe.Players) : number {
@@ -75,7 +78,7 @@ export class Node {
             this.weight -= value;
         }
         if(this.parentNode != null) {
-            this.parentNode.propagateWin(player, value);
+            this.parentNode.propagateWin(player, value/2);
         }
     }
 }

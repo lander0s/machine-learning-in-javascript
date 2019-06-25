@@ -34,6 +34,14 @@ export class TicTacToe {
         return this.board;
     }
 
+    public getBoardHash():string {
+        let hash : string = '';
+        for(let i = 0; i < 9; i++) {
+            hash += this.board[i].toString();
+        }
+        return hash;
+    }
+
     public getPlaysOrder(): number[] {
         return this.plays;
     }

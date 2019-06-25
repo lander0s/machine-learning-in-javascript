@@ -1,6 +1,5 @@
 import { Node } from './Node'
 import { TicTacToe } from '../../../TicTacToe';
-import { BoardBuilder } from './BoardBuilder';
 
 export class DecisionTree {
 
@@ -27,9 +26,7 @@ export class DecisionTree {
                 let newNode = new Node();
                 newNode.cellIndex = crtPermutation[j];
                 newNode.cellValue = game.getPlayersTurn();
-                let bb = new BoardBuilder();
-                bb.setBoard(game.getBoard());
-                if(this.hashTable[bb.getHash()].addChild(newNode)) {
+                if(this.hashTable[game.getBoardHash()].addChild(newNode)) {
                     this.hashTable[newNode.getBoardHash()] = newNode;   
                 }
                 let x = (crtPermutation[j] % 3)|0;
@@ -38,11 +35,11 @@ export class DecisionTree {
 
                 if(game.isFinished()) {
                     if(game.getState() == TicTacToe.State.X_Won) {
-                        newNode.propagateWin(TicTacToe.Players.X_Player, 1/ i);
+                        newNode.propagateWin(TicTacToe.Players.X_Player, 1/i);
                         newNode.isWinnerNode = true;
                     }
                     else if(game.getState() == TicTacToe.State.O_Won) {
-                        newNode.propagateWin(TicTacToe.Players.O_Player, 1/ i);
+                        newNode.propagateWin(TicTacToe.Players.O_Player, 1/i);
                         newNode.isWinnerNode = true;
                     }
                     break;

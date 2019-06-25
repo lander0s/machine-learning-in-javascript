@@ -1,7 +1,6 @@
 import { AiPlayer } from '../../AiPlayer'
 import { TicTacToe } from '../../../TicTacToe';
 import { DecisionTree } from './DecisionTree'
-import { BoardBuilder  } from './BoardBuilder'
 
 export class DecisionTreePlayer extends AiPlayer {
     private decisionTree : DecisionTree;
@@ -16,11 +15,17 @@ export class DecisionTreePlayer extends AiPlayer {
     }
 
     public play(board: TicTacToe.Players[], turn : TicTacToe.Players, callback:Function) : void {
-        let bb = new BoardBuilder();
-        bb.setBoard(board);
-        let idx = this.decisionTree.getNodes()[bb.getHash()].getBestMoveFor(turn);
+        let idx = this.decisionTree.getNodes()[this.getBoardHash(board)].getBestMoveFor(turn);
         let x = (idx % 3)|0;
         let y = (idx / 3)|0;
         callback(x, y);
+    }
+
+    public getBoardHash(board: TicTacToe.Players[]) : string {
+        let hash : string = '';
+        for(let i = 0; i < 9; i++) {
+            hash += board[i].toString();
+        }
+        return hash;
     }
 }
