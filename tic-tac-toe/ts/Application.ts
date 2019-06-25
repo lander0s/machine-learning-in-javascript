@@ -70,10 +70,6 @@ export class Application {
         else if(e.srcElement.value == 'tree') {
             this.aiPlayer = new DecisionTreePlayer();
         }
-        else if(e.srcElement.value == 'ann') {
-            console.error('ann not yet implemented');
-            return;
-        }
         
         this.showTrainingMessage();
         setTimeout(() => {
