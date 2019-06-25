@@ -92,12 +92,12 @@ export class Application {
         message.style.opacity = 0;
     }
 
-    public push() : void {
-       this.game.pushContext();
+    public save() : void {
+       this.game.save();
     }
 
-    public pop() : void {
-        this.game.popContext();
+    public restore() : void {
+        this.game.restore();
         this.renderer.draw();
-     }
+    }
 }
