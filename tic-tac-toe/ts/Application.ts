@@ -91,4 +91,13 @@ export class Application {
         message.style.zIndex = -1;
         message.style.opacity = 0;
     }
+
+    public push() : void {
+       this.game.pushContext();
+    }
+
+    public pop() : void {
+        this.game.popContext();
+        this.renderer.draw();
+     }
 }

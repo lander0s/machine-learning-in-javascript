@@ -1,9 +1,22 @@
+class GameContext {
+    public state          : TicTacToe.State;
+    public board          : TicTacToe.Players[];
+    public plays          : number[];
+    public movementsCount : number;
+    public winnerCondIdx  : number;
+    public copyFrom(gameContext : GameContext) : void {
+        this.state = gameContext.state;
+        this.board = [ ... gameContext.board];
+        this.plays = [ ... gameContext.plays];
+        this.movementsCount = gameContext.movementsCount;
+        this.winnerCondIdx = gameContext.winnerCondIdx;
+    }
+}
+
 export class TicTacToe {
-    private state          : TicTacToe.State;
-    private board          : TicTacToe.Players[];
-    private plays          : number[];
-    private movementsCount : number;
-    private winnerCondIdx  : number;
+    private ctx : GameContext;
+    private ctxStack : GameContext[];
+
     private winningConditions = [
         [0, 1, 2],
         [3, 4, 5],
@@ -16,26 +29,28 @@ export class TicTacToe {
     ];
 
     constructor() {
+        this.ctxStack = [];
         this.restart();
     }
 
     public restart() : void {
-        this.state = TicTacToe.State.Playing;
-        this.movementsCount = 0;
-        this.board = [];
-        this.plays = [];
-        this.winnerCondIdx = -1;
+        this.ctx = new GameContext();
+        this.ctx.state = TicTacToe.State.Playing;
+        this.ctx.movementsCount = 0;
+        this.ctx.board = [];
+        this.ctx.plays = [];
+        this.ctx.winnerCondIdx = -1;
         for(let i = 0; i < 9; i++) {
-            this.board.push(TicTacToe.Players.None);
+            this.ctx.board.push(TicTacToe.Players.None);
         }
     }
 
     public getBoard(): number[] {
-        return this.board;
+        return this.ctx.board;
     }
 
     public getHash(): string {
-        return TicTacToe.getHash(this.board);
+        return TicTacToe.getHash(this.ctx.board);
     }
 
     public static getHash(board:number[]) : string {
@@ -47,15 +62,15 @@ export class TicTacToe {
     }
 
     public getPlaysOrder(): number[] {
-        return this.plays;
+        return this.ctx.plays;
     }
 
     public getState(): TicTacToe.State {
-        return this.state;
+        return this.ctx.state;
     }
 
     public isFinished(): boolean {
-        return this.state != TicTacToe.State.Playing;
+        return this.ctx.state != TicTacToe.State.Playing;
     }
 
     public makePlay(x: number, y: number): boolean {
@@ -65,18 +80,18 @@ export class TicTacToe {
 
         let playIndex = y * 3 + x;
         let currentPlayer = this.getPlayersTurn();
-        if(this.board[playIndex] != TicTacToe.Players.None) {
+        if(this.ctx.board[playIndex] != TicTacToe.Players.None) {
             return false;
         }
-        this.board[playIndex] = currentPlayer;
-        this.movementsCount++;
-        this.plays.push(playIndex);
+        this.ctx.board[playIndex] = currentPlayer;
+        this.ctx.movementsCount++;
+        this.ctx.plays.push(playIndex);
         this.evaluateBoard();
         return true;
     }
 
     public getPlayersTurn(): TicTacToe.Players {
-        if(this.movementsCount % 2 == 0) {
+        if(this.ctx.movementsCount % 2 == 0) {
             return TicTacToe.Players.X_Player;
         }
         else {
@@ -85,32 +100,43 @@ export class TicTacToe {
     }
 
     public evaluateBoard(): void {
-        if(this.movementsCount < 5) {
+        if(this.ctx.movementsCount < 5) {
             return;
         }
 
         for(let i = 0; i < this.winningConditions.length; i++) {
             let condition = this.winningConditions[i];
-            if(this.board[condition[0]] != TicTacToe.Players.None &&
-                this.board[condition[0]] == this.board[condition[1]] &&
-                this.board[condition[0]] == this.board[condition[2]]) {
-                if(this.board[condition[0]] == TicTacToe.Players.O_Player) {
-                    this.state = TicTacToe.State.O_Won;
+            if(this.ctx.board[condition[0]] != TicTacToe.Players.None &&
+                this.ctx.board[condition[0]] == this.ctx.board[condition[1]] &&
+                this.ctx.board[condition[0]] == this.ctx.board[condition[2]]) {
+                if(this.ctx.board[condition[0]] == TicTacToe.Players.O_Player) {
+                    this.ctx.state = TicTacToe.State.O_Won;
                 } else {
-                    this.state = TicTacToe.State.X_Won;
+                    this.ctx.state = TicTacToe.State.X_Won;
                 }
-                this.winnerCondIdx = i;                
+                this.ctx.winnerCondIdx = i;                
                 return;
             }
         }
 
-        if(this.movementsCount == 9) {
-            this.state = TicTacToe.State.Draw;
+        if(this.ctx.movementsCount == 9) {
+            this.ctx.state = TicTacToe.State.Draw;
         }
     }
 
     public getWinningConditionIndex(): number {
-        return this.winnerCondIdx;
+        return this.ctx.winnerCondIdx;
+    }
+
+    public save() : void {
+        let newCtx = new GameContext();
+        newCtx.copyFrom(this.ctx);
+        this.ctxStack.push(this.ctx);
+        this.ctx = newCtx;
+    }
+
+    public restore() : void {
+        this.ctx = this.ctxStack.pop();
     }
 }
 
