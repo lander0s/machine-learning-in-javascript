@@ -26,8 +26,8 @@ export class DecisionTree {
                 let newNode = new Node();
                 newNode.cellIndex = crtPermutation[j];
                 newNode.cellValue = game.getPlayersTurn();
-                if(this.hashTable[game.getBoardHash()].addChild(newNode)) {
-                    this.hashTable[newNode.getBoardHash()] = newNode;   
+                if(this.hashTable[game.getHash()].addChild(newNode)) {
+                    this.hashTable[newNode.getHash()] = newNode;   
                 }
                 let x = (crtPermutation[j] % 3)|0;
                 let y = (crtPermutation[j] / 3)|0;
@@ -52,7 +52,7 @@ export class DecisionTree {
     private initializeRootNode() : void {
         this.hashTable = { };
         let rootNode = new Node();
-        this.hashTable[rootNode.getBoardHash()] = rootNode;
+        this.hashTable[rootNode.getHash()] = rootNode;
     }
 
     private generatePermutations(collection : number[]) : Array<Array<number>> {

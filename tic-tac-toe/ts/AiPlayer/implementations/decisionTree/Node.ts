@@ -38,12 +38,8 @@ export class Node {
         return this.board;
     }
 
-    public getBoardHash() : string {
-        let hash : string = '';
-        for(let i = 0; i < 9; i++) {
-            hash += this.board[i].toString();
-        }
-        return hash;
+    public getHash() : string {
+        return TicTacToe.getHash(this.board);
     }
 
     public getBestMoveFor(player:TicTacToe.Players) : number {

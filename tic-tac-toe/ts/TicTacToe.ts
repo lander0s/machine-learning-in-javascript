@@ -34,10 +34,14 @@ export class TicTacToe {
         return this.board;
     }
 
-    public getBoardHash():string {
+    public getHash(): string {
+        return TicTacToe.getHash(this.board);
+    }
+
+    public static getHash(board:number[]) : string {
         let hash : string = '';
         for(let i = 0; i < 9; i++) {
-            hash += this.board[i].toString();
+            hash += board[i].toString();
         }
         return hash;
     }
@@ -67,7 +71,7 @@ export class TicTacToe {
         this.board[playIndex] = currentPlayer;
         this.movementsCount++;
         this.plays.push(playIndex);
-        this.evaluateTable();
+        this.evaluateBoard();
         return true;
     }
 
@@ -80,7 +84,7 @@ export class TicTacToe {
         }
     }
 
-    public evaluateTable(): void {
+    public evaluateBoard(): void {
         if(this.movementsCount < 5) {
             return;
         }
