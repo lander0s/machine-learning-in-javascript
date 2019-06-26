@@ -11,7 +11,7 @@ export class DecisionTreePlayer extends AiPlayer {
     }
 
     public train() : void {
-        this.decisionTree.build2();
+        this.decisionTree.build();
     }
 
     public play(board: TicTacToe.Players[], turn : TicTacToe.Players, callback:Function) : void {
