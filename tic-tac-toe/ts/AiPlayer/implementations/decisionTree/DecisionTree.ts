@@ -17,22 +17,28 @@ export class DecisionTree {
 
     public build() : void {
         this.initializeRootNode();
-        this.permutations = this.generatePermutations([0,1,2,3,4,5,6,7,8]);
-        for(let i = this.permutations.length -1 ; i >= 0; i--) {
-            let crtPermutation = this.permutations[i];
-            let game = new TicTacToe();
-            for(let j = 0; j < crtPermutation.length; j++) {
+        let game = new TicTacToe();
+        this.explore(game);
+        console.log(this.hashTable['000000000']);
+    }
 
+    private explore(game: TicTacToe) : void {
+        let board = game.getBoard();
+
+        for(let i = 0; i < board.length; i++) {
+            if(board[i] == TicTacToe.Players.None) {
+                game.save();
                 let newNode = new Node();
-                newNode.cellIndex = crtPermutation[j];
+                newNode.cellIndex = i;
                 newNode.cellValue = game.getPlayersTurn();
-                if(this.hashTable[game.getHash()].addChild(newNode)) {
-                    this.hashTable[newNode.getHash()] = newNode;   
-                }
-                let x = (crtPermutation[j] % 3)|0;
-                let y = (crtPermutation[j] / 3)|0;
-                game.makePlay(x, y);
+                let x = (i % 3)|0;
+                let y = (i / 3)|0;
 
+                if(this.hashTable[game.getHash()].addChild(newNode)) {
+                    this.hashTable[newNode.getHash()] = newNode;
+                }
+
+                game.makePlay(x, y);
                 if(game.isFinished()) {
                     if(game.getState() == TicTacToe.State.X_Won) {
                         newNode.propagateWin(TicTacToe.Players.X_Player, 1/i);
@@ -42,11 +48,13 @@ export class DecisionTree {
                         newNode.propagateWin(TicTacToe.Players.O_Player, 1/i);
                         newNode.isWinnerNode = true;
                     }
-                    break;
                 }
+                else {
+                    this.explore(game);
+                }
+                game.restore();
             }
         }
-        console.log(this.hashTable['000000000']);
     }
 
     private initializeRootNode() : void {

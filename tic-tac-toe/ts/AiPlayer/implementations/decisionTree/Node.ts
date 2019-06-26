@@ -74,7 +74,7 @@ export class Node {
             this.weight -= value;
         }
         if(this.parentNode != null) {
-            this.parentNode.propagateWin(player, value/2);
+            this.parentNode.propagateWin(player, value);
         }
     }
 }
