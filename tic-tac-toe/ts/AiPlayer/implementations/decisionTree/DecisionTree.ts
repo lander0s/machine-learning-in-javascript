@@ -17,49 +17,53 @@ export class DecisionTree {
 
     public build() : void {
         this.initializeRootNode();
-        let game = new TicTacToe();
-        this.explore(game);
-        console.log(this.hashTable['000000000']);
-    }
+        this.permutations = this.generatePermutations([0,1,2,3,4,5,6,7,8]);
+        for(let i = this.permutations.length -1 ; i >= 0; i--) {
+            let crtPermutation = this.permutations[i];
+            let game = new TicTacToe();
+            for(let j = 0; j < crtPermutation.length; j++) {
 
-    private explore(game: TicTacToe) : void {
-        let board = game.getBoard();
+                let boardHashBeforeMove = game.getHash();
+                game.makePlay(crtPermutation[j]);
+                let boardHashAfterMove = game.getHash();
 
-        for(let i = 0; i < board.length; i++) {
-            if(board[i] == TicTacToe.Players.None) {
-                game.save();
-                let newNode = new Node();
-                newNode.cellIndex = i;
-                newNode.cellValue = game.getPlayersTurn();
-                let x = (i % 3)|0;
-                let y = (i / 3)|0;
-
-                if(this.hashTable[game.getHash()].addChild(newNode)) {
-                    this.hashTable[newNode.getHash()] = newNode;
+                if(this.hashTable[boardHashAfterMove] == undefined) {
+                    this.hashTable[boardHashAfterMove] = new Node(game.getBoard());
                 }
 
-                game.makePlay(x, y);
+                this.hashTable[boardHashBeforeMove].addChild(this.hashTable[boardHashAfterMove]);
+                this.hashTable[boardHashAfterMove].addParent(this.hashTable[boardHashBeforeMove]);
+
                 if(game.isFinished()) {
                     if(game.getState() == TicTacToe.State.X_Won) {
-                        newNode.propagateWin(TicTacToe.Players.X_Player, 1/i);
-                        newNode.isWinnerNode = true;
+                        this.hashTable[boardHashAfterMove].winner = TicTacToe.Players.X_Player;
                     }
                     else if(game.getState() == TicTacToe.State.O_Won) {
-                        newNode.propagateWin(TicTacToe.Players.O_Player, 1/i);
-                        newNode.isWinnerNode = true;
+                        this.hashTable[boardHashAfterMove].winner = TicTacToe.Players.O_Player;
                     }
+                    break;
                 }
-                else {
-                    this.explore(game);
-                }
-                game.restore();
             }
         }
+
+        for(let hash in this.hashTable) {
+            let node = this.hashTable[hash];
+            if(node.winner != TicTacToe.Players.None) {
+                let steps = 0;
+                for(let i = 0; i < 9; i ++) {
+                    if(node.board[i] != TicTacToe.Players.None) {
+                        steps++;
+                    }
+                }
+                node.propagateWin(node.winner, 1 );
+            }
+        }
+        console.log(this.hashTable['000000000']);
     }
 
     private initializeRootNode() : void {
         this.hashTable = { };
-        let rootNode = new Node();
+        let rootNode = new Node([0,0,0,0,0,0,0,0,0]);
         this.hashTable[rootNode.getHash()] = rootNode;
     }
 

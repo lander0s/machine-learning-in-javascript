@@ -20,8 +20,6 @@ export class RandomAiPlayer extends AiPlayer {
         }
         let cellRange = 1.0 / emptyCellsIndices.length;
         let selectedIdx = (Math.random() / cellRange)|0;
-        let y = (emptyCellsIndices[selectedIdx] / 3)|0;
-        let x = (emptyCellsIndices[selectedIdx] % 3)|0;
-        callback(x, y);
+        callback(emptyCellsIndices[selectedIdx]);
     }
 }

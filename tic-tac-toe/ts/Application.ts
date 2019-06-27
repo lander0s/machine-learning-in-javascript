@@ -17,22 +17,22 @@ export class Application {
         this.aiPlayer = null;
         this.game = new TicTacToe();
         this.renderer = new Renderer(this.game);
-        this.renderer.onCellClicked((x:number, y:number)=> this.onCellClicked(x,y));
+        this.renderer.onCellClicked((cellIndex:number)=> this.onCellClicked(cellIndex));
         this.renderer.draw();
         document.querySelector('#opponent-selector').addEventListener('change', (e) => this.onOpponentSelected(e));
         document.querySelector('#player-selector').addEventListener('change', (e) => this.onPlayerSelected(e));
         document.querySelector('#restart-button').addEventListener('click', ()=> this.restartGame() );
     }
 
-    public onCellClicked(x:number, y:number) : void {
+    public onCellClicked(cellIndex:number) : void {
         if(this.aiPlayer != null) {
             if(!this.game.isFinished() && this.game.getPlayersTurn() == this.humanPlayer) {
-                if(this.game.makePlay(x, y)) {
+                if(this.game.makePlay(cellIndex)) {
                     this.renderer.draw();
                     if(!this.game.isFinished()) {
                         let board = this.game.getBoard();
-                        this.aiPlayer.play(board, this.cpuPlayer, (x : number, y : number) => {
-                            this.game.makePlay(x, y);
+                        this.aiPlayer.play(board, this.cpuPlayer, (cellIndex:number) => {
+                            this.game.makePlay(cellIndex);
                             this.renderer.draw();
                         });
                     }
@@ -45,8 +45,8 @@ export class Application {
         this.game.restart();
         this.renderer.draw();
         if(this.cpuPlayer == TicTacToe.Players.X_Player && this.aiPlayer != null) {
-            this.aiPlayer.play(this.game.getBoard(), TicTacToe.Players.X_Player, (x : number, y : number) => {
-                this.game.makePlay(x, y);
+            this.aiPlayer.play(this.game.getBoard(), TicTacToe.Players.X_Player, (cellIndex:number) => {
+                this.game.makePlay(cellIndex);
                 this.renderer.draw();
             });
         }

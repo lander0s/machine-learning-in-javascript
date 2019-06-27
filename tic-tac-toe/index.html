@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title> Artificial intelligence that learns how to play tic-tac-toe</title>
+        <title> Artificial intelligence that plays tic-tac-toe</title>
         <link rel="stylesheet" href="css/index.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Domine&display=swap" rel="stylesheet">
     </head>
     <body>
-        <div id='training-message'>Training...</div>
+        <div id='training-message'>Building decision tree...</div>
         <br/>
-        <label>Artificial intelligence that learns how to play tic tac toe</label>
+        <label>Artificial intelligence that plays tic tac toe</label>
         <br/><br/>
         <select id='opponent-selector'>
             <option disabled selected value> -- Select an opponent -- </option>
@@ -17,9 +17,9 @@
             <option value='tree'>Decision tree player</option>
         </select>
         <select id='player-selector'>
-                <option value='X'> Play with X </option>
-                <option value='O' selected >Play with O</option>
-            </select>
+            <option value='X'> Play with X </option>
+            <option value='O' selected >Play with O</option>
+        </select>
         <button id='restart-button'> Restart game </button>
         <br/>
         <br/>

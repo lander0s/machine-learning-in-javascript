@@ -73,19 +73,19 @@ export class TicTacToe {
         return this.ctx.state != TicTacToe.State.Playing;
     }
 
-    public makePlay(x: number, y: number): boolean {
+    public makePlay(cellIndex : number): boolean {
         if(this.isFinished()) {
             return;
         }
 
-        let playIndex = y * 3 + x;
         let currentPlayer = this.getPlayersTurn();
-        if(this.ctx.board[playIndex] != TicTacToe.Players.None) {
+        if(this.ctx.board[cellIndex] != TicTacToe.Players.None) {
             return false;
         }
-        this.ctx.board[playIndex] = currentPlayer;
+        
+        this.ctx.board[cellIndex] = currentPlayer;
         this.ctx.movementsCount++;
-        this.ctx.plays.push(playIndex);
+        this.ctx.plays.push(cellIndex);
         this.evaluateBoard();
         return true;
     }

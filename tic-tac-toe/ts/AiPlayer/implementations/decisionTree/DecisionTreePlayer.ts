@@ -15,10 +15,15 @@ export class DecisionTreePlayer extends AiPlayer {
     }
 
     public play(board: TicTacToe.Players[], turn : TicTacToe.Players, callback:Function) : void {
-        let idx = this.decisionTree.getNodes()[this.getBoardHash(board)].getBestMoveFor(turn);
-        let x = (idx % 3)|0;
-        let y = (idx / 3)|0;
-        callback(x, y);
+        let boardState = this.decisionTree.getNodes()[this.getBoardHash(board)].getBestMoveFor(turn).getBoard();
+        let selectedIdx = 0;
+        for(let i = 0 ; i < 9; i ++) {
+            if(boardState[i] != board[i]) {
+                selectedIdx = i;
+                break;
+            }
+        }
+        callback(selectedIdx);
     }
 
     public getBoardHash(board: TicTacToe.Players[]) : string {

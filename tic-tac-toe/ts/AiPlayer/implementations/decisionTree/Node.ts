@@ -1,40 +1,40 @@
 import { TicTacToe } from '../../../TicTacToe'
 
 export class Node {
-    public board        : number[];
-    public isWinnerNode : boolean;
-    public weight       : number;
-    public cellIndex    : number;
-    public cellValue    : number;
-    public parentNode   : Node;
-    public children     : Node[];
+    public board    : TicTacToe.Players[];
+    public weight   : number;
+    public children : Node[];
+    public parents  : Node[];
+    public winner   : TicTacToe.Players;
 
-    constructor() {
-        this.board = [0,0,0,0,0,0,0,0,0];
+    constructor(board: TicTacToe.Players[]) {
+        this.board = [... board];
         this.weight = 0;
-        this.cellIndex = -1;
-        this.cellValue = 0;
-        this.parentNode = null;
+        this.parents = [];
         this.children = [];
+        this.winner = TicTacToe.Players.None;
     }
 
     public addChild(node:Node) : boolean {
         for(let i = 0 ; i < this.children.length; i++) {
-            if(this.children[i].cellIndex == node.cellIndex) {
+            if(this.children[i].getHash() == node.getHash()) {
                 return false;
             }
         }
-
         this.children.push(node);
-        node.parentNode = this;
-        for(let i = 0; i < node.board.length; i++) {
-                 node.board[i] = this.board[i];
-        }
-        node.board[node.cellIndex] = node.cellValue;
         return true;
     }
 
-    public getBoard() : number[] {
+    public addParent(node:Node) : boolean {
+        for(let i = 0 ; i < this.parents.length; i++) {
+            if(this.parents[i].getHash() == node.getHash()) {
+                return false;
+            }
+        }
+        this.parents.push(node);
+    }
+
+    public getBoard() : TicTacToe.Players[] {
         return this.board;
     }
 
@@ -42,7 +42,7 @@ export class Node {
         return TicTacToe.getHash(this.board);
     }
 
-    public getBestMoveFor(player:TicTacToe.Players) : number {
+    public getBestMoveFor(player:TicTacToe.Players) : Node {
         let best = this.children[0];
         for(let i = 0; i < this.children.length; i++) {
             let node = this.children[i];
@@ -50,31 +50,23 @@ export class Node {
                 if(best.weight < node.weight) {
                     best = node;
                 }
-                if(node.isWinnerNode) {
-                    best = node;
-                    break;
-                }
             } else {
                 if(best.weight > node.weight) {
                     best = node;
                 }
-                if(node.isWinnerNode) {
-                    best = node;
-                    break;
-                }
             }
         }
-        return best.cellIndex;
+        return best;
     }
 
-    public propagateWin(player:TicTacToe.Players, value : number) : void {
+    public propagateWin(player:TicTacToe.Players, value : number = 1) : void {
         if(player == TicTacToe.Players.X_Player) {
             this.weight += value;
         } else {
             this.weight -= value;
         }
-        if(this.parentNode != null) {
-            this.parentNode.propagateWin(player, value);
-        }
+        this.parents.forEach((parentNode)=>{
+            parentNode.propagateWin(player, value);
+        });
     }
 }

@@ -32,7 +32,8 @@ export class Renderer {
         this.svgDoc.on('click', (e:any)=>{
             let x = (e.offsetX / cellSize)|0;
             let y = (e.offsetY / cellSize)|0;
-            this.cellClickedCallback(x, y);
+            let cellIndex = y * 3 + x;
+            this.cellClickedCallback(cellIndex);
         });
 
         this.winningLinesParams = [
