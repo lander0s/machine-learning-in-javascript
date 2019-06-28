@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Natural selection - simulation </title>
+        <link rel="stylesheet" href="css/index.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Domine&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <script src="libs/requirejs/require.min.js"></script>
+        <script src="js/application.js"></script>
+        <script>
+            var app = null;
+            require(["Application"], (module) => {
+                app = new module.Application();
+                app.main();
+            });
+        </script>
+    </body>
+</html>
