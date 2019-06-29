@@ -1,0 +1,17 @@
+html, body {
+    padding: 0;
+    margin: 0;
+}
+#canvas-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #AAA;
+}
+
+#main-canvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #2980b9;
+}

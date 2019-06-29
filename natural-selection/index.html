@@ -7,13 +7,22 @@
         <link href="https://fonts.googleapis.com/css?family=Domine&display=swap" rel="stylesheet">
     </head>
     <body>
+        <div id='canvas-container'>
+            <canvas id='main-canvas'></canvas>
+        </div>
         <script src="libs/requirejs/require.min.js"></script>
+        <script src="libs/perlinjs/perlin.js"></script>
         <script src="js/application.js"></script>
         <script>
             var app = null;
             require(["Application"], (module) => {
                 app = new module.Application();
                 app.main();
+                function mainLoop() {
+                    app.update();
+                    window.requestAnimationFrame(mainLoop);
+                }
+                mainLoop();
             });
         </script>
     </body>
