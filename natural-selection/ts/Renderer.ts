@@ -62,13 +62,18 @@ export class Renderer {
     }
 
     public drawCreatures() : void {
-        this.mSimulator.getCreatures().forEach( c => {
+        this.mSimulator.getCreatures().forEach( creature => {
             this.mContext.save();
-            let pos = c.getPosition();
+            let pos = creature.getPosition();
             let posInPixels = [pos[0] * this.mScale, pos[1] * this.mScale];
             this.mContext.translate(posInPixels[0], posInPixels[1]);
-            let sizeInPixels = c.getSize() * this.mScale;
-            this.mContext.fillStyle = 'maroon';
+            let sizeInPixels = creature.getSize() * this.mScale;
+            if(creature.isDead()) {
+                this.mContext.fillStyle = 'black';
+            }
+            else{
+                this.mContext.fillStyle = 'maroon';
+            }
             this.mContext.fillRect(sizeInPixels/2, sizeInPixels/2, sizeInPixels, sizeInPixels);
             this.mContext.restore();
         });

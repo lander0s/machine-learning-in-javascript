@@ -6,11 +6,13 @@ export class Creature {
     private position        : number[];
     private mTargetPosition : number[];
     private mGenome         : Genome;
+    private energy          : number;
 
     constructor() {
         this.mGenome = new Genome();
         this.mTargetPosition = [0,0];
         this.position = [0,0];
+        this.energy = 1;
     }
 
     public isSameSpecies(creature : Creature) : boolean {
@@ -27,11 +29,15 @@ export class Creature {
     }
 
     public update() : void {
+        if(this.energy <= 0) {
+            return;
+        }
         if(this.hasArrivedAtTargetPos()) {
             this.findNewTargetPosition();
         } else {
             this.moveTowardsTargetPosition();
         }
+        this.energy -= 0.001;
     }
 
     public moveTowardsTargetPosition() : void {
@@ -56,9 +62,15 @@ export class Creature {
     }
 
     public findNewTargetPosition() : void {
-        let halfTerrainsize = SimulatorConfig.terrainSizeInMts / 2;
-        this.mTargetPosition[0] = (Math.random() * SimulatorConfig.terrainSizeInMts) - halfTerrainsize;
-        this.mTargetPosition[1] = (Math.random() * SimulatorConfig.terrainSizeInMts) - halfTerrainsize;
+        let angle = Math.random() * (Math.PI * 2);
+        let stepSizeInMts = 5;
+        let x = Math.cos(angle) * stepSizeInMts;
+        let y = Math.sin(angle) * stepSizeInMts;
+        this.mTargetPosition[0] = this.position[0] + x;
+        this.mTargetPosition[1] = this.position[1] + y;
+        //let halfTerrainsize = SimulatorConfig.terrainSizeInMts / 2;
+        //this.mTargetPosition[0] = (Math.random() * SimulatorConfig.terrainSizeInMts) - halfTerrainsize;
+        //this.mTargetPosition[1] = (Math.random() * SimulatorConfig.terrainSizeInMts) - halfTerrainsize;
     }
 
     public hasArrivedAtTargetPos() : boolean {
@@ -72,5 +84,9 @@ export class Creature {
 
     public getSize() : number {
         return this.mGenome.mSize;
+    }
+
+    public isDead() : boolean {
+        return this.energy <= 0;
     }
 }

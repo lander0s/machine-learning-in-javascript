@@ -8,6 +8,7 @@ export class Application {
     public main() : void {
         this.mSimulator = new Simulator();
         this.mRenderer = new Renderer(this.mSimulator);
+        window.addEventListener('click', e => this.spawnCreature());
     }
 
     public update() : void {
