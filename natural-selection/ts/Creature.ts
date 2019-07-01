@@ -29,7 +29,7 @@ export class Creature {
     }
 
     public update() : void {
-        if(this.energy <= 0) {
+        if(this.isDead()) {
             return;
         }
         if(this.hasArrivedAtTargetPos()) {
