@@ -7,4 +7,5 @@ export const SimulatorConfig  = {
     grassTreshold      : 0.40,
     denseGrassTreshold : 0.45,
     rockTreshold       : 0.70,
+    speciesMaxDistance : 10,
 }

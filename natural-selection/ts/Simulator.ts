@@ -1,4 +1,5 @@
 import { SimulatorConfig } from './Config'
+import { Creature } from './Creature';
 declare var noise : any;
 
 export const enum Materials {
@@ -13,8 +14,11 @@ export const enum Materials {
 
 export class Simulator {
     private terrain : number[][];
+    private creatures : Creature[];
+
     constructor() {
         this.generateTerrain();
+        this.creatures = [];
     }
 
     public generateTerrain() {
@@ -62,6 +66,14 @@ export class Simulator {
     }
 
     public update() : void {
+        this.creatures.forEach( c => c.update());
+    }
 
+    public addCreature() : void {
+        this.creatures.push(new Creature());
+    }
+
+    public getCreatures() : Creature[] {
+        return this.creatures;
     }
 }

@@ -37,6 +37,7 @@ export class Renderer {
         this.mContext.scale(1, -1);
         this.mContext.translate(-this.mCameraPos[0], -this.mCameraPos[1]);
         this.drawTerrain();
+        this.drawCreatures();
         this.mContext.restore();
     }
 
@@ -58,6 +59,19 @@ export class Renderer {
             }
         }
         this.mContext.restore();
+    }
+
+    public drawCreatures() : void {
+        this.mSimulator.getCreatures().forEach( c => {
+            this.mContext.save();
+            let pos = c.getPosition();
+            let posInPixels = [pos[0] * this.mScale, pos[1] * this.mScale];
+            this.mContext.translate(posInPixels[0], posInPixels[1]);
+            let sizeInPixels = c.getSize() * this.mScale;
+            this.mContext.fillStyle = 'maroon';
+            this.mContext.fillRect(sizeInPixels/2, sizeInPixels/2, sizeInPixels, sizeInPixels);
+            this.mContext.restore();
+        });
     }
 
     public getColorForMaterial(material:Materials) : string {

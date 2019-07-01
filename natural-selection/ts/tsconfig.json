@@ -10,6 +10,8 @@
         "Application.ts",
         "Config.ts",
         "Simulator.ts",
-        "Renderer.ts"
+        "Renderer.ts",
+        "Creature.ts",
+        "Genome.ts"
     ]
 }
