@@ -1,4 +1,4 @@
-import { Simulator } from './Simulator'
+import { Materials, Simulator } from './Simulator'
 import { SimulatorConfig } from './Config';
 
 export class Renderer {
@@ -15,6 +15,13 @@ export class Renderer {
         this.mSimulator = simulator;
         this.mCanvas = document.querySelector('#main-canvas');
         this.onResize();
+        window.addEventListener('wheel', (e)=>{
+            let delta = e.deltaY * 0.015;
+            this.mScale -= delta;
+            if(this.mScale <= 1.0) {
+                this.mScale = 1.0;
+            }
+        });
     }
 
     public onResize() : void {
@@ -44,12 +51,29 @@ export class Renderer {
             for(let y = 0; y < SimulatorConfig.terrainSizeInMts; y++) {
                 let idx = y * SimulatorConfig.terrainSizeInMts + x;
                 let val = terrain[x][y] * 255;
-                this.mContext.fillStyle = `rgba(${val},${val},${val})`;
+                this.mContext.fillStyle = this.getColorForMaterial(terrain[x][y]);
                 let xPixels = (x * this.mScale) - (this.mScale/2);
                 let yPixels = (y * this.mScale) - (this.mScale/2);
-                this.mContext.fillRect(xPixels, yPixels, this.mScale, this.mScale);
+                this.mContext.fillRect(xPixels, yPixels, this.mScale+1, this.mScale+1);
             }
         }
         this.mContext.restore();
+    }
+
+    public getColorForMaterial(material:Materials) : string {
+        if(material == Materials.DEEP_WATER)
+            return '#2980b9';
+        if(material == Materials.WATER)
+            return '#3498db';
+        if(material == Materials.SAND)
+            return '#f39c12';
+        if(material == Materials.GRASS)
+            return '#1abc9c';
+        if(material == Materials.DENSE_GRASS)
+            return '#16a085';
+        if(material == Materials.ROCK)
+            return '#bdc3c7';
+        if(material == Materials.SNOW)
+            return '#ecf0f1';
     }
 }
