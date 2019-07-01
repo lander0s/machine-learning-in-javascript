@@ -74,7 +74,10 @@ export class Renderer {
             else{
                 this.mContext.fillStyle = 'maroon';
             }
-            this.mContext.fillRect(-sizeInPixels/2, -sizeInPixels/2, sizeInPixels, sizeInPixels);
+            //this.mContext.fillRect(-sizeInPixels/2, -sizeInPixels/2, sizeInPixels, sizeInPixels);
+            this.mContext.beginPath();
+            this.mContext.arc(0, 0, sizeInPixels / 2, 0, 2 * Math.PI);
+            this.mContext.fill();
             this.mContext.restore();
         });
     }
