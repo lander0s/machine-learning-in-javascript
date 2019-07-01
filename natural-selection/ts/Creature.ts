@@ -68,9 +68,6 @@ export class Creature {
         let y = Math.sin(angle) * stepSizeInMts;
         this.mTargetPosition[0] = this.position[0] + x;
         this.mTargetPosition[1] = this.position[1] + y;
-        //let halfTerrainsize = SimulatorConfig.terrainSizeInMts / 2;
-        //this.mTargetPosition[0] = (Math.random() * SimulatorConfig.terrainSizeInMts) - halfTerrainsize;
-        //this.mTargetPosition[1] = (Math.random() * SimulatorConfig.terrainSizeInMts) - halfTerrainsize;
     }
 
     public hasArrivedAtTargetPos() : boolean {
