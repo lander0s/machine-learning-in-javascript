@@ -29,7 +29,7 @@ export class Simulator {
             for(let y = 0; y < SimulatorConfig.terrainSizeInMts; y++) {
                 let dx = x - SimulatorConfig.terrainSizeInMts/2;
                 let dy = y - SimulatorConfig.terrainSizeInMts/2;
-                dy *=  1.0;
+                dy *=  1.1;
                 dx *=  0.8;
                 let distanceToCenter= Math.sqrt(dx*dx + dy*dy);
                 let n = (noise.perlin2(x/10, y/10) + 1 ) / 2;
