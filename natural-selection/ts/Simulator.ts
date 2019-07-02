@@ -32,18 +32,22 @@ export class Simulator {
         for(let x = 0; x < SimulatorConfig.terrainSizeInMts; x++) {
             this.terrain[x] = [];
             for(let y = 0; y < SimulatorConfig.terrainSizeInMts; y++) {
-                let dx = x - halfTerrainSize;
-                let dy = y - halfTerrainSize;
-                dy *=  1.1;
-                dx *=  0.8;
-                let distanceToCenter= Math.sqrt(dx*dx + dy*dy);
+                let worldPos = this.terrainCoordsToWorldPosition(x, y);
+                let worldPosCopy = [... worldPos];
+                worldPosCopy[1] *= 1.3; // so the island has an oval shape
+                let distanceToCenter = Math.sqrt(worldPosCopy[0] * worldPosCopy[0] + worldPosCopy[1] * worldPosCopy[1]);
                 let n = (noise.perlin2(x/10, y/10) + 1 ) / 2;
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
                 let material = this.getBiome(n);
                 this.terrain[x][y] = material;
-                this.checkSpawnBush(n, [x - halfTerrainSize, y - halfTerrainSize]);
+                this.checkSpawnBush(n, worldPos);
             }
         }
+    }
+
+    public terrainCoordsToWorldPosition(x:number, y:number) : number[] {
+        const halfTerrainSize = SimulatorConfig.terrainSizeInMts / 2;
+        return [x - halfTerrainSize, y - halfTerrainSize];
     }
 
     public checkSpawnBush(perlinNoiseOutput:number, position:number[]) {
