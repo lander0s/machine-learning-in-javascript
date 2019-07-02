@@ -1,19 +1,26 @@
-import { Biomes, Simulator } from './Simulator'
+import { Simulator } from './Simulator'
+import { Biomes } from './Terrain'
 import { SimulatorConfig } from './Config';
 
 export class Renderer {
 
-    private mSimulator : Simulator;
-    private mCanvas    : HTMLCanvasElement;
-    private mContext   : CanvasRenderingContext2D;
-    private mScale     : number;
-    private mCameraPos : number[];
+    private mSimulator         : Simulator;
+    private mCanvas            : HTMLCanvasElement;
+    private mContext           : CanvasRenderingContext2D;
+    private mBackgroundCanvas  : HTMLCanvasElement;
+    private mBackgroundContext : CanvasRenderingContext2D;
+    private mScale             : number;
+    private mCameraPos         : number[];
+    private mNeedTerrainRender : boolean;
+    private mVisibleArea       : number[]
     
     constructor(simulator:Simulator) {
         this.mScale = 10.0;
         this.mCameraPos = [0, 0];
         this.mSimulator = simulator;
         this.mCanvas = document.querySelector('#main-canvas');
+        this.mBackgroundCanvas = document.querySelector('#background-canvas');
+        this.mNeedTerrainRender = true;
         this.onResize();
         this.initializeMouseEventHandlers();
     }
@@ -29,6 +36,8 @@ export class Renderer {
             let toOffsetInMts = (1 / previousScale - 1 / this.mScale);
             this.mCameraPos[0] += cursorCartesianCoords[0] * toOffsetInMts;
             this.mCameraPos[1] += cursorCartesianCoords[1] * toOffsetInMts;
+            this.mNeedTerrainRender = true;
+            this.updateVisibleArea();
         });
         window.addEventListener('mousemove', e => {
             const leftMouseButton = 1;
@@ -36,14 +45,30 @@ export class Renderer {
                 let offsetInMts = [e.movementX / this.mScale, -e.movementY / this.mScale];
                 this.mCameraPos[0] -= offsetInMts[0];
                 this.mCameraPos[1] -= offsetInMts[1];
+                this.mNeedTerrainRender = true;
+                this.updateVisibleArea();
             }
         });
+    }
+
+    public updateVisibleArea() : void {
+        let halfScreenWidthInMts = (window.innerWidth / this.mScale)/2;
+        let halfScreenHeightInMts = (window.innerWidth / this.mScale)/2;
+        this.mVisibleArea = [];
+        this.mVisibleArea[0] = this.mCameraPos[0] - (halfScreenWidthInMts + 2);
+        this.mVisibleArea[1] = this.mCameraPos[1] - (halfScreenHeightInMts + 2);
+        this.mVisibleArea[2] = this.mCameraPos[0] + (halfScreenWidthInMts + 2);
+        this.mVisibleArea[3] = this.mCameraPos[1] + (halfScreenHeightInMts + 2);
     }
 
     public onResize() : void {
         this.mCanvas.width = window.innerWidth;
         this.mCanvas.height = window.innerHeight;
         this.mContext = this.mCanvas.getContext('2d');
+        this.mBackgroundCanvas.width = window.innerWidth;
+        this.mBackgroundCanvas.height = window.innerHeight;
+        this.mBackgroundContext = this.mBackgroundCanvas.getContext('2d');
+        this.updateVisibleArea();
     }
 
     public draw() : void {
@@ -59,23 +84,39 @@ export class Renderer {
     }
 
     public drawTerrain() : void {
-        this.mContext.save();
-        let terrain = this.mSimulator.getTerrain();
+        if(!this.mNeedTerrainRender) {
+            return;
+        }
+        this.mBackgroundContext.save();
+        this.mBackgroundContext.clearRect(0, 0, this.mBackgroundCanvas.width, this.mBackgroundCanvas.height);
+        this.mBackgroundContext.translate(this.mBackgroundCanvas.width/2, this.mBackgroundCanvas.height/2);
+        this.mBackgroundContext.scale(1, -1);
+        this.mBackgroundContext.translate(-this.mCameraPos[0] * this.mScale, -this.mCameraPos[1] * this.mScale);
+        let terrain = this.mSimulator.getTerrain().getTiles();
         let terrainSizeInPixels = SimulatorConfig.terrainSizeInMts * this.mScale;
         let halfTerrainSizeInPixels = terrainSizeInPixels / 2;
-        this.mContext.strokeStyle = 'white';
-        this.mContext.translate(-halfTerrainSizeInPixels,-halfTerrainSizeInPixels);
-        for(let x = 0; x < SimulatorConfig.terrainSizeInMts; x++) {
-            for(let y = 0; y < SimulatorConfig.terrainSizeInMts; y++) {
+        this.mBackgroundContext.strokeStyle = 'white';
+        this.mBackgroundContext.translate(-halfTerrainSizeInPixels,-halfTerrainSizeInPixels);
+
+        let clip : number[] = [];
+        this.mVisibleArea.forEach( val => {
+            let cellVal = (val + SimulatorConfig.terrainSizeInMts/2)|0;
+            cellVal = Math.max(Math.min(cellVal, SimulatorConfig.terrainSizeInMts-1), 1);
+            clip.push(cellVal);
+        });
+
+        for(let x = clip[0]; x < clip[2]; x++) {
+            for(let y = clip[1]; y < clip[3]; y++) {
                 let idx = y * SimulatorConfig.terrainSizeInMts + x;
                 let val = terrain[x][y] * 255;
-                this.mContext.fillStyle = this.getColorForMaterial(terrain[x][y]);
+                this.mBackgroundContext.fillStyle = this.getColorForMaterial(terrain[x][y]);
                 let xPixels = (x * this.mScale) - (this.mScale/2);
                 let yPixels = (y * this.mScale) - (this.mScale/2);
-                this.mContext.fillRect(xPixels, yPixels, this.mScale+1, this.mScale+1);
+                this.mBackgroundContext.fillRect(xPixels, yPixels, this.mScale+1, this.mScale+1);
             }
         }
-        this.mContext.restore();
+        this.mBackgroundContext.restore();
+        this.mNeedTerrainRender = false;
     }
 
     public drawBushes() : void {
@@ -131,7 +172,6 @@ export class Renderer {
             else{
                 this.mContext.fillStyle = 'maroon';
             }
-            //this.mContext.fillRect(-sizeInPixels/2, -sizeInPixels/2, sizeInPixels, sizeInPixels);
             this.mContext.beginPath();
             this.mContext.arc(0, 0, sizeInPixels / 2, 0, 2 * Math.PI);
             this.mContext.fill();

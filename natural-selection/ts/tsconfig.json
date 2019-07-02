@@ -13,6 +13,7 @@
         "Renderer.ts",
         "Creature.ts",
         "Genome.ts",
-        "Bush.ts"
+        "Bush.ts",
+        "Terrain.ts"
     ]
 }
