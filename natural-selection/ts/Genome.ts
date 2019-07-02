@@ -6,7 +6,7 @@ export class Genome {
 
     constructor() {
         this.mSpeed = Math.random();
-        this.mSize = Math.random() * 1 + 0.5;
+        this.mSize = Math.random() * 0.5 + 0.5;
     }
 
     public crossOver(daddy:Genome, mum:Genome) {
