@@ -41,12 +41,12 @@ export class Simulator {
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
                 let material = this.getBiome(n);
                 this.terrain[x][y] = material;
-                this.CheckSpawnBush(n, [x - halfTerrainSize, y - halfTerrainSize]);
+                this.checkSpawnBush(n, [x - halfTerrainSize, y - halfTerrainSize]);
             }
         }
     }
 
-    public CheckSpawnBush(perlinNoiseOutput:number, position:number[]) {
+    public checkSpawnBush(perlinNoiseOutput:number, position:number[]) {
         const bushRange = 0.01;
 
         let grasslandRange = SimulatorConfig.grasslandTreshold - SimulatorConfig.desertTreshold;
