@@ -12,6 +12,7 @@
         "Simulator.ts",
         "Renderer.ts",
         "Creature.ts",
-        "Genome.ts"
+        "Genome.ts",
+        "Bush.ts"
     ]
 }

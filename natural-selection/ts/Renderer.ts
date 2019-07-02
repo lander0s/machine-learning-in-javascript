@@ -21,6 +21,7 @@ export class Renderer {
             if(this.mScale <= 1.0) {
                 this.mScale = 1.0;
             }
+            console.log(this.mScale);
         });
     }
 
@@ -37,6 +38,7 @@ export class Renderer {
         this.mContext.scale(1, -1);
         this.mContext.translate(-this.mCameraPos[0], -this.mCameraPos[1]);
         this.drawTerrain();
+        this.drawBushes();
         this.drawCreatures();
         this.mContext.restore();
     }
@@ -59,6 +61,46 @@ export class Renderer {
             }
         }
         this.mContext.restore();
+    }
+
+    public drawBushes() : void {
+        if(this.mScale <= 10.0) {
+            return;
+        }
+        this.mSimulator.getBushes().forEach( bush => {
+            this.mContext.save();
+            let pos = bush.getPosition();
+            this.mContext.translate( pos[0] * this.mScale, pos[1] * this.mScale);
+            this.mContext.translate( 0, -0.25 * this.mScale);
+            this.mContext.beginPath();
+            this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI);
+            this.mContext.fillStyle = 'green';
+            this.mContext.fill();
+            this.mContext.translate( 0,  0.30 * this.mScale);
+            this.mContext.beginPath();
+            this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI*2);
+            this.mContext.fillStyle = 'green';
+            this.mContext.fill();
+            this.drawFruits(bush.getFruitCount());
+            this.mContext.restore();
+        });
+    }
+
+    public drawFruits(count : number) : void {
+        if(this.mScale <= 30) {
+            return;
+        }
+        let angleBetweenFruits =  Math.PI / count;
+        for(let i = 0; i < count; i++) {
+            this.mContext.save();
+            let angle = angleBetweenFruits * i;
+            this.mContext.rotate(-angle);
+            this.mContext.beginPath();
+            this.mContext.arc(-0.15 * this.mScale, 0.0, 0.025 * this.mScale, 0, Math.PI * 2);
+            this.mContext.fillStyle = 'red';
+            this.mContext.fill();
+            this.mContext.restore();
+        }
     }
 
     public drawCreatures() : void {
