@@ -41,22 +41,24 @@ export class Simulator {
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
                 let material = this.getBiome(n);
                 this.terrain[x][y] = material;
-                this.checkSpawnBush(n, [x - halfTerrainSize, y - halfTerrainSize]);
+                this.tryToSpawnBush(n, [x - halfTerrainSize, y - halfTerrainSize]);
             }
         }
     }
 
-    public checkSpawnBush(terrainValue:number, position:number[]) {
-        let grassRange = SimulatorConfig.grasslandTreshold - SimulatorConfig.desertTreshold;
-        let grassCenter = (grassRange)/2 + SimulatorConfig.desertTreshold;
-        let bushRange = 0.01;
-        if(terrainValue > grassCenter - bushRange*grassRange && terrainValue < grassCenter + bushRange*grassRange) {
-            this.bushes.push(new Bush(position));
-        }
+    public tryToSpawnBush(perlinNoiseOutput:number, position:number[]) {
+        const bushRange = 0.01;
 
-        let denseGrassRange = SimulatorConfig.forestTreshold - SimulatorConfig.grasslandTreshold;
-        let denseGrassCenter = (denseGrassRange)/2 + SimulatorConfig.grasslandTreshold;
-        if(terrainValue > denseGrassCenter - bushRange*denseGrassRange && terrainValue < denseGrassCenter + bushRange*denseGrassRange) {
+        let grasslandRange = SimulatorConfig.grasslandTreshold - SimulatorConfig.desertTreshold;
+        let grasslandRangeCenter = grasslandRange / 2 + SimulatorConfig.desertTreshold;
+        let bushRangeInGrassland = bushRange*grasslandRange;
+
+        let forestRange = SimulatorConfig.forestTreshold - SimulatorConfig.grasslandTreshold;
+        let forestRangeCenter = forestRange / 2 + SimulatorConfig.grasslandTreshold;
+        let bushRangeInForest = bushRange*forestRange;
+
+        if(Math.abs(perlinNoiseOutput - grasslandRangeCenter) < bushRangeInGrassland
+           || Math.abs(perlinNoiseOutput - forestRangeCenter) < bushRangeInForest ) {
             this.bushes.push(new Bush(position));
         }
     }
