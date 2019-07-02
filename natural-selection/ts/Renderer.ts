@@ -124,21 +124,23 @@ export class Renderer {
             return;
         }
         this.mSimulator.getBushes().forEach( bush => {
-            this.mContext.save();
             let pos = bush.getPosition();
-            this.mContext.translate( pos[0] * this.mScale, pos[1] * this.mScale);
-            this.mContext.translate( 0, -0.25 * this.mScale);
-            this.mContext.beginPath();
-            this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI);
-            this.mContext.fillStyle = 'green';
-            this.mContext.fill();
-            this.mContext.translate( 0,  0.30 * this.mScale);
-            this.mContext.beginPath();
-            this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI*2);
-            this.mContext.fillStyle = 'green';
-            this.mContext.fill();
-            this.drawFruits(bush.getFruitCount());
-            this.mContext.restore();
+            if(this.isInVisibleArea(pos)) {
+                this.mContext.save();
+                this.mContext.translate( pos[0] * this.mScale, pos[1] * this.mScale);
+                this.mContext.translate( 0, -0.25 * this.mScale);
+                this.mContext.beginPath();
+                this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI);
+                this.mContext.fillStyle = 'green';
+                this.mContext.fill();
+                this.mContext.translate( 0,  0.30 * this.mScale);
+                this.mContext.beginPath();
+                this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI*2);
+                this.mContext.fillStyle = 'green';
+                this.mContext.fill();
+                this.drawFruits(bush.getFruitCount());
+                this.mContext.restore();
+            }
         });
     }
 
@@ -159,23 +161,27 @@ export class Renderer {
         }
     }
 
+    public isInVisibleArea(pos:number[]) : boolean {
+        return pos[0] >= this.mVisibleArea[0]
+            && pos[0] <= this.mVisibleArea[2]
+            && pos[1] >= this.mVisibleArea[1]
+            && pos[1] <= this.mVisibleArea[3];
+    }
+
     public drawCreatures() : void {
         this.mSimulator.getCreatures().forEach( creature => {
-            this.mContext.save();
             let pos = creature.getPosition();
-            let posInPixels = [pos[0] * this.mScale, pos[1] * this.mScale];
-            this.mContext.translate(posInPixels[0], posInPixels[1]);
-            let sizeInPixels = creature.getSize() * this.mScale;
-            if(creature.isDead()) {
-                this.mContext.fillStyle = 'black';
+            if(this.isInVisibleArea(pos)) {
+                this.mContext.save();
+                let posInPixels = [pos[0] * this.mScale, pos[1] * this.mScale];
+                this.mContext.translate(posInPixels[0], posInPixels[1]);
+                let sizeInPixels = creature.getSize() * this.mScale;
+                this.mContext.fillStyle = creature.isDead() ? 'black' : 'maroon';
+                this.mContext.beginPath();
+                this.mContext.arc(0, 0, sizeInPixels / 2, 0, 2 * Math.PI);
+                this.mContext.fill();
+                this.mContext.restore();
             }
-            else{
-                this.mContext.fillStyle = 'maroon';
-            }
-            this.mContext.beginPath();
-            this.mContext.arc(0, 0, sizeInPixels / 2, 0, 2 * Math.PI);
-            this.mContext.fill();
-            this.mContext.restore();
         });
     }
 
