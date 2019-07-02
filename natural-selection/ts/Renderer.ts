@@ -1,4 +1,4 @@
-import { Materials, Simulator } from './Simulator'
+import { Biomes, Simulator } from './Simulator'
 import { SimulatorConfig } from './Config';
 
 export class Renderer {
@@ -124,20 +124,20 @@ export class Renderer {
         });
     }
 
-    public getColorForMaterial(material:Materials) : string {
-        if(material == Materials.DEEP_WATER)
+    public getColorForMaterial(material:Biomes) : string {
+        if(material == Biomes.DEEP_WATER)
             return '#2980b9';
-        if(material == Materials.WATER)
+        if(material == Biomes.WATER)
             return '#3498db';
-        if(material == Materials.SAND)
+        if(material == Biomes.DESERT)
             return '#f39c12';
-        if(material == Materials.GRASS)
+        if(material == Biomes.GRASSLAND)
             return '#1abc9c';
-        if(material == Materials.DENSE_GRASS)
+        if(material == Biomes.FOREST)
             return '#16a085';
-        if(material == Materials.ROCK)
+        if(material == Biomes.MOUNTAIN)
             return '#bdc3c7';
-        if(material == Materials.SNOW)
+        if(material == Biomes.SNOW)
             return '#ecf0f1';
     }
 }

@@ -4,13 +4,13 @@ import { Bush } from './Bush'
 
 declare var noise : any;
 
-export const enum Materials {
+export const enum Biomes {
     WATER,
     DEEP_WATER,
-    SAND,
-    GRASS,
-    DENSE_GRASS,
-    ROCK,
+    DESERT,
+    GRASSLAND,
+    FOREST,
+    MOUNTAIN,
     SNOW
 }
 
@@ -39,7 +39,7 @@ export class Simulator {
                 let distanceToCenter= Math.sqrt(dx*dx + dy*dy);
                 let n = (noise.perlin2(x/10, y/10) + 1 ) / 2;
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
-                let material = this.getMaterial(n);
+                let material = this.getBiome(n);
                 this.terrain[x][y] = material;
                 this.checkSpawnBush(n, [x - halfTerrainSize, y - halfTerrainSize]);
             }
@@ -47,15 +47,15 @@ export class Simulator {
     }
 
     public checkSpawnBush(terrainValue:number, position:number[]) {
-        let grassRange = SimulatorConfig.grassTreshold - SimulatorConfig.sandTreshold;
-        let grassCenter = (grassRange)/2 + SimulatorConfig.sandTreshold;
+        let grassRange = SimulatorConfig.grasslandTreshold - SimulatorConfig.desertTreshold;
+        let grassCenter = (grassRange)/2 + SimulatorConfig.desertTreshold;
         let bushRange = 0.01;
         if(terrainValue > grassCenter - bushRange*grassRange && terrainValue < grassCenter + bushRange*grassRange) {
             this.bushes.push(new Bush(position));
         }
 
-        let denseGrassRange = SimulatorConfig.denseGrassTreshold - SimulatorConfig.grassTreshold;
-        let denseGrassCenter = (denseGrassRange)/2 + SimulatorConfig.grassTreshold;
+        let denseGrassRange = SimulatorConfig.forestTreshold - SimulatorConfig.grasslandTreshold;
+        let denseGrassCenter = (denseGrassRange)/2 + SimulatorConfig.grasslandTreshold;
         if(terrainValue > denseGrassCenter - bushRange*denseGrassRange && terrainValue < denseGrassCenter + bushRange*denseGrassRange) {
             this.bushes.push(new Bush(position));
         }
@@ -65,26 +65,26 @@ export class Simulator {
         return this.bushes;
     }
 
-    public getMaterial(f:number) : Materials {
-        if(f < SimulatorConfig.deepWaterTreshold) {
-            return Materials.DEEP_WATER;
+    public getBiome(perlinNoiseOutput:number) : Biomes {
+        if(perlinNoiseOutput < SimulatorConfig.deepWaterTreshold) {
+            return Biomes.DEEP_WATER;
         }
-        if(f < SimulatorConfig.waterTreshold) {
-            return Materials.WATER;
+        if(perlinNoiseOutput < SimulatorConfig.waterTreshold) {
+            return Biomes.WATER;
         }
-        if(f < SimulatorConfig.sandTreshold) {
-            return Materials.SAND;
+        if(perlinNoiseOutput < SimulatorConfig.desertTreshold) {
+            return Biomes.DESERT;
         }
-        if(f < SimulatorConfig.grassTreshold) {
-            return Materials.GRASS;
+        if(perlinNoiseOutput < SimulatorConfig.grasslandTreshold) {
+            return Biomes.GRASSLAND;
         }
-        if(f < SimulatorConfig.denseGrassTreshold) {
-            return Materials.DENSE_GRASS;
+        if(perlinNoiseOutput < SimulatorConfig.forestTreshold) {
+            return Biomes.FOREST;
         }
-        if(f < SimulatorConfig.rockTreshold) {
-            return Materials.ROCK;
+        if(perlinNoiseOutput < SimulatorConfig.mountainTreshold) {
+            return Biomes.MOUNTAIN;
         }
-        return Materials.SNOW;
+        return Biomes.SNOW;
     }
 
     public getTerrain() : number[][] {
