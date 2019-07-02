@@ -26,7 +26,7 @@ export class Simulator {
     }
 
     public generateTerrain() {
-        noise.seed(Math.random());
+        noise.seed(23);
         this.terrain = [];
         const halfTerrainSize = SimulatorConfig.terrainSizeInMts/2;
         for(let x = 0; x < SimulatorConfig.terrainSizeInMts; x++) {
@@ -41,15 +41,22 @@ export class Simulator {
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
                 let material = this.getMaterial(n);
                 this.terrain[x][y] = material;
-                this.checkSpawnBush(material, [x - halfTerrainSize, y - halfTerrainSize]);
+                this.checkSpawnBush(n, [x - halfTerrainSize, y - halfTerrainSize]);
             }
         }
     }
 
-    public checkSpawnBush(material:Materials, position:number[]) {
-        let rand = Math.random();
-        let chance = material == Materials.GRASS ? 0.01 : material == Materials.DENSE_GRASS ? 0.05 : 0.0;
-        if(rand < chance) {
+    public checkSpawnBush(terrainValue:number, position:number[]) {
+        let grassRange = SimulatorConfig.grassTreshold - SimulatorConfig.sandTreshold;
+        let grassCenter = (grassRange)/2 + SimulatorConfig.sandTreshold;
+        let bushRange = 0.01;
+        if(terrainValue > grassCenter - bushRange*grassRange && terrainValue < grassCenter + bushRange*grassRange) {
+            this.bushes.push(new Bush(position));
+        }
+
+        let denseGrassRange = SimulatorConfig.denseGrassTreshold - SimulatorConfig.grassTreshold;
+        let denseGrassCenter = (denseGrassRange)/2 + SimulatorConfig.grassTreshold;
+        if(terrainValue > denseGrassCenter - bushRange*denseGrassRange && terrainValue < denseGrassCenter + bushRange*denseGrassRange) {
             this.bushes.push(new Bush(position));
         }
     }
