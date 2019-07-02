@@ -15,13 +15,28 @@ export class Renderer {
         this.mSimulator = simulator;
         this.mCanvas = document.querySelector('#main-canvas');
         this.onResize();
+        this.initializeMouseEventHandlers();
+    }
+
+    public initializeMouseEventHandlers() : void {
         window.addEventListener('wheel', (e)=>{
-            let delta = e.deltaY * 0.015;
-            this.mScale -= delta;
-            if(this.mScale <= 1.0) {
-                this.mScale = 1.0;
+            let previousScale = this.mScale;
+            let delta = e.deltaY / 100;
+            this.mScale *= Math.pow(1.1, -delta);
+            this.mScale = Math.max(Math.min(this.mScale, 1000), 1);
+
+            let cursorCartesianCoords = [(e.offsetX - window.innerWidth/2), -(e.offsetY - window.innerHeight/2)];
+            let toOffsetInMts = (1 / previousScale - 1 / this.mScale);
+            this.mCameraPos[0] += cursorCartesianCoords[0] * toOffsetInMts;
+            this.mCameraPos[1] += cursorCartesianCoords[1] * toOffsetInMts;
+        });
+        window.addEventListener('mousemove', e => {
+            const leftMouseButton = 1;
+            if(e.buttons === leftMouseButton) {
+                let offsetInMts = [e.movementX / this.mScale, -e.movementY / this.mScale];
+                this.mCameraPos[0] -= offsetInMts[0];
+                this.mCameraPos[1] -= offsetInMts[1];
             }
-            console.log(this.mScale);
         });
     }
 
@@ -36,7 +51,7 @@ export class Renderer {
         this.mContext.save();
         this.mContext.translate(this.mCanvas.width/2, this.mCanvas.height/2);
         this.mContext.scale(1, -1);
-        this.mContext.translate(-this.mCameraPos[0], -this.mCameraPos[1]);
+        this.mContext.translate(-this.mCameraPos[0] * this.mScale, -this.mCameraPos[1] * this.mScale);
         this.drawTerrain();
         this.drawBushes();
         this.drawCreatures();
@@ -64,7 +79,7 @@ export class Renderer {
     }
 
     public drawBushes() : void {
-        if(this.mScale <= 10.0) {
+        if(this.mScale <= 5.0) {
             return;
         }
         this.mSimulator.getBushes().forEach( bush => {
