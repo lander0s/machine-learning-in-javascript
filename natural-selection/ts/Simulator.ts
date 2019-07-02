@@ -26,7 +26,7 @@ export class Simulator {
     }
 
     public generateTerrain() {
-        noise.seed(23);
+        noise.seed(Math.random());
         this.terrain = [];
         const halfTerrainSize = SimulatorConfig.terrainSizeInMts/2;
         for(let x = 0; x < SimulatorConfig.terrainSizeInMts; x++) {
