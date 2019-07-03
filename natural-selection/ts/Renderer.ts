@@ -13,9 +13,10 @@ export class Renderer {
     private mCameraPos         : number[];
     private mNeedTerrainRender : boolean;
     private mVisibleArea       : number[]
+    private mTerrainTexture    : HTMLImageElement;
     
     constructor(simulator:Simulator) {
-        this.mScale = 10.0;
+        this.mScale = 20;
         this.mCameraPos = [0, 0];
         this.mSimulator = simulator;
         this.mCanvas = document.querySelector('#main-canvas');
@@ -23,6 +24,7 @@ export class Renderer {
         this.mNeedTerrainRender = true;
         this.onResize();
         this.initializeMouseEventHandlers();
+        this.createTerrainTexture();
     }
 
     public initializeMouseEventHandlers() : void {
@@ -38,6 +40,7 @@ export class Renderer {
             this.mCameraPos[1] += cursorCartesianCoords[1] * toOffsetInMts;
             this.mNeedTerrainRender = true;
             this.updateVisibleArea();
+            console.log(this.mScale);
         });
         window.addEventListener('mousemove', e => {
             const leftMouseButton = 1;
@@ -65,8 +68,8 @@ export class Renderer {
         this.mCanvas.width = window.innerWidth;
         this.mCanvas.height = window.innerHeight;
         this.mContext = this.mCanvas.getContext('2d');
-        this.mBackgroundCanvas.width = window.innerWidth;
-        this.mBackgroundCanvas.height = window.innerHeight;
+        this.mBackgroundCanvas.width = SimulatorConfig.terrainSizeInMts;
+        this.mBackgroundCanvas.height = SimulatorConfig.terrainSizeInMts;
         this.mBackgroundContext = this.mBackgroundCanvas.getContext('2d');
         this.updateVisibleArea();
     }
@@ -83,44 +86,37 @@ export class Renderer {
         this.mContext.restore();
     }
 
-    public drawTerrain() : void {
-        if(!this.mNeedTerrainRender) {
-            return;
-        }
+    public createTerrainTexture() {
         this.mBackgroundContext.save();
         this.mBackgroundContext.clearRect(0, 0, this.mBackgroundCanvas.width, this.mBackgroundCanvas.height);
-        this.mBackgroundContext.translate(this.mBackgroundCanvas.width/2, this.mBackgroundCanvas.height/2);
-        this.mBackgroundContext.scale(1, -1);
-        this.mBackgroundContext.translate(-this.mCameraPos[0] * this.mScale, -this.mCameraPos[1] * this.mScale);
         let terrain = this.mSimulator.getTerrain().getTiles();
-        let terrainSizeInPixels = SimulatorConfig.terrainSizeInMts * this.mScale;
-        let halfTerrainSizeInPixels = terrainSizeInPixels / 2;
-        this.mBackgroundContext.strokeStyle = 'white';
-        this.mBackgroundContext.translate(-halfTerrainSizeInPixels,-halfTerrainSizeInPixels);
-
-        let clip : number[] = [];
-        this.mVisibleArea.forEach( val => {
-            let cellVal = (val + SimulatorConfig.terrainSizeInMts/2)|0;
-            cellVal = Math.max(Math.min(cellVal, SimulatorConfig.terrainSizeInMts-1), 1);
-            clip.push(cellVal);
-        });
-
-        for(let x = clip[0]; x < clip[2]; x++) {
-            for(let y = clip[1]; y < clip[3]; y++) {
+        let terrainSizeInPixels = SimulatorConfig.terrainSizeInMts;
+        for(let x = 0; x < SimulatorConfig.terrainSizeInMts; x++) {
+            for(let y = 0; y < SimulatorConfig.terrainSizeInMts; y++) {
                 let idx = y * SimulatorConfig.terrainSizeInMts + x;
                 let val = terrain[x][y] * 255;
                 this.mBackgroundContext.fillStyle = this.getColorForMaterial(terrain[x][y]);
-                let xPixels = (x * this.mScale) - (this.mScale/2);
-                let yPixels = (y * this.mScale) - (this.mScale/2);
+                let xPixels = x;
+                let yPixels = y;
                 this.mBackgroundContext.fillRect(xPixels, yPixels, this.mScale+1, this.mScale+1);
             }
         }
         this.mBackgroundContext.restore();
-        this.mNeedTerrainRender = false;
+        this.mTerrainTexture = new Image();
+        this.mTerrainTexture.src = this.mBackgroundCanvas.toDataURL('image/webp', 1);
+    }
+
+    public drawTerrain() : void {
+        let offsetX = (window.innerWidth/2) - (SimulatorConfig.terrainSizeInMts/2);
+        let offsetY = (window.innerHeight/2) - (SimulatorConfig.terrainSizeInMts/2);
+        this.mBackgroundCanvas.style.transform = `translate(${offsetX}px,${offsetY}px)`;
+        this.mBackgroundCanvas.style.transform += `scale(${this.mScale})`;
+        this.mBackgroundCanvas.style.transform += `translate(${-this.mCameraPos[0] - 0.5}px,${this.mCameraPos[1] + 0.5}px)`;
+        this.mBackgroundCanvas.style.transform += `scale(1, -1)`;
     }
 
     public drawBushes() : void {
-        if(this.mScale <= 5.0) {
+        if(this.mScale <= 10.0) {
             return;
         }
         this.mSimulator.getBushes().forEach( bush => {
@@ -169,6 +165,9 @@ export class Renderer {
     }
 
     public drawCreatures() : void {
+        if(this.mScale <= 10.0) {
+            return;
+        }
         this.mSimulator.getCreatures().forEach( creature => {
             let pos = creature.getPosition();
             if(this.isInVisibleArea(pos)) {
