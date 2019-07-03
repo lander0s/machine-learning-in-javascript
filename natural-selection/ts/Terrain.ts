@@ -16,6 +16,7 @@ export class Terrain {
     private mBushesPosition : number[][];
 
     public generate() : void {
+        let perlinScale = 0.1 / (SimulatorConfig.terrainSizeInMts/128);
         noise.seed(Math.random());
         this.mTiles = [];
         this.mBushesPosition = [];
@@ -27,7 +28,7 @@ export class Terrain {
                 let worldPosCopy = [... worldPos];
                 worldPosCopy[1] *= 1.3; // so the island has an oval shape
                 let distanceToCenter = Math.sqrt(worldPosCopy[0] * worldPosCopy[0] + worldPosCopy[1] * worldPosCopy[1]);
-                let n = (noise.perlin2(x/10, y/10) + 1 ) / 2;
+                let n = (noise.perlin2(x * perlinScale, y * perlinScale) + 1 ) / 2;
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
                 let material = this.getBiome(n);
                 this.mTiles[x][y] = material;
@@ -74,7 +75,7 @@ export class Terrain {
     }
 
     private checkSpawnBush(perlinNoiseValue:number, worldPosition:number[]) : void {
-        const bushRange = 0.01;
+        const bushRange = 0.01 / (SimulatorConfig.terrainSizeInMts/128);
 
         let grasslandRange = SimulatorConfig.grasslandTreshold - SimulatorConfig.desertTreshold;
         let grasslandRangeCenter = grasslandRange / 2 + SimulatorConfig.desertTreshold;

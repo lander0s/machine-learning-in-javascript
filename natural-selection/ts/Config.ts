@@ -1,6 +1,6 @@
 
 export const SimulatorConfig  = {
-    terrainSizeInMts   : 100,
+    terrainSizeInMts   : 2048,
     deepWaterTreshold  : 0.10,
     waterTreshold      : 0.15,
     desertTreshold     : 0.20,

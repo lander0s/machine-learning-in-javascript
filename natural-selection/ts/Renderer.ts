@@ -32,7 +32,7 @@ export class Renderer {
             let previousScale = this.mScale;
             let delta = e.deltaY / 100;
             this.mScale *= Math.pow(1.1, -delta);
-            this.mScale = Math.max(Math.min(this.mScale, 100), 1);
+            this.mScale = Math.max(Math.min(this.mScale, 1000), 1);
 
             let cursorCartesianCoords = [(e.offsetX - window.innerWidth/2), -(e.offsetY - window.innerHeight/2)];
             let toOffsetInMts = (1 / previousScale - 1 / this.mScale);
