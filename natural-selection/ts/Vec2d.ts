@@ -18,32 +18,27 @@ export class Vec2d {
     }
     
     
-    distance(v : Vec2d) {
-        return (v.subtract(this)).norm();
+    distance(v : Vec2d) : number {
+        return (v.subtract(this)).length();
     }
     
-    mult(scalar : number) {
+    multiply(scalar : number) : Vec2d {
         return new Vec2d(this.x * scalar, this.y * scalar);
     }
     
-    norm() {
+    length() :number {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
     
     normalize() : Vec2d {
-        let norm = this.norm();
+        let len = this.length();
 
-        return new Vec2d(this.x / norm, this.y / norm);
+        return new Vec2d(this.x / len, this.y / len);
     }
 
     subtract(v : Vec2d) : Vec2d {        
         return new Vec2d(this.x - v.x, this.y - v.y);
     }
-    
-    scalarMult(a : number) : Vec2d {
-        return new Vec2d(this.x * a, this.y * a);
-    }
-
 
     toString() : string {
         return "(" + this.x + ", " + this.y + ")";
