@@ -1,6 +1,7 @@
 import { Simulator } from './Simulator'
 import { Biomes } from './Terrain'
 import { SimulatorConfig } from './Config';
+import { Creature } from './Creature';
 
 export class Renderer {
 
@@ -165,23 +166,59 @@ export class Renderer {
     }
 
     public drawCreatures() : void {
-        if(this.mScale <= 10.0) {
-            return;
-        }
         this.mSimulator.getCreatures().forEach( creature => {
             let pos = creature.getPosition();
-            if(this.isInVisibleArea(pos)) {
-                this.mContext.save();
-                let posInPixels = [pos[0] * this.mScale, pos[1] * this.mScale];
-                this.mContext.translate(posInPixels[0], posInPixels[1]);
-                let sizeInPixels = creature.getSize() * this.mScale;
-                this.mContext.fillStyle = creature.isDead() ? 'black' : 'maroon';
-                this.mContext.beginPath();
-                this.mContext.arc(0, 0, sizeInPixels / 2, 0, 2 * Math.PI);
-                this.mContext.fill();
-                this.mContext.restore();
+            if(creature.getSize() * this.mScale < 5 || !this.isInVisibleArea(pos)) {
+                return;
             }
+            //this.drawCreatureDebugInfo(creature);
+            this.mContext.save();
+            let posInPixels = [pos[0] * this.mScale, pos[1] * this.mScale];
+            this.mContext.translate(posInPixels[0], posInPixels[1]);
+            let sizeInPixels = creature.getSize() * this.mScale;
+            this.mContext.fillStyle = creature.isDead() ? 'black' : 'maroon';
+            this.mContext.beginPath();
+            this.mContext.arc(0, 0, sizeInPixels / 2, 0, 2 * Math.PI);
+            this.mContext.fill();
+            this.mContext.restore();
         });
+    }
+
+    public drawCreatureDebugInfo(creature : Creature) : void {
+        if(creature.isDead()) {
+            return;
+        }
+
+        let visibleFood = creature.getVisibleFood();
+        let creaturePos = creature.getPosition();
+
+        // It draws a Line from the creature to the bush
+        visibleFood.forEach( bush =>{
+            this.mContext.save();
+            this.mContext.beginPath();
+            let pointA = creature.getPosition();
+            let pointB = bush.getPosition();
+            this.mContext.moveTo(pointA[0] * this.mScale , pointA[1] * this.mScale);
+            this.mContext.lineTo(pointB[0] * this.mScale, pointB[1] * this.mScale);
+            this.mContext.strokeStyle = 'purple';
+            this.mContext.lineWidth = 5;
+            this.mContext.stroke();
+            this.mContext.restore();
+        });
+
+        // It draws the creature's FOV
+        this.mContext.save();
+        this.mContext.translate(creaturePos[0] * this.mScale, creaturePos[1] * this.mScale);
+        this.mContext.beginPath();
+        this.mContext.moveTo(0,0);
+        let halfAngle = creature.getFOVAngle() / 2;
+        this.mContext.rotate(creature.getOrientation());
+        this.mContext.arc(0,0, creature.getFOVDistance() * this.mScale, -halfAngle, halfAngle);
+        this.mContext.lineTo(0,0);
+        this.mContext.fillStyle = visibleFood.length == 0 ? 'green' : 'red';
+        this.mContext.globalAlpha = 0.2;
+        this.mContext.fill();
+        this.mContext.restore();
     }
 
     public getColorForMaterial(material:Biomes) : string {
