@@ -14,6 +14,7 @@
         "Creature.ts",
         "Genome.ts",
         "Bush.ts",
-        "Terrain.ts"
+        "Terrain.ts",
+        "Vec2d.ts"
     ]
 }
