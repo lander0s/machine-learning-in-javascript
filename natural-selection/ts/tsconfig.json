@@ -7,6 +7,7 @@
         "outFile" : "../js/application.js"
     },
     "files": [
+        "Test.ts",
         "Application.ts",
         "Config.ts",
         "Simulator.ts",

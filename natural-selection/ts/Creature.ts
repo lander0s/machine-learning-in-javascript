@@ -2,11 +2,12 @@ import { Genome } from './Genome'
 import { SimulatorConfig } from './Config'
 import { Bush } from './Bush';
 import { Simulator } from './Simulator';
+import { Vec2d } from './Vec2d';
 
 export class Creature {
 
-    private mPosition       : number[];
-    private mTargetPosition : number[];
+    private mPosition       : Vec2d;
+    private mTargetPosition : Vec2d;
     private mGenome         : Genome;
     private mEnergy         : number;
     private mOrientation    : number;
@@ -17,10 +18,10 @@ export class Creature {
     constructor(simulator : Simulator) {
         this.mSimulator = simulator;
         this.mGenome = new Genome();
-        this.mTargetPosition = [0,0];
-        this.mPosition = [0,0];
+        this.mTargetPosition = new Vec2d(0,0);
+        this.mPosition = new Vec2d(0,0);
         this.mEnergy = 1;
-        this.mOrientation = 0;
+        this.mOrientation = -90 * Math.PI / 180;
         this.mFovAngle = this.mGenome.getFovFactor() * 2 *  Math.PI;
         this.mFovDistance = Math.sqrt(SimulatorConfig.creatureViewArea / this.mGenome.getFovFactor() * Math.PI);
     }
@@ -51,29 +52,12 @@ export class Creature {
     }
 
     public moveTowardsTargetPosition() : void {
-        let dirVec = [
-            this.mTargetPosition[0] - this.mPosition[0],
-            this.mTargetPosition[1] - this.mPosition[1]
-        ];
-        let len = Math.sqrt(dirVec[0] * dirVec[0] + dirVec[1] * dirVec[1]);
-        let normalizedDirVec = [dirVec[0]/len, dirVec[1]/len];
-        let step = [
-            normalizedDirVec[0] * this.mGenome.getSpeed(),
-            normalizedDirVec[1] * this.mGenome.getSpeed(),
-        ];
-        let stepLength = Math.sqrt(step[0] * step[0] + step[1] * step[1]);
-        if(stepLength > len) {
-            this.mPosition[0] = this.mTargetPosition[0];
-            this.mPosition[1] = this.mTargetPosition[1];
-        } else {
-            this.mPosition[0] += step[0];
-            this.mPosition[1] += step[1];
-        }
-        this.mOrientation = Math.atan(dirVec[1]/dirVec[0]);
-        if(dirVec[0] < 0) {
-            this.mOrientation -= Math.PI;
-        }
-        console.log(this.mOrientation / Math.PI * 180);
+        let toTargetVec = this.mTargetPosition.subtract(this.mPosition);
+        let step = toTargetVec.normalize()
+            .scale(this.mGenome.getSpeed())
+            .clampLength(toTargetVec.length());
+            this.mPosition = this.mPosition.add(step);
+        this.mOrientation = toTargetVec.direction();
     }
 
     public findNewTargetPosition() : void {
@@ -81,20 +65,16 @@ export class Creature {
     }
 
     public generateRandomTargetPosition() : void {
-        let angle = Math.random() * (Math.PI * 2);
         let stepSizeInMts = 10;
-        let x = Math.cos(angle) * stepSizeInMts;
-        let y = Math.sin(angle) * stepSizeInMts;
-        this.mTargetPosition[0] = this.mPosition[0] + x;
-        this.mTargetPosition[1] = this.mPosition[1] + y;
+        let randomVec = Vec2d.randomVectorWithLength(stepSizeInMts);
+        this.mTargetPosition = this.mPosition.add(randomVec);
     }
 
     public hasArrivedAtTargetPos() : boolean {
-        return this.mPosition[0] === this.mTargetPosition[0] &&
-        this.mPosition[1] === this.mTargetPosition[1];
+        return this.mPosition.distance(this.mTargetPosition) < 0.01
     }
 
-    public getPosition() : number[] {
+    public getPosition() : Vec2d {
         return this.mPosition;
     }
 
@@ -120,10 +100,9 @@ export class Creature {
 
     public getVisibleFood() : Bush[] {
         return this.mSimulator.getBushesInCircularSector(
-            this.getPosition()[0],
-            this.getPosition()[1],
-            this.mFovDistance,
+            this.mPosition,
             this.mOrientation,
+            this.mFovDistance,
             this.mFovAngle
         );
     }

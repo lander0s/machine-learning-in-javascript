@@ -1,4 +1,5 @@
 import { SimulatorConfig } from './Config'
+import { Vec2d } from './Vec2d';
 declare var noise : any;
 
 export const enum Biomes {
@@ -13,11 +14,11 @@ export const enum Biomes {
 
 export class Terrain {
     private mTiles : number[][];
-    private mBushesPosition : number[][];
+    private mBushesPosition : Vec2d[];
 
     public generate() : void {
         let perlinScale = 0.1 / (SimulatorConfig.terrainSizeInMts/128);
-        noise.seed(Math.random());
+        noise.seed(0.5678838610663668);
         this.mTiles = [];
         this.mBushesPosition = [];
         const halfTerrainSize = SimulatorConfig.terrainSizeInMts/2;
@@ -25,9 +26,9 @@ export class Terrain {
             this.mTiles[x] = [];
             for(let y = 0; y < SimulatorConfig.terrainSizeInMts; y++) {
                 let worldPos = this.terrainCoordsToWorldPosition(x, y);
-                let worldPosCopy = [... worldPos];
-                worldPosCopy[1] *= 1.3; // so the island has an oval shape
-                let distanceToCenter = Math.sqrt(worldPosCopy[0] * worldPosCopy[0] + worldPosCopy[1] * worldPosCopy[1]);
+                let worldPosCopy = worldPos.copy();
+                worldPosCopy.y *= 1.3; // so the island has an oval shape
+                let distanceToCenter = worldPosCopy.length();
                 let n = (noise.perlin2(x * perlinScale, y * perlinScale) + 1 ) / 2;
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
                 let material = this.getBiome(n);
@@ -47,9 +48,9 @@ export class Terrain {
         return this.mTiles;
     }
 
-    public terrainCoordsToWorldPosition(x:number, y:number) : number[] {
+    public terrainCoordsToWorldPosition(x:number, y:number) : Vec2d {
         const halfTerrainSize = SimulatorConfig.terrainSizeInMts / 2;
-        return [x - halfTerrainSize, y - halfTerrainSize];
+        return new Vec2d (x - halfTerrainSize, y - halfTerrainSize);
     }
 
     private getBiome(perlinNoiseOutput:number) : Biomes {
@@ -74,7 +75,7 @@ export class Terrain {
         return Biomes.SNOW;
     }
 
-    private checkSpawnBush(perlinNoiseValue:number, worldPosition:number[]) : void {
+    private checkSpawnBush(perlinNoiseValue:number, worldPosition:Vec2d) : void {
         const bushRange = 0.01 / (SimulatorConfig.terrainSizeInMts/128);
 
         let grasslandRange = SimulatorConfig.grasslandTreshold - SimulatorConfig.desertTreshold;

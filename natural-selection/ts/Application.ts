@@ -1,5 +1,6 @@
 import { Simulator } from './Simulator'
 import { Renderer } from './Renderer'
+import { Test } from './Test'
 
 export class Application {
     private mRenderer  : Renderer;
@@ -24,5 +25,10 @@ export class Application {
 
     public spawnCreature() : void {
         this.mSimulator.addCreature();
+    }
+
+    public runTest() : void {
+        let test = new Test();
+        test.runTest();
     }
 }

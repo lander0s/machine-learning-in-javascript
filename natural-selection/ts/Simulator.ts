@@ -2,6 +2,7 @@ import { SimulatorConfig } from './Config'
 import { Creature } from './Creature';
 import { Bush } from './Bush'
 import { Terrain } from './Terrain'
+import { Vec2d } from './Vec2d';
 
 export class Simulator {
     private mTerrain   : Terrain;
@@ -13,10 +14,10 @@ export class Simulator {
         this.mBushes = [];
         this.mTerrain = new Terrain();
         this.mTerrain.generate();
-        this.mTerrain.forEachBush( (pos : number[]) => this.addBush(pos) );
+        this.mTerrain.forEachBush( (pos : Vec2d) => this.addBush(pos) );
     }
 
-    public addBush(position:number[]) {
+    public addBush(position:Vec2d) {
         this.mBushes.push(new Bush(position));
     }
 
@@ -24,25 +25,22 @@ export class Simulator {
         return this.mBushes;
     }
 
-    public getBushesInRadius(x : number, y : number, radius : number) : Bush[] {
+    public getBushesInRadius(position:Vec2d, radius : number) : Bush[] {
         return this.mBushes.filter( bush => {
-            let bushPos = bush.getPosition();
-            let diffX = bushPos[0] - x;
-            let diffY = bushPos[1] - y;
-            return Math.sqrt(diffX * diffX + diffY * diffY) <= radius;
+            return bush.getPosition().distance(position) <= radius;
         });
     }
 
-    public getBushesInCircularSector(x: number, y: number, radius: number, orientation : number, angle : number) : Bush[] {
-        let candidates = this.getBushesInRadius(x, y, radius);
-        return candidates.filter( (candidate) => {
-            let candidatePos = candidate.getPosition();
-            let toBushVec = [ candidatePos[0] - x , candidatePos[1] - y];
-            let toBushAngle = Math.atan(toBushVec[1] / toBushVec[0]);
-            if(toBushVec[0] < 0 ) {
-                toBushAngle += Math.PI;
-            }
-            let diffDeg = (toBushAngle - orientation) / Math.PI * 180.0;
+    public getBushesInCircularSector(position:Vec2d, orientation : number, radius: number, angle : number) : Bush[] {
+        let candidates = this.getBushesInRadius(position, radius);
+        return candidates.filter( (bush) => {
+            let toBushVec = bush.getPosition().subtract(position);
+            let toBushAngle = toBushVec.direction();
+
+            let normalizeDirA = toBushAngle;
+            let normalizeDirB = Math.atan2(Math.sin(orientation), Math.cos(orientation));
+
+            let diffDeg = (normalizeDirA - normalizeDirB) / Math.PI * 180.0;
             diffDeg = Math.abs((diffDeg + 180.0) % 360.0 - 180.0);
             let diffRad = diffDeg * Math.PI / 180.0;
             return diffRad <= (angle/2.0);
