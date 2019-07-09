@@ -12,6 +12,8 @@ export class Application {
         this.mRenderer = new Renderer(this.mSimulator);
         this.mTimestamp = 0;
         window.addEventListener('click', e => this.spawnCreature());
+        let loadingMessage : HTMLElement = document.querySelector('#loading-message');
+        loadingMessage.style.opacity = '0';
     }
 
     public update() : void {
