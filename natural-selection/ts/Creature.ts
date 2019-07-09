@@ -98,12 +98,16 @@ export class Creature {
         return this.mFovDistance;
     }
 
-    public getVisibleFood() : Bush[] {
+    public getVisibleBushes() : Bush[] {
         return this.mSimulator.getBushesInCircularSector(
             this.mPosition,
             this.mOrientation,
             this.mFovDistance,
             this.mFovAngle
-        );
+        ).sort( (a, b) => {
+            let distanceToA = this.mPosition.subtract(a.getPosition()).lengthSQ();
+            let distanceToB = this.mPosition.subtract(b.getPosition()).lengthSQ();
+            return distanceToA > distanceToB ? 1 : distanceToA < distanceToB ? -1 : 0;
+        });
     }
 }
