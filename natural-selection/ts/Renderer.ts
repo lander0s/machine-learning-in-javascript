@@ -188,10 +188,12 @@ export class Renderer {
             return;
         }
 
-        let visibleFood = creature.getVisibleFood();
-        let creaturePosPx = creature.getPosition().scale(this.mScale);
+        let visibleFood = creature.getVisibleBushes();
+        let creaturePos = creature.getPosition();
+        let creaturePosPx = creaturePos.scale(this.mScale);
 
         // It draws a Line from the creature to the bush
+        let alpha = 1.0;
         visibleFood.forEach( bush =>{
             this.mContext.save();
             this.mContext.beginPath();
@@ -200,6 +202,7 @@ export class Renderer {
             this.mContext.lineTo(bushPosPx.x, bushPosPx.y);
             this.mContext.strokeStyle = 'purple';
             this.mContext.lineWidth = 5;
+            this.mContext.globalAlpha *= alpha; alpha = 0.2;
             this.mContext.stroke();
             this.mContext.restore();
         });
