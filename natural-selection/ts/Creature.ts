@@ -15,11 +15,11 @@ export class Creature {
     private mFovDistance    : number;
     private mSimulator      : Simulator;
 
-    constructor(simulator : Simulator) {
+    constructor(simulator : Simulator, initialPosition : Vec2d) {
         this.mSimulator = simulator;
         this.mGenome = new Genome();
         this.mTargetPosition = new Vec2d(0,0);
-        this.mPosition = new Vec2d(0,0);
+        this.mPosition = initialPosition;
         this.mEnergy = 1;
         this.mOrientation = -90 * Math.PI / 180;
         this.mFovAngle = this.mGenome.getFovFactor() * 2 *  Math.PI;
@@ -34,7 +34,7 @@ export class Creature {
         let genomeC = new Genome();
         genomeC.crossOver(daddy.mGenome, mum.mGenome);
         genomeC.mutate();
-        let creature = new Creature(daddy.mSimulator);
+        let creature = new Creature(daddy.mSimulator, mum.mPosition);
         creature.mGenome = genomeC;
         return creature;
     }
@@ -61,7 +61,14 @@ export class Creature {
     }
 
     public findNewTargetPosition() : void {
-        return this.generateRandomTargetPosition();
+        let visibleBushes = this.getVisibleBushes();
+        if(visibleBushes.length > 0) {
+            this.mTargetPosition = visibleBushes[0].getPosition();
+        }
+        else 
+        {
+            this.generateRandomTargetPosition();
+        }
     }
 
     public generateRandomTargetPosition() : void {
@@ -99,12 +106,7 @@ export class Creature {
     }
 
     public getVisibleBushes() : Bush[] {
-        return this.mSimulator.getBushesInCircularSector(
-            this.mPosition,
-            this.mOrientation,
-            this.mFovDistance,
-            this.mFovAngle
-        ).sort( (a, b) => {
+        return this.mSimulator.getVisibleBushesForCreature(this).sort( (a, b) => {
             let distanceToA = this.mPosition.subtract(a.getPosition()).lengthSQ();
             let distanceToB = this.mPosition.subtract(b.getPosition()).lengthSQ();
             return distanceToA > distanceToB ? 1 : distanceToA < distanceToB ? -1 : 0;

@@ -238,4 +238,11 @@ export class Renderer {
         if(material == Biomes.SNOW)
             return '#ecf0f1';
     }
+
+    public screenSpaceToWorld(screenSpacePos:Vec2d) : Vec2d {
+        let halfScreenWidth = window.innerWidth/2;
+        let halfScreenHeight = window.innerHeight/2;
+        let cursorCartesianCoords = new Vec2d(screenSpacePos.x -halfScreenWidth, -(screenSpacePos.y - halfScreenHeight));
+        return this.mCameraPos.subtract(cursorCartesianCoords.scale(1/this.mScale));
+    }
 }

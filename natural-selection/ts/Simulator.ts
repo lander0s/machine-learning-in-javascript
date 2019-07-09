@@ -25,25 +25,25 @@ export class Simulator {
         return this.mBushes;
     }
 
-    public getBushesInRadius(position:Vec2d, radius : number) : Bush[] {
+    public getVisibleBushesForCreature(creature:Creature) : Bush[] {
         return this.mBushes.filter( bush => {
-            return bush.getPosition().distance(position) <= radius;
-        });
-    }
-
-    public getBushesInCircularSector(position:Vec2d, orientation : number, radius: number, angle : number) : Bush[] {
-        let candidates = this.getBushesInRadius(position, radius);
-        return candidates.filter( (bush) => {
-            let toBushVec = bush.getPosition().subtract(position);
+            let distance = creature.getPosition().distance(bush.getPosition());
+            if(distance > creature.getFOVDistance()) {
+                return false;
+            }
+            if(distance <= creature.getSize()/2) {
+                return true;
+            }
+            let toBushVec = bush.getPosition().subtract(creature.getPosition());
             let toBushAngle = toBushVec.direction();
-
+        
             let normalizeDirA = toBushAngle;
-            let normalizeDirB = Math.atan2(Math.sin(orientation), Math.cos(orientation));
-
+            let normalizeDirB = Math.atan2(Math.sin(creature.getOrientation()), Math.cos(creature.getOrientation()));
+        
             let diffDeg = (normalizeDirA - normalizeDirB) / Math.PI * 180.0;
             diffDeg = Math.abs((diffDeg + 180.0) % 360.0 - 180.0);
             let diffRad = diffDeg * Math.PI / 180.0;
-            return diffRad <= (angle/2.0);
+            return diffRad <= (creature.getFOVAngle()/2.0);
         });
     }
 
@@ -55,8 +55,8 @@ export class Simulator {
         this.mCreatures.forEach( c => c.update());
     }
 
-    public addCreature() : void {
-        this.mCreatures.push(new Creature(this));
+    public addCreature(pos:Vec2d) : void {
+        this.mCreatures.push(new Creature(this, pos));
     }
 
     public getCreatures() : Creature[] {

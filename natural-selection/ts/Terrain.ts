@@ -18,7 +18,7 @@ export class Terrain {
 
     public generate() : void {
         let perlinScale = 0.1 / (SimulatorConfig.terrainSizeInMts/128);
-        noise.seed(0.5678838610663668);
+        noise.seed(Math.random());
         this.mTiles = [];
         this.mBushesPosition = [];
         const halfTerrainSize = SimulatorConfig.terrainSizeInMts/2;

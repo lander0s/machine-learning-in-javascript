@@ -9,7 +9,7 @@ export class Genome {
         this.mSpeed = 0.2;
         this.mSize = 0.5;
         this.mFov = 0.5;
-        //this.mutate();
+        this.mutate();
     }
 
     public crossOver(daddy:Genome, mum:Genome) {
