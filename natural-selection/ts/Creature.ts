@@ -3,11 +3,11 @@ import { SimulatorConfig } from './Config'
 import { Bush } from './Bush';
 import { Simulator } from './Simulator';
 import { Vec2d } from './Vec2d';
+import { Object } from './Object'
 
-export class Creature {
+export class Creature extends Object {
 
-    private mPosition       : Vec2d;
-    private mTargetPosition : Vec2d;
+    private mTargetObject   : Object;
     private mGenome         : Genome;
     private mEnergy         : number;
     private mOrientation    : number;
@@ -16,10 +16,10 @@ export class Creature {
     private mSimulator      : Simulator;
 
     constructor(simulator : Simulator, initialPosition : Vec2d) {
+        super(initialPosition);
         this.mSimulator = simulator;
         this.mGenome = new Genome();
-        this.mTargetPosition = new Vec2d(0,0);
-        this.mPosition = initialPosition;
+        this.mTargetObject = new Object(initialPosition);
         this.mEnergy = 1;
         this.mOrientation = -90 * Math.PI / 180;
         this.mFovAngle = this.mGenome.getFovFactor() * 2 *  Math.PI;
@@ -44,6 +44,7 @@ export class Creature {
             return;
         }
         if(this.hasArrivedAtTargetPos()) {
+            this.checkForFoodToConsume();
             this.findNewTargetPosition();
         } else {
             this.moveTowardsTargetPosition();
@@ -52,7 +53,7 @@ export class Creature {
     }
 
     public moveTowardsTargetPosition() : void {
-        let toTargetVec = this.mTargetPosition.subtract(this.mPosition);
+        let toTargetVec = this.mTargetObject.getPosition().subtract(this.mPosition);
         let step = toTargetVec.normalize()
             .scale(this.mGenome.getSpeed())
             .clampLength(toTargetVec.length());
@@ -61,9 +62,9 @@ export class Creature {
     }
 
     public findNewTargetPosition() : void {
-        let visibleBushes = this.getVisibleBushes();
+        let visibleBushes = this.getVisibleBushesWithFruit();
         if(visibleBushes.length > 0) {
-            this.mTargetPosition = visibleBushes[0].getPosition();
+            this.mTargetObject = visibleBushes[0];
         }
         else 
         {
@@ -74,11 +75,22 @@ export class Creature {
     public generateRandomTargetPosition() : void {
         let stepSizeInMts = 10;
         let randomVec = Vec2d.randomVectorWithLength(stepSizeInMts);
-        this.mTargetPosition = this.mPosition.add(randomVec);
+        this.mTargetObject = new Object(this.mPosition.add(randomVec));
     }
 
     public hasArrivedAtTargetPos() : boolean {
-        return this.mPosition.distance(this.mTargetPosition) < 0.01
+        return this.mPosition.distance(this.mTargetObject.getPosition()) < (this.getSize() / 2);
+    }
+
+    public checkForFoodToConsume() : void {
+        if(this.mTargetObject instanceof Bush) {
+            if(this.mTargetObject.consumeFruit()) {
+                this.mEnergy += 0.05;
+            }
+        }
+        // else if(this.mTargetObject instanceof Creature) {
+
+        // }
     }
 
     public getPosition() : Vec2d {
@@ -103,6 +115,10 @@ export class Creature {
 
     public getFOVDistance() : number {
         return this.mFovDistance;
+    }
+
+    public getVisibleBushesWithFruit() : Bush[] {
+        return this.getVisibleBushes().filter( (bush) => bush.getFruitCount() > 0);
     }
 
     public getVisibleBushes() : Bush[] {

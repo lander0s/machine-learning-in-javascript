@@ -188,7 +188,7 @@ export class Renderer {
             return;
         }
 
-        let visibleFood = creature.getVisibleBushes();
+        let visibleFood = creature.getVisibleBushesWithFruit();
         let creaturePos = creature.getPosition();
         let creaturePosPx = creaturePos.scale(this.mScale);
 
@@ -242,7 +242,8 @@ export class Renderer {
     public screenSpaceToWorld(screenSpacePos:Vec2d) : Vec2d {
         let halfScreenWidth = window.innerWidth/2;
         let halfScreenHeight = window.innerHeight/2;
-        let cursorCartesianCoords = new Vec2d(screenSpacePos.x -halfScreenWidth, -(screenSpacePos.y - halfScreenHeight));
-        return this.mCameraPos.subtract(cursorCartesianCoords.scale(1/this.mScale));
+        let cursorCartesianCoords = new Vec2d(screenSpacePos.x - halfScreenWidth, -(screenSpacePos.y - halfScreenHeight));
+        let cursorCartesianCoordsInMts = cursorCartesianCoords.scale(1.0 / this.mScale);
+        return this.mCameraPos.add(cursorCartesianCoordsInMts);
     }
 }

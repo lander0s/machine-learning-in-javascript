@@ -1,15 +1,12 @@
 import { Vec2d } from "./Vec2d";
+import { Object } from './Object'
 
-export class Bush {
-    private position    : Vec2d;
-    private fruitsCount : number;
+export class Bush extends Object {
+    private mFruitsCount : number;
+
     constructor(position:Vec2d) {
-        this.position = position;
-        this.fruitsCount = (Math.random() * 5) + 1;
-    }
-
-    public getPosition() : Vec2d {
-        return this.position;
+        super(position);
+        this.mFruitsCount = (Math.random() * 5) + 1;
     }
 
     public update() : void {
@@ -17,6 +14,14 @@ export class Bush {
     }
 
     public getFruitCount() : number {
-        return this.fruitsCount;
+        return this.mFruitsCount;
+    }
+
+    public consumeFruit() : boolean {
+        if(this.mFruitsCount > 0 ) {
+            this.mFruitsCount--;
+            return true;
+        }
+        return false;
     }
 }
