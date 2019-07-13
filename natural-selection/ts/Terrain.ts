@@ -30,10 +30,11 @@ export class Terrain {
                 worldPosCopy.y *= 1.3; // so the island has an oval shape
                 let distanceToCenter = worldPosCopy.length();
                 let n = (noise.perlin2(x * perlinScale, y * perlinScale) + 1 ) / 2;
+                let n2 = (noise.perlin2(x * x * perlinScale, y * y * perlinScale) + 1 ) / 2;
                 n *= 1.0 - (distanceToCenter/(halfTerrainSize));       
                 let material = this.getBiome(n);
                 this.mTiles[x][y] = material;
-                this.checkSpawnBush(n, worldPos);
+                this.checkSpawnBush(n2, worldPos, material);
             }
         }
     }
@@ -75,8 +76,11 @@ export class Terrain {
         return Biomes.SNOW;
     }
 
-    private checkSpawnBush(perlinNoiseValue:number, worldPosition:Vec2d) : void {
-        const bushRange = 0.01 / (SimulatorConfig.terrainSizeInMts/128);
+    private checkSpawnBush(perlinNoiseValue: number, worldPosition: Vec2d, material: Biomes): void {
+        if(material != Biomes.GRASSLAND && material != Biomes.FOREST) {
+            return;
+        }
+        const bushRange = 0.05 / (SimulatorConfig.terrainSizeInMts/128);
 
         let grasslandRange = SimulatorConfig.grasslandTreshold - SimulatorConfig.desertTreshold;
         let grasslandRangeCenter = grasslandRange / 2 + SimulatorConfig.desertTreshold;
