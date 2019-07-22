@@ -53,6 +53,7 @@ export class Simulator {
 
     public update() : void {
         this.mCreatures.forEach( c => c.update());
+        this.mBushes.forEach(c => c.update());
     }
 
     public addCreature(pos:Vec2d) : void {

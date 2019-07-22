@@ -124,33 +124,33 @@ export class Renderer {
                 this.mContext.save();
                 let bushPosPx = pos.scale(this.mScale);
                 this.mContext.translate( bushPosPx.x, bushPosPx.y);
-                this.mContext.translate( 0, -0.25 * this.mScale);
+                this.mContext.translate(0, -0.25 * this.mScale * bush.getBushSize());
                 this.mContext.beginPath();
-                this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI);
+                this.mContext.arc(0, 0, 0.25 * this.mScale * bush.getBushSize(), 0, Math.PI);
                 this.mContext.fillStyle = 'green';
                 this.mContext.fill();
-                this.mContext.translate( 0,  0.30 * this.mScale);
+                this.mContext.translate(0, 0.30 * this.mScale * bush.getBushSize());
                 this.mContext.beginPath();
-                this.mContext.arc(0,0, 0.25 * this.mScale, 0, Math.PI*2);
+                this.mContext.arc(0, 0, 0.25 * this.mScale * bush.getBushSize(), 0, Math.PI*2);
                 this.mContext.fillStyle = 'green';
                 this.mContext.fill();
-                this.drawFruits(bush.getFruitCount());
+                this.drawFruits(bush.getFruitCount(), bush.getFruitSize(), bush.getBushSize());
                 this.mContext.restore();
             }
         });
     }
 
-    public drawFruits(count : number) : void {
+    public drawFruits(count: number, fruitSize: number, bushSize: number): void {
         if(this.mScale <= 30) {
             return;
         }
-        let angleBetweenFruits =  Math.PI / count;
+        let angleBetweenFruits =   2 * Math.PI / count;
         for(let i = 0; i < count; i++) {
             this.mContext.save();
-            let angle = angleBetweenFruits * i;
+            let angle = (Math.PI / 2) + angleBetweenFruits * i;
             this.mContext.rotate(-angle);
             this.mContext.beginPath();
-            this.mContext.arc(-0.15 * this.mScale, 0.0, 0.025 * this.mScale, 0, Math.PI * 2);
+            this.mContext.arc(-0.15 * this.mScale * bushSize, 0.0, 0.025 * fruitSize * this.mScale, 0, Math.PI * 2);
             this.mContext.fillStyle = 'red';
             this.mContext.fill();
             this.mContext.restore();
