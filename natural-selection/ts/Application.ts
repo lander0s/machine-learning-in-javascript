@@ -12,7 +12,7 @@ export class Application {
         this.mSimulator = new Simulator();
         this.mRenderer = new Renderer(this.mSimulator);
         this.mTimestamp = 0;
-        window.addEventListener('click', (e) => {
+        window.addEventListener('dblclick', (e) => {
             let screenSpaceCursorPos = new Vec2d(e.offsetX, e.offsetY);
             let worldPos = this.mRenderer.screenSpaceToWorld(screenSpaceCursorPos);
             this.spawnCreature(worldPos);
