@@ -114,12 +114,12 @@ export class Renderer {
         this.mBackgroundCanvas.style.transform += `scale(1, -1)`;
     }
 
-    public drawBushes() : void {
-        if(this.mScale <= 10.0) {
-            return;
-        }
+    public drawBushes(): void {
         this.mSimulator.getBushes().forEach( bush => {
             let pos = bush.getPosition();
+            if(bush.getBushSize() * this.mScale <= 10 || !this.isInVisibleArea(pos)) {
+                return;
+            }
             if(this.isInVisibleArea(pos)) {
                 this.mContext.save();
                 let bushPosPx = pos.scale(this.mScale);
@@ -141,7 +141,7 @@ export class Renderer {
     }
 
     public drawFruits(count: number, fruitSize: number, bushSize: number): void {
-        if(this.mScale <= 30) {
+        if(fruitSize * this.mScale <= 30) {
             return;
         }
         let angleBetweenFruits =   2 * Math.PI / count;
@@ -218,6 +218,20 @@ export class Renderer {
         this.mContext.lineTo(0,0);
         this.mContext.fillStyle = visibleFood.length == 0 ? 'green' : 'red';
         this.mContext.globalAlpha = 0.2;
+        this.mContext.fill();
+        this.mContext.restore();
+
+        // It draws the creature's Energy
+        this.mContext.save();
+        this.mContext.translate(creaturePosPx.x, creaturePosPx.y);
+        this.mContext.beginPath();
+        this.mContext.moveTo(0, 0);
+        let energyHalfAngle = creature.getEnergy() * Math.PI;
+        this.mContext.rotate(creature.getOrientation());
+        this.mContext.arc(0, 0, creature.getSize() * this.mScale * 0.75, -energyHalfAngle, energyHalfAngle);
+        this.mContext.lineTo(0, 0);
+        this.mContext.fillStyle = 'blue';
+        this.mContext.globalAlpha = 0.5;
         this.mContext.fill();
         this.mContext.restore();
     }
