@@ -2,7 +2,7 @@ import { Vec2d } from "./Vec2d";
 import { Object } from './Object'
 
 export class Bush extends Object {
-    private BUSH_FRUIT_CAPACITY: number = 5;
+    private AVG_BUSH_FRUIT_CAPACITY: number = 5;
     private mBushSize: number;
     private mFruitSize: number;
     private mMaxFruits: number;
@@ -15,7 +15,7 @@ export class Bush extends Object {
         //Values from 50% to 200% with an avg of 125%
         this.mBushSize = Math.random() * 1.5 + 0.5;
         this.mFruitSize = Math.random() * 1.5 + 0.5;
-        this.mMaxFruits = ((this.mBushSize * this.BUSH_FRUIT_CAPACITY) / this.mFruitSize) | 0;
+        this.mMaxFruits = ((this.mBushSize * this.AVG_BUSH_FRUIT_CAPACITY) / this.mFruitSize) | 0;
         this.mFruitsCount = (Math.random() * this.mMaxFruits + 1) | 0;
         this.mFruitsEnergyValue = (this.mFruitSize * 200) | 0;
         this.mEnergy = 0;
