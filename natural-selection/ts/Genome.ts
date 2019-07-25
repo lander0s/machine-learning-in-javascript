@@ -12,7 +12,7 @@ export class Genome {
         this.mutate();
     }
 
-    public crossOver(daddy:Genome, mum:Genome) {
+    public crossOver(daddy: Genome, mummy: Genome) {
 
     }
 
@@ -30,12 +30,20 @@ export class Genome {
         return Math.max(Math.min(val, 1.0), 0.0);
     }
 
+    public quadraticLength(): number {
+        let length = 0;
+        length += this.mSpeed * this.mSpeed;
+        length += this.mSize * this.mSize;
+        length += this.mFov * this.mFov;
+        return length;
+    }
+
     public distanceTo(genome : Genome) : number {
-        return Math.abs(this.mSpeed - genome.mSpeed);
+        return Math.abs(this.quadraticLength() - genome.quadraticLength());
     }
 
     public getSpeed() : number {
-        return this.mSpeed * 1;
+        return this.mSpeed + 0.1;
     }
 
     public getSize() : number {
