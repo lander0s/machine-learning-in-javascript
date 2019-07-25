@@ -7,20 +7,21 @@ import { Object } from './Object'
 
 export class Creature extends Object {
 
-    private mTargetObject   : Object;
-    private mGenome         : Genome;
-    private mEnergy         : number;
-    private mOrientation    : number;
-    private mFovAngle       : number;
-    private mFovDistance    : number;
-    private mSimulator      : Simulator;
+    private AVG_CREATURE_ENERGY_CAPACITY    : number = 10000;
+    private mTargetObject                   : Object;
+    private mGenome                         : Genome;
+    private mAmountOfEnergy                 : number;
+    private mOrientation                    : number;
+    private mFovAngle                       : number;
+    private mFovDistance                    : number;
+    private mSimulator                      : Simulator;
 
     constructor(simulator : Simulator, initialPosition : Vec2d) {
         super(initialPosition);
         this.mSimulator = simulator;
         this.mGenome = new Genome();
         this.mTargetObject = new Object(initialPosition);
-        this.mEnergy = 1;
+        this.mAmountOfEnergy = this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY * 0.25;
         this.mOrientation = -90 * Math.PI / 180;
         this.mFovAngle = this.mGenome.getFovFactor() * 2 *  Math.PI;
         this.mFovDistance = Math.sqrt(SimulatorConfig.creatureViewArea / this.mGenome.getFovFactor() * Math.PI);
@@ -30,11 +31,11 @@ export class Creature extends Object {
         return this.mGenome.distanceTo(creature.mGenome) < SimulatorConfig.speciesMaxDistance;
     }
 
-    public static fromParents(daddy : Creature, mum : Creature) : Creature {
+    public static fromParents(daddy : Creature, mummy : Creature) : Creature {
         let genomeC = new Genome();
-        genomeC.crossOver(daddy.mGenome, mum.mGenome);
+        genomeC.crossOver(daddy.mGenome, mummy.mGenome);
         genomeC.mutate();
-        let creature = new Creature(daddy.mSimulator, mum.mPosition);
+        let creature = new Creature(daddy.mSimulator, mummy.mPosition);
         creature.mGenome = genomeC;
         return creature;
     }
@@ -49,7 +50,7 @@ export class Creature extends Object {
         } else {
             this.moveTowardsTargetPosition();
         }
-        this.mEnergy -= 0.001;
+        this.mAmountOfEnergy -= this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY * 0.001;
     }
 
     public moveTowardsTargetPosition() : void {
@@ -66,8 +67,7 @@ export class Creature extends Object {
         if(visibleBushes.length > 0) {
             this.mTargetObject = visibleBushes[0];
         }
-        else 
-        {
+        else {
             this.generateRandomTargetPosition();
         }
     }
@@ -85,7 +85,8 @@ export class Creature extends Object {
     public checkForFoodToConsume() : void {
         if(this.mTargetObject instanceof Bush) {
             if(this.mTargetObject.consumeFruit()) {
-                this.mEnergy += 0.05;
+                //this.mAmountOfEnergy += this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY * 0.05;
+                this.mAmountOfEnergy += this.mTargetObject.getFruitsEnergyValue();;
             }
         }
         // else if(this.mTargetObject instanceof Creature) {
@@ -101,8 +102,12 @@ export class Creature extends Object {
         return this.mGenome.getSize();
     }
 
+    public getEnergy(): number {
+        return this.mAmountOfEnergy / (this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY);
+    }
+
     public isDead() : boolean {
-        return this.mEnergy <= 0;
+        return this.mAmountOfEnergy <= 0;
     }
 
     public getOrientation() : number {
