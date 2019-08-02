@@ -6,20 +6,20 @@ import { Vec2d } from './Vec2d';
 
 export class Renderer {
 
-    private mSimulator         : Simulator;
-    private mCanvas            : HTMLCanvasElement;
-    private mContext           : CanvasRenderingContext2D;
-    private mBackgroundCanvas  : HTMLCanvasElement;
-    private mBackgroundContext : CanvasRenderingContext2D;
-    private mScale             : number;
-    private mCameraPos         : Vec2d;
-    private mNeedTerrainRender : boolean;
-    private mVisibleArea       : number[]
-    private mTerrainTexture    : HTMLImageElement;
-    
-    constructor(simulator:Simulator) {
+    private mSimulator          : Simulator;
+    private mCanvas             : HTMLCanvasElement;
+    private mContext            : CanvasRenderingContext2D;
+    private mBackgroundCanvas   : HTMLCanvasElement;
+    private mBackgroundContext  : CanvasRenderingContext2D;
+    private mScale              : number;
+    private mCameraPos          : Vec2d;
+    private mNeedTerrainRender  : boolean;
+    private mVisibleArea        : number[]
+    private mTerrainTexture     : HTMLImageElement;
+
+    constructor(simulator : Simulator) {
         this.mScale = 20;
-        this.mCameraPos = new Vec2d(0,0);
+        this.mCameraPos = new Vec2d(0, 0);
         this.mSimulator = simulator;
         this.mCanvas = document.querySelector('#main-canvas');
         this.mBackgroundCanvas = document.querySelector('#background-canvas');
@@ -30,13 +30,13 @@ export class Renderer {
     }
 
     public initializeMouseEventHandlers() : void {
-        window.addEventListener('wheel', (e)=>{
+        window.addEventListener('wheel', (e) => {
             let previousScale = this.mScale;
             let delta = e.deltaY / 100;
             this.mScale *= Math.pow(1.1, -delta);
             this.mScale = Math.max(Math.min(this.mScale, 1000), 1);
 
-            let cursorCartesianCoords = new Vec2d((e.offsetX - window.innerWidth/2), -(e.offsetY - window.innerHeight/2));
+            let cursorCartesianCoords = new Vec2d((e.offsetX - window.innerWidth / 2), -(e.offsetY - window.innerHeight / 2));
             let toOffsetInMts = (1 / previousScale - 1 / this.mScale);
             this.mCameraPos = this.mCameraPos.add(cursorCartesianCoords.scale(toOffsetInMts));
             this.mNeedTerrainRender = true;
@@ -54,8 +54,8 @@ export class Renderer {
     }
 
     public updateVisibleArea() : void {
-        let halfScreenWidthInMts = (window.innerWidth / this.mScale)/2;
-        let halfScreenHeightInMts = (window.innerWidth / this.mScale)/2;
+        let halfScreenWidthInMts = (window.innerWidth / this.mScale) / 2;
+        let halfScreenHeightInMts = (window.innerWidth / this.mScale) / 2;
         this.mVisibleArea = [];
         this.mVisibleArea[0] = this.mCameraPos.x - (halfScreenWidthInMts + 2);
         this.mVisibleArea[1] = this.mCameraPos.y - (halfScreenHeightInMts + 2);
@@ -76,7 +76,7 @@ export class Renderer {
     public draw() : void {
         this.mContext.clearRect(0, 0, this.mCanvas.width, this.mCanvas.height);
         this.mContext.save();
-        this.mContext.translate(this.mCanvas.width/2, this.mCanvas.height/2);
+        this.mContext.translate(this.mCanvas.width / 2, this.mCanvas.height / 2);
         this.mContext.scale(1, -1);
         let camPosPx = this.mCameraPos.scale(this.mScale);
         this.mContext.translate(-camPosPx.x, -camPosPx.y);
@@ -97,7 +97,7 @@ export class Renderer {
                 this.mBackgroundContext.fillStyle = this.getColorForMaterial(terrain[x][y]);
                 let xPixels = x;
                 let yPixels = y;
-                this.mBackgroundContext.fillRect(xPixels, yPixels, this.mScale+1, this.mScale+1);
+                this.mBackgroundContext.fillRect(xPixels, yPixels, this.mScale + 1, this.mScale + 1);
             }
         }
         this.mBackgroundContext.restore();
@@ -106,16 +106,16 @@ export class Renderer {
     }
 
     public drawTerrain() : void {
-        let offsetX = (window.innerWidth/2) - (SimulatorConfig.terrainSizeInMts/2);
-        let offsetY = (window.innerHeight/2) - (SimulatorConfig.terrainSizeInMts/2);
+        let offsetX = (window.innerWidth / 2) - (SimulatorConfig.terrainSizeInMts / 2);
+        let offsetY = (window.innerHeight / 2) - (SimulatorConfig.terrainSizeInMts / 2);
         this.mBackgroundCanvas.style.transform = `translate(${offsetX}px,${offsetY}px)`;
         this.mBackgroundCanvas.style.transform += `scale(${this.mScale})`;
         this.mBackgroundCanvas.style.transform += `translate(${-this.mCameraPos.x - 0.5}px,${this.mCameraPos.y + 0.5}px)`;
         this.mBackgroundCanvas.style.transform += `scale(1, -1)`;
     }
 
-    public drawBushes(): void {
-        this.mSimulator.getBushes().forEach( bush => {
+    public drawBushes() : void {
+        this.mSimulator.getBushes().forEach(bush => {
             let pos = bush.getPosition();
             if(bush.getBushSize() * this.mScale <= 10 || !this.isInVisibleArea(pos)) {
                 return;
@@ -123,7 +123,7 @@ export class Renderer {
             if(this.isInVisibleArea(pos)) {
                 this.mContext.save();
                 let bushPosPx = pos.scale(this.mScale);
-                this.mContext.translate( bushPosPx.x, bushPosPx.y);
+                this.mContext.translate(bushPosPx.x, bushPosPx.y);
                 this.mContext.translate(0, -0.25 * this.mScale * bush.getBushSize());
                 this.mContext.beginPath();
                 this.mContext.arc(0, 0, 0.25 * this.mScale * bush.getBushSize(), 0, Math.PI);
@@ -131,7 +131,7 @@ export class Renderer {
                 this.mContext.fill();
                 this.mContext.translate(0, 0.30 * this.mScale * bush.getBushSize());
                 this.mContext.beginPath();
-                this.mContext.arc(0, 0, 0.25 * this.mScale * bush.getBushSize(), 0, Math.PI*2);
+                this.mContext.arc(0, 0, 0.25 * this.mScale * bush.getBushSize(), 0, Math.PI * 2);
                 this.mContext.fillStyle = 'green';
                 this.mContext.fill();
                 this.drawFruits(bush.getFruitCount(), bush.getFruitSize(), bush.getBushSize());
@@ -140,11 +140,11 @@ export class Renderer {
         });
     }
 
-    public drawFruits(count: number, fruitSize: number, bushSize: number): void {
+    public drawFruits(count : number, fruitSize : number, bushSize : number) : void {
         if(fruitSize * this.mScale <= 30) {
             return;
         }
-        let angleBetweenFruits =   2 * Math.PI / count;
+        let angleBetweenFruits = 2 * Math.PI / count;
         for(let i = 0; i < count; i++) {
             this.mContext.save();
             let angle = (Math.PI / 2) + angleBetweenFruits * i;
@@ -157,7 +157,7 @@ export class Renderer {
         }
     }
 
-    public isInVisibleArea(pos:Vec2d) : boolean {
+    public isInVisibleArea(pos : Vec2d) : boolean {
         return pos.x >= this.mVisibleArea[0]
             && pos.x <= this.mVisibleArea[2]
             && pos.y >= this.mVisibleArea[1]
@@ -165,7 +165,7 @@ export class Renderer {
     }
 
     public drawCreatures() : void {
-        this.mSimulator.getCreatures().forEach( creature => {
+        this.mSimulator.getCreatures().forEach(creature => {
             let pos = creature.getPosition();
             if(creature.getSize() * this.mScale < 5 || !this.isInVisibleArea(pos)) {
                 return;
@@ -175,7 +175,7 @@ export class Renderer {
             let posPx = pos.scale(this.mScale)
             this.mContext.translate(posPx.x, posPx.y);
             let sizeInPixels = creature.getSize() * this.mScale;
-            this.mContext.fillStyle = creature.isDead() ? 'black' : 'maroon';
+            this.mContext.fillStyle = creature.isDead() ? 'black'  : 'maroon';
             this.mContext.beginPath();
             this.mContext.arc(0, 0, sizeInPixels / 2, 0, 2 * Math.PI);
             this.mContext.fill();
@@ -194,15 +194,16 @@ export class Renderer {
 
         // It draws a Line from the creature to the bush
         let alpha = 1.0;
-        visibleFood.forEach( bush =>{
+        visibleFood.forEach(bush => {
             this.mContext.save();
             this.mContext.beginPath();
             let bushPosPx = bush.getPosition().scale(this.mScale);
-            this.mContext.moveTo(creaturePosPx.x , creaturePosPx.y);
+            this.mContext.moveTo(creaturePosPx.x, creaturePosPx.y);
             this.mContext.lineTo(bushPosPx.x, bushPosPx.y);
             this.mContext.strokeStyle = 'purple';
             this.mContext.lineWidth = 5;
-            this.mContext.globalAlpha *= alpha; alpha = 0.2;
+            this.mContext.globalAlpha *= alpha;
+            alpha = 0.2;
             this.mContext.stroke();
             this.mContext.restore();
         });
@@ -211,24 +212,26 @@ export class Renderer {
         this.mContext.save();
         this.mContext.translate(creaturePosPx.x, creaturePosPx.y);
         this.mContext.beginPath();
-        this.mContext.moveTo(0,0);
+        this.mContext.moveTo(0, 0);
         let halfAngle = creature.getFOVAngle() / 2;
         this.mContext.rotate(creature.getOrientation());
-        this.mContext.arc(0,0, creature.getFOVDistance() * this.mScale, -halfAngle, halfAngle);
-        this.mContext.lineTo(0,0);
-        this.mContext.fillStyle = visibleFood.length == 0 ? 'green' : 'red';
+        this.mContext.arc(0, 0, creature.getFOVDistance() * this.mScale, -halfAngle, halfAngle);
+        this.mContext.lineTo(0, 0);
+        this.mContext.fillStyle = visibleFood.length == 0 ? 'green'  : 'red';
         this.mContext.globalAlpha = 0.2;
         this.mContext.fill();
         this.mContext.restore();
 
         // It draws the creature's Energy
+        let energyHalfAngle = creature.getEnergy() * Math.PI;
+        //let energyAngle = creature.getEnergy() * Math.PI * 2;
+        let creatureRadioInPixels = creature.getSize() * this.mScale / 2;
         this.mContext.save();
         this.mContext.translate(creaturePosPx.x, creaturePosPx.y);
+        this.mContext.rotate(creature.getOrientation() + Math.PI);
         this.mContext.beginPath();
-        this.mContext.moveTo(0, 0);
-        let energyHalfAngle = creature.getEnergy() * Math.PI;
-        this.mContext.rotate(creature.getOrientation());
-        this.mContext.arc(0, 0, creature.getSize() * this.mScale * 0.75, -energyHalfAngle, energyHalfAngle);
+        //this.mContext.arc(0, 0, creatureRadioInPixels * 1.5, 0, energyAngle);
+        this.mContext.arc(0, 0, creatureRadioInPixels * 1.5, -energyHalfAngle, energyHalfAngle);
         this.mContext.lineTo(0, 0);
         this.mContext.fillStyle = 'blue';
         this.mContext.globalAlpha = 0.5;
@@ -236,7 +239,7 @@ export class Renderer {
         this.mContext.restore();
     }
 
-    public getColorForMaterial(material:Biomes) : string {
+    public getColorForMaterial(material : Biomes) : string {
         if(material == Biomes.DEEP_WATER)
             return '#2980b9';
         if(material == Biomes.WATER)
@@ -253,9 +256,9 @@ export class Renderer {
             return '#ecf0f1';
     }
 
-    public screenSpaceToWorld(screenSpacePos:Vec2d) : Vec2d {
-        let halfScreenWidth = window.innerWidth/2;
-        let halfScreenHeight = window.innerHeight/2;
+    public screenSpaceToWorld(screenSpacePos : Vec2d) : Vec2d {
+        let halfScreenWidth = window.innerWidth / 2;
+        let halfScreenHeight = window.innerHeight / 2;
         let cursorCartesianCoords = new Vec2d(screenSpacePos.x - halfScreenWidth, -(screenSpacePos.y - halfScreenHeight));
         let cursorCartesianCoordsInMts = cursorCartesianCoords.scale(1.0 / this.mScale);
         return this.mCameraPos.add(cursorCartesianCoordsInMts);
