@@ -7,10 +7,13 @@ import { Object } from './Object'
 
 export class Creature extends Object {
 
-    private AVG_CREATURE_ENERGY_CAPACITY    : number = 10000;
+    private AVG_CREATURE_ENERGY_CAPACITY    : number = 5000;
     private mTargetObject                   : Object;
     private mGenome                         : Genome;
     private mAmountOfEnergy                 : number;
+    private mMaxAmountOfEnergy              : number;
+    private mMinEnergyPercentage            : number = 0.10;
+    private mNewBornEnergyPercentage        : number = 0.25;
     private mOrientation                    : number;
     private mFovAngle                       : number;
     private mFovDistance                    : number;
@@ -21,9 +24,10 @@ export class Creature extends Object {
         this.mSimulator = simulator;
         this.mGenome = new Genome();
         this.mTargetObject = new Object(initialPosition);
-        this.mAmountOfEnergy = this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY * 0.25;
+        this.mMaxAmountOfEnergy = this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY;
+        this.mAmountOfEnergy = this.mMaxAmountOfEnergy * this.mNewBornEnergyPercentage;
         this.mOrientation = -90 * Math.PI / 180;
-        this.mFovAngle = this.mGenome.getFovFactor() * 2 *  Math.PI;
+        this.mFovAngle = this.mGenome.getFovFactor() * 2 * Math.PI;
         this.mFovDistance = Math.sqrt(SimulatorConfig.creatureViewArea / this.mGenome.getFovFactor() * Math.PI);
     }
 
@@ -32,6 +36,8 @@ export class Creature extends Object {
     }
 
     public static fromParents(daddy : Creature, mummy : Creature) : Creature {
+        daddy.mAmountOfEnergy -= daddy.mMaxAmountOfEnergy * daddy.mNewBornEnergyPercentage;
+        mummy.mAmountOfEnergy -= mummy.mMaxAmountOfEnergy * mummy.mNewBornEnergyPercentage;
         let genomeC = new Genome();
         genomeC.crossOver(daddy.mGenome, mummy.mGenome);
         genomeC.mutate();
@@ -46,11 +52,16 @@ export class Creature extends Object {
         }
         if(this.hasArrivedAtTargetPos()) {
             this.checkForFoodToConsume();
+            this.checkForSomeoneToFuck();
             this.findNewTargetPosition();
         } else {
             this.moveTowardsTargetPosition();
         }
-        this.mAmountOfEnergy -= this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY * 0.001;
+        this.mAmountOfEnergy -= this.mMaxAmountOfEnergy * 0.001;
+    }
+
+    public hasArrivedAtTargetPos() : boolean {
+        return this.mPosition.distance(this.mTargetObject.getPosition()) < (this.getSize() / 2);
     }
 
     public moveTowardsTargetPosition() : void {
@@ -58,17 +69,28 @@ export class Creature extends Object {
         let step = toTargetVec.normalize()
             .scale(this.mGenome.getSpeed())
             .clampLength(toTargetVec.length());
-            this.mPosition = this.mPosition.add(step);
+        this.mPosition = this.mPosition.add(step);
         this.mOrientation = toTargetVec.direction();
     }
 
     public findNewTargetPosition() : void {
-        let visibleBushes = this.getVisibleBushesWithFruit();
-        if(visibleBushes.length > 0) {
-            this.mTargetObject = visibleBushes[0];
+        if(this.canFuck()) {
+            let visibleMates = this.getVisibleViableMates();
+            if(visibleMates.length > 0) {
+                this.mTargetObject = visibleMates[0];
+            }
+            else {
+                this.generateRandomTargetPosition();
+            }
         }
         else {
-            this.generateRandomTargetPosition();
+            let visibleBushes = this.getVisibleBushesWithFruit();
+            if(visibleBushes.length > 0) {
+                this.mTargetObject = visibleBushes[0];
+            }
+            else {
+                this.generateRandomTargetPosition();
+            }
         }
     }
 
@@ -78,20 +100,58 @@ export class Creature extends Object {
         this.mTargetObject = new Object(this.mPosition.add(randomVec));
     }
 
-    public hasArrivedAtTargetPos() : boolean {
-        return this.mPosition.distance(this.mTargetObject.getPosition()) < (this.getSize() / 2);
+    public checkForSomeoneToFuck() : any {
+        if(this.mTargetObject instanceof Creature) {
+            if(this.canFuck() && this.mTargetObject.canFuck()) {
+                console.log("fucking");
+                console.log(this.mTargetObject);
+                let newborn = Creature.fromParents(this, this.mTargetObject);
+
+            }
+        }
+    }
+
+    public canFuck() {
+        if(!this.isDead() && this.getEnergy() > (this.mNewBornEnergyPercentage + this.mMinEnergyPercentage)) {
+            return true;
+        }
+        return false;
+    }
+
+    public getVisibleViableMates() : Creature[] {
+        return this.getVisibleMates().filter((mate) => mate != this && mate.canFuck());
+    }
+
+    public getVisibleMates() : Creature[] {
+        return this.mSimulator.getVisibleCreaturesForCreature(this).sort((a, b) => {
+            //maybe better sort by energy?
+            let distanceToA = this.mPosition.subtract(a.getPosition()).lengthSQ();
+            let distanceToB = this.mPosition.subtract(b.getPosition()).lengthSQ();
+            return distanceToA > distanceToB ? 1  : distanceToA < distanceToB ? -1  : 0;
+        });
     }
 
     public checkForFoodToConsume() : void {
         if(this.mTargetObject instanceof Bush) {
             if(this.mTargetObject.consumeFruit()) {
-                //this.mAmountOfEnergy += this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY * 0.05;
                 this.mAmountOfEnergy += this.mTargetObject.getFruitsEnergyValue();;
             }
         }
         // else if(this.mTargetObject instanceof Creature) {
 
         // }
+    }
+
+    public getVisibleBushesWithFruit() : Bush[] {
+        return this.getVisibleBushes().filter((bush) => bush.getFruitCount() > 0);
+    }
+
+    public getVisibleBushes() : Bush[] {
+        return this.mSimulator.getVisibleBushesForCreature(this).sort((a, b) => {
+            let distanceToA = this.mPosition.subtract(a.getPosition()).lengthSQ();
+            let distanceToB = this.mPosition.subtract(b.getPosition()).lengthSQ();
+            return distanceToA > distanceToB ? 1  : distanceToA < distanceToB ? -1  : 0;
+        });
     }
 
     public getPosition() : Vec2d {
@@ -102,8 +162,8 @@ export class Creature extends Object {
         return this.mGenome.getSize();
     }
 
-    public getEnergy(): number {
-        return this.mAmountOfEnergy / (this.mGenome.getSize() * this.AVG_CREATURE_ENERGY_CAPACITY);
+    public getEnergy() : number {
+        return this.mAmountOfEnergy / (this.mMaxAmountOfEnergy);
     }
 
     public isDead() : boolean {
@@ -120,17 +180,5 @@ export class Creature extends Object {
 
     public getFOVDistance() : number {
         return this.mFovDistance;
-    }
-
-    public getVisibleBushesWithFruit() : Bush[] {
-        return this.getVisibleBushes().filter( (bush) => bush.getFruitCount() > 0);
-    }
-
-    public getVisibleBushes() : Bush[] {
-        return this.mSimulator.getVisibleBushesForCreature(this).sort( (a, b) => {
-            let distanceToA = this.mPosition.subtract(a.getPosition()).lengthSQ();
-            let distanceToB = this.mPosition.subtract(b.getPosition()).lengthSQ();
-            return distanceToA > distanceToB ? 1 : distanceToA < distanceToB ? -1 : 0;
-        });
     }
 }
