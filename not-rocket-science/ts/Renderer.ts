@@ -80,12 +80,11 @@ export class Renderer {
 
     private drawRockets() {
         let rockets = this.simulator.getAllRockets();
-        let bestRocketIdx = this.simulator.getBestRocketIndex();
         for(let i = 0; i < rockets.length; i++) {
             let rocket = rockets[i];
 
             this.context.save();
-            this.context.globalAlpha *= (i == bestRocketIdx ? 1.0 : 0.1);
+            this.context.globalAlpha *= (i == 0 ? 1.0 : 0.1);
             let screenSpacePosition = this.toScreenSpace(rocket.getPosition());
             this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
             this.context.rotate(rocket.getAngle());
