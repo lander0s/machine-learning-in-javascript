@@ -10,5 +10,5 @@ export const SimulatorConfig = {
 }
 
 export const LearnerConfig = {
-    generationSize : 32,
+    generationSize : 12,
 }
