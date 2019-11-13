@@ -1,4 +1,5 @@
 ### AI and Machine Learning in javascript
+This repo contains some AI and ML experiments, all of them work on any modern web browser.
 
 #### AI learns how to land a rocket smoothly
 > This AI controlls a rocket inside a simulation and learns how to land it smoothly using an algorithm called __neuroevolution__, the below image shows the difference between the Generation Zero vs the 1000th.
@@ -52,9 +53,13 @@ a single hidden layer and 3 outputs to learn how to apply a simple image filter 
   
 ![tic-tac-toe](https://user-images.githubusercontent.com/5791055/60117585-27e3ac00-972f-11e9-9e39-d8c889ba8b07.gif)
 
-#### libs and tools used on this project
+#### Credits
 - <a href='https://github.com/cazala/synaptic'>synaptic</a> : The javascript architecture-free neural network library for node.js and the browser
 - <a href='https://requirejs.org/'> RequireJS </a> : JavaScript file and module loader
 - <a href='https://www.typescriptlang.org/'> TypeScript </a> : A typed superset of JavaScript that compiles to plain JavaScript
 - <a href='https://svgjs.com/docs/2.7/'> SVG.js </a> : The lightweight library for manipulating and animating SVG.
 - <a href='https://github.com/schteppe/p2.js/'> p2.js </a> : 2D rigid body physics engine written in JavaScript
+
+#### Contributors
+- David Landeros - dh.landeros08@gmail.com
+- Omar Arredondo - hapu.x2@gmail.com
