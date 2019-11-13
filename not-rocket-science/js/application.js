@@ -140,6 +140,7 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
     var Rocket = (function () {
         function Rocket(body) {
             this.isAlive = true;
+            this.isLanded = false;
             this.score = 0;
             this.body = body;
             this.thrusterAngle = 0;
@@ -160,7 +161,7 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
         };
         Rocket.prototype.updateScore = function () {
             if (this.isAlive) {
-                if (this.getFuelTankReservePercentage() > 0) {
+                if (this.getFuelTankReservePercentage() > 0 || (this.getFuelTankReservePercentage() == 0 && this.isLanded)) {
                     if (this.body.velocity[1] <= 0) {
                         var angularScore = 2.0 * Math.cos(this.getAngle()) - 1.0;
                         var deadlySpeed = 5.0;
@@ -172,6 +173,12 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
                     this.score -= 9750;
                     this.markAsDead();
                 }
+                if (this.isLanded) {
+                    var elapsedtime = new Date().getTime() - this.landingTimestamp;
+                    if (elapsedtime >= 3000) {
+                        this.markAsDead();
+                    }
+                }
             }
         };
         Rocket.prototype.judgeLanding = function () {
@@ -179,8 +186,13 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
             var deadlySpeed = 5.0;
             var spinScore = 1.0 - Math.abs(this.getAngularVelocity()) / deadlySpeed;
             var linearSpeed = Math.sqrt(this.body.velocity[0] * this.body.velocity[0] + this.body.velocity[1] * this.body.velocity[1]);
-            var speedScore = 1.0 - linearSpeed / deadlySpeed;
+            var speedScore = 1.0 - linearSpeed / (deadlySpeed * 2.0);
             this.score += 1000 * (spinScore + angularScore + speedScore);
+            this.isLanded = true;
+            this.landingTimestamp = new Date().getTime();
+            if (speedScore < 0) {
+                this.markAsDead();
+            }
         };
         Rocket.prototype.getScore = function () {
             return this.score;
@@ -251,6 +263,9 @@ define("Rocket", ["require", "exports", "Config"], function (require, exports, C
         };
         Rocket.prototype.isDead = function () {
             return !this.isAlive;
+        };
+        Rocket.prototype.hasLanded = function () {
+            return this.isLanded;
         };
         Rocket.prototype.getSecondsSinceDeath = function () {
             return (new Date().getTime() - this.deathTimestamp) / 1000;
@@ -328,18 +343,10 @@ define("Simulator", ["require", "exports", "Rocket", "Config"], function (requir
             this.world.step(elapsedSeconds);
             this.removeDeadRockets();
         };
-        Simulator.prototype.applyRandomImpulse = function (rocket) {
-            var forceX = (Math.random() * 2 - 1) * 20;
-            var forceY = (Math.random() * 2 - 1) * 20;
-            var posX = (Math.random() * 2 + 1) * Config_3.SimulatorConfig.rocketSize[0];
-            var posY = 0;
-            rocket.getPhysicsObject().applyImpulseLocal([forceX, forceY], [posX, posY]);
-        };
         Simulator.prototype.onBeginContact = function (evt) {
             var theRocket = evt.bodyA.id == this.ground.id ? evt.bodyB : evt.bodyA;
             var rocket = this.getRocketById(theRocket.id);
-            if (!rocket.isDead()) {
-                rocket.markAsDead();
+            if (!rocket.hasLanded()) {
                 rocket.judgeLanding();
             }
         };
@@ -480,7 +487,7 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
             for (var i = 0; i < rockets.length; i++) {
                 var rocket = rockets[i];
                 this.context.save();
-                this.context.globalAlpha *= (i == bestRocketIdx ? 1.0 : 0.1);
+                this.context.globalAlpha *= (i == 0 ? 1.0 : 0.1);
                 var screenSpacePosition = this.toScreenSpace(rocket.getPosition());
                 this.context.translate(screenSpacePosition[0], screenSpacePosition[1]);
                 this.context.rotate(rocket.getAngle());
