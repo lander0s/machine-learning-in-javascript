@@ -15,7 +15,7 @@ export class FireGFX {
         this.time = 0;
     }
 
-    public draw(factor: number, size: Array<number>) {
+    public draw(factor: number, size: Array<number>) : void {
 
         let copies = 18;
         for (let i = 0; i < copies; i++) {

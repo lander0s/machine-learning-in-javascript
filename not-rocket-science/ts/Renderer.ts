@@ -78,7 +78,7 @@ export class Renderer {
         this.context.restore();
     }
 
-    private drawRockets() {
+    private drawRockets() : void {
         let rockets = this.simulator.getAllRockets();
         for(let i = 0; i < rockets.length; i++) {
             let rocket = rockets[i];
@@ -142,7 +142,7 @@ export class Renderer {
         this.context.restore();
     }
 
-    private drawGround() {
+    private drawGround() : void {
         this.context.save();
         this.context.fillStyle = this.marsTexturePattern;
         let scaleFactor = this.scale / 20;

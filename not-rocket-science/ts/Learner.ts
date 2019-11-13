@@ -5,11 +5,11 @@ import { Leaderboard } from './Leaderboard'
 
 export class Learner {
 
-    private simulator : Simulator;
-    private genomes   : Array<Genome>
+    private simulator         : Simulator;
+    private genomes           : Array<Genome>
+    private topFitness        : number;
+    private leaderboard       : Leaderboard;
     private currentGeneration : number;
-    private topFitness : number;
-    private leaderboard : Leaderboard;
 
     constructor(simulator:Simulator, leaderboard: Leaderboard) {
         this.simulator = simulator;
@@ -18,7 +18,7 @@ export class Learner {
         this.leaderboard = leaderboard;
     }
 
-    public init() {
+    public init() : void {
         if(this.hasSave()) {
             this.initFromSave();
         } else {
@@ -73,7 +73,7 @@ export class Learner {
         }
     }
 
-    private createNextGeneration() {
+    private createNextGeneration() : void {
         let bestCandidates = this.selectBestCandidates();
         let firstPlace = bestCandidates[0];
         let secondPlace = bestCandidates[1];

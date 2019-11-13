@@ -52,7 +52,7 @@ export class Rocket {
         this.updateScore();
     }
 
-    private updateScore() {
+    private updateScore() : void {
         if(this.isAlive) {
             if(this.getFuelTankReservePercentage() > 0 || (this.getFuelTankReservePercentage() == 0 && this.isLanded)) {
                 if (this.body.velocity[1] <= 0) {

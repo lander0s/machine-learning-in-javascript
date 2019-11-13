@@ -16,7 +16,7 @@ export class Simulator {
     constructor() {
     }
 
-    public init() {
+    public init() : void {
         this.world = new p2.World();
         let planeShape = new p2.Plane();
         planeShape.collisionMask = COLLISION_GROUP_ROCKET;
@@ -42,7 +42,7 @@ export class Simulator {
         return rocket;
     }
 
-    public getAllRockets() {
+    public getAllRockets() : Array<Rocket> {
         return this.rockets;
     }
 
@@ -104,7 +104,7 @@ export class Simulator {
         }
     }
 
-    public removeAllRockets() {
+    public removeAllRockets() : void {
         this.rockets.forEach((rocket)=>{
             this.world.removeBody(rocket.getPhysicsObject());
         });

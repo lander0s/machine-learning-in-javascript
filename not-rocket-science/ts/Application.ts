@@ -18,14 +18,14 @@ export class Application {
         document.querySelector('#reset-button').addEventListener('click', () => this.hardReset() );
     }
 
-    public init() {
+    public init() : void {
         this.leaderboard.init();
         this.renderer.init();
         this.simulator.init();
         this.learner.init();
     }
 
-    public update() {
+    public update() : void {
         this.simulator.update();
         this.learner.update();
         this.renderer.draw();
