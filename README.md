@@ -2,7 +2,7 @@
 This repo contains some AI and ML experiments, all of them work on any modern web browser.
 
 ## AI learns how to land a rocket smoothly
-> This AI controlls a rocket inside a simulation and learns how to land it smoothly using an algorithm called __neuroevolution__, the below image shows the difference between the Generation Zero vs the 1000th.
+> This AI controlls a rocket inside a simulation and learns how to land it smoothly using an algorithm called __neuroevolution__, the below image shows the difference between the Generation Zero and the 1000th.
 
 <center>
 <table>
