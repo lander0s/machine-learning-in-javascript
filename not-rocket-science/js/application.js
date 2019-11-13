@@ -483,7 +483,6 @@ define("Renderer", ["require", "exports", "Config", "FireGFX"], function (requir
         };
         Renderer.prototype.drawRockets = function () {
             var rockets = this.simulator.getAllRockets();
-            var bestRocketIdx = this.simulator.getBestRocketIndex();
             for (var i = 0; i < rockets.length; i++) {
                 var rocket = rockets[i];
                 this.context.save();
