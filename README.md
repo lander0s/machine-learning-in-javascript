@@ -25,9 +25,8 @@ This repo contains some AI and ML experiments, all of them work on any modern we
 </table>
 </center>
 
-## Artificial neural network learns how to apply image filters
-> This application uses an artificial neural network (Perceptron) with 3 inputs (Red, Green, Blue),  
-a single hidden layer and 3 outputs to learn how to apply a simple image filter __based on a given example__
+## ANN learns image filters
+> an artificial neural network (ANN) learns how to apply Image filters __based on a given example__. This example uses perceptron with 3 neurons. The below image shows the ANN learning __threshold__ and __negative__.
 
 <table>
   <tr>
