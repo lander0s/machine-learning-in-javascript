@@ -1,29 +1,54 @@
-# Artificial intelligence and machine learning experiments
- On this repository you will find the following experiments:
- - Image filters using artificial neural networks
- - Genetic algorithm learns how to land a rocket
- - AI plays Tic Tac Toe using a decision tree algorithm
+### AI and Machine Learning in javascript
 
+#### AI learns how to land a rocket smoothly
+> This AI controlls a rocket inside a simulation and learns how to land it smoothly using an algorithm called __neuroevolution__, the below image shows the difference between the Generation Zero vs the 1000th.
 
-#### Image filter app
-This application uses an artificial neural network (Perceptron) with 3 inputs (Red, Green, Blue),  
-a single hidden layer and 3 outputs to learn how to apply a simple image filter based on a given example  
-  
-<img height='300px' src= 'https://user-images.githubusercontent.com/5791055/59375438-f9afa680-8d02-11e9-9f7a-55dae2ad338a.gif'>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
-<img height='300px' src= 'https://user-images.githubusercontent.com/5791055/59378141-7f822080-8d08-11e9-8526-b936399fc380.gif'>
+<center>
+<table>
+  <tr>
+    <td>
+      Generation #0
+    </td>
+    <td>
+      Generation #1000
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img width='250px' src='https://user-images.githubusercontent.com/5791055/68810475-14c07280-0623-11ea-8dca-b523be426bba.gif'/>
+    </td>
+    <td>
+      <img width='250px' src='https://user-images.githubusercontent.com/5791055/68810479-1722cc80-0623-11ea-9972-e111ea4dfabb.gif'/>
+    </td>
+  </tr> 
+</table>
+</center>
 
-#### Not rocket science
-This application simulates an ai-controlled rocket that is thrown upside down, then, by using a  
-genetic algorithm called neuroevolution it figures out how to land smoothly (it acctually manage  
-to do it before running out of fuel)  
-  
-<img height='300px' src= 'https://user-images.githubusercontent.com/5791055/59807121-a06be800-92ab-11e9-8cd0-995a19fde43f.gif'>
+#### Artificial neural network learns how to apply image filters
+> This application uses an artificial neural network (Perceptron) with 3 inputs (Red, Green, Blue),  
+a single hidden layer and 3 outputs to learn how to apply a simple image filter __based on a given example__
 
+<table>
+  <tr>
+    <td>
+      Threshold
+    </td>
+    <td>   
+      Negative
+    </td>   
+  </tr>
+  <tr>
+    <td>
+      <img height='300px' src= 'https://user-images.githubusercontent.com/5791055/59375438-f9afa680-8d02-11e9-9f7a-55dae2ad338a.gif'/>
+    </td>
+    <td>   
+      <img height='300px' src= 'https://user-images.githubusercontent.com/5791055/59378141-7f822080-8d08-11e9-8526-b936399fc380.gif'/>
+    </td>   
+  </tr>
+</table>
 
 #### Tic Tac Toe
-In this experiment, an artificial intelligence explores all the possible states of a Tic Tac Toe board, compiling a  
-decision tree, then it is able to plays agains a human , it may win or may draw but it never loses  
+> In this experiment, an artificial intelligence explores all the possible states of a Tic Tac Toe board, compiling a decision tree, then it is able to plays agains a human , it may win or may draw but it never loses.
   
 ![tic-tac-toe](https://user-images.githubusercontent.com/5791055/60117585-27e3ac00-972f-11e9-9e39-d8c889ba8b07.gif)
 
